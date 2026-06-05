@@ -61,3 +61,14 @@ Why not focus on MVE?
 ---------------------
 
 Minimum-volume ellipsoid estimators are historically important, but the benchmark evidence in this project points to a stronger niche: efficient MCD for separable outliers and regularized heavy-tail scatter for small samples. MVE may become an experimental add-on later, but it is not currently the core differentiator.
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Extended material
+   :hidden:
+
+   notebooks
+   kaggle_roadmap
+   kaggle_examples
+   external_demo_workflow
+   release_readiness
