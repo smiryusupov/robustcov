@@ -1,0 +1,6 @@
+method,median_seconds,min_seconds,max_seconds
+robustcov FastMCD,0.023761,0.023498,0.024421
+robustcov TylerShape,0.001889,0.001869,0.002081
+robustcov RegTyler,0.001691,0.001674,0.001742
+sklearn EmpiricalCovariance,0.000202,0.000172,0.000817
+sklearn MinCovDet,0.191902,0.190605,0.193694

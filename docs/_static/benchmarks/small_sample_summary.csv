@@ -1,0 +1,10 @@
+method,appearances,failures,win_rate,mean_rank,median_error,mean_error,median_seconds
+robustcov Cauchy,27,0,0.7407,1.4074,0.5994,0.7625,0.013307
+robustcov StudentT(df=3),27,0,0.0000,3.1852,0.6675,0.8793,0.015101
+robustcov HellTyler(exp),27,0,0.1111,3.2963,0.8503,0.9889,0.042900
+robustcov RegTyler,27,0,0.0370,3.5185,0.8021,12.0413,0.005107
+robustcov KLTyler,27,0,0.0370,4.5185,0.8021,12.0413,0.005073
+sklearn MinCovDet,27,0,0.1111,6.2963,2.1739,15.6922,0.024392
+sklearn LedoitWolf,27,0,0.0000,6.5556,2.5696,262.0354,0.000420
+sklearn OAS,27,0,0.0000,7.5926,5.3643,1629.2743,0.000325
+sklearn Empirical,27,0,0.0000,8.6296,6.9285,1681.1440,0.000449

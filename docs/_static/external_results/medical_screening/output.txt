@@ -1,0 +1,7 @@
+medical screening benchmark
+method,seconds,precision,recall,f1,roc_auc,pr_auc,detected
+sklearn EllipticEnvelope,1.5929,0.5996,0.5996,0.5996,0.6356,0.6285,34979
+sklearn IsolationForest,0.9813,0.5811,0.5811,0.5811,0.6078,0.5941,34979
+robustcov Auto(StudentTScatter),2.5164,0.5712,0.5712,0.5712,0.5863,0.5674,34979
+sklearn LocalOutlierFactor,10.5699,0.5365,0.5365,0.5365,0.5487,0.5391,34979
+saved outputs to results/external/medical_screening

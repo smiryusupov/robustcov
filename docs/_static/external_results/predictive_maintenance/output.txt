@@ -1,0 +1,7 @@
+predictive maintenance benchmark
+method,seconds,precision,recall,f1,roc_auc,pr_auc,detected
+sklearn IsolationForest,0.2076,0.9440,0.9440,0.9440,0.9872,0.9628,339
+robustcov Auto(StudentTScatter),0.7577,0.9469,0.9469,0.9469,0.9846,0.8199,339
+sklearn EllipticEnvelope,0.1666,0.5103,0.5103,0.5103,0.9531,0.5805,339
+sklearn LocalOutlierFactor,0.1379,0.1209,0.1209,0.1209,0.4843,0.0570,339
+saved outputs to results/external/predictive_maintenance

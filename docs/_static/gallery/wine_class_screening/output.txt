@@ -1,0 +1,10 @@
+wine class screening
+method,seconds,precision,recall,f1,roc_auc,detected
+sklearn LocalOutlierFactor,0.0015,0.9000,0.9000,0.9000,0.9932,10
+robustcov Auto,0.0156,0.8000,0.8000,0.8000,0.9763,10
+sklearn IsolationForest,0.1131,0.6000,0.6000,0.6000,0.8949,10
+sklearn EllipticEnvelope,0.0275,0.4000,0.4000,0.4000,0.9017,10
+sklearn OneClassSVM,0.0010,0.3077,0.4000,0.3478,0.8627,13
+normal_class=0, anomaly_class=1, anomaly_count=10, n=69, p=8, anomaly_fraction=0.145
+auto_detector_estimators=3
+saved diagnostics to results/use_cases/wine_class

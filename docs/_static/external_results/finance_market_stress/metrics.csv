@@ -1,0 +1,2 @@
+method,n_days,n_assets,alpha,detected_days,threshold,max_distance,median_distance,radial_kurtosis,condition_number
+RegularizedCauchy,899,8,0.975,23,95.79757169861077,251.5634271621798,7.344121400847285,2.815129834185989,6.066016648802037

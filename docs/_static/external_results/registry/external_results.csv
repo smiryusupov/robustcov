@@ -1,0 +1,4 @@
+dataset,task,best_robustcov_method,headline_metric,headline_value,comparison_or_top_result,notes
+Credit-card fraud,fraud anomaly detection,robustcov FastMCD,PR-AUC,0.7121,IsolationForest PR-AUC 0.1427,External Kaggle-style result provided by local run
+Finance market stress,single-day market stress,RegularizedCauchy,detected days,23.0,"top day 2020-09-11, distance 251.56",Synthetic finance CSV demo
+Rolling-window finance,market regime anomaly,RegularizedCauchy,detected windows,5.0,top window 2020-09-03 to 2020-09-30,Synthetic finance CSV demo

@@ -1,0 +1,4 @@
+sensor anomaly use case
+precision=1.000, recall=1.000, detected=35
+radial_kurtosis=11.421, support=551
+saved diagnostics to results/use_cases/sensor

@@ -1,0 +1,4 @@
+biomedical/signal-window anomaly example
+features=16, precision=1.000, recall=1.000, detected=35
+radial_kurtosis=3031935997.323
+saved diagnostics to results/use_cases/biomedical_signal

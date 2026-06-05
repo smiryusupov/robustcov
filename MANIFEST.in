@@ -1,0 +1,33 @@
+include README.md
+include LICENSE
+include NOTICE
+include CHANGELOG.md
+include CITATION.cff
+include CONTRIBUTING.md
+include RELEASE.md
+include pyproject.toml
+include CMakeLists.txt
+include .readthedocs.yaml
+include .gitignore
+
+recursive-include robustcov *.py
+recursive-include src *.cpp *.hpp *.h CMakeLists.txt
+recursive-include tests *.py
+recursive-include examples *.py
+recursive-include examples_external *.py *.md
+recursive-include benchmarks *.py *.md
+recursive-include docs *.rst *.py *.md *.css *.png *.csv
+recursive-include notebooks *.ipynb *.md
+recursive-include conda *.md *.yaml *.yml
+recursive-include .github/workflows *.yml *.yaml
+
+global-exclude __pycache__ *.py[cod] *.so *.pyd *.dll *.dylib
+global-exclude .DS_Store
+
+prune docs/_build
+prune results
+prune .pytest_cache
+prune .venv
+prune examples_external/data
+prune build
+prune dist

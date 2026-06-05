@@ -1,0 +1,4 @@
+embedding outlier screening
+selected=StudentTScatter
+precision=1.000, recall=1.000, detected=55
+saved diagnostics to results/use_cases/embedding_outliers

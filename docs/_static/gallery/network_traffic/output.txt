@@ -1,0 +1,4 @@
+network traffic anomaly simulation
+precision=1.000, recall=1.000, detected=80
+radial_kurtosis=13.409
+saved diagnostics to results/use_cases/network

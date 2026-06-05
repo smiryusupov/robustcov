@@ -1,0 +1,58 @@
+{% set name = "robustcov" %}
+{% set version = "0.0.1" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.io/packages/source/r/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: REPLACE_WITH_PYPI_SDIST_SHA256
+
+build:
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  skip: true  # [py<312]
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - cmake
+    - ninja
+  host:
+    - python
+    - pip
+    - scikit-build-core >=0.11.3
+    - pybind11 >=3.0.1
+    - numpy >=2.3.4
+  run:
+    - python
+    - numpy >=2.3.4
+    - scipy >=1.16.1
+    - matplotlib-base >=3.10.5
+
+test:
+  imports:
+    - robustcov
+  requires:
+    - pytest >=8
+    - scikit-learn >=1.7.2
+  source_files:
+    - tests
+    - examples
+  commands:
+    - python -c "import robustcov as rc; print(rc.__version__, rc.has_openmp())"
+    - pytest -q tests
+    - python -m compileall -q examples
+
+about:
+  home: https://github.com/smiryusupov/robustcov
+  summary: Robust covariance, heavy-tail scatter estimation, anomaly diagnostics, and benchmark galleries
+  license: Apache-2.0
+  license_file: LICENSE
+  doc_url: https://robustcov.readthedocs.io/
+  dev_url: https://github.com/smiryusupov/robustcov
+
+extra:
+  recipe-maintainers:
+    - smiryusupov

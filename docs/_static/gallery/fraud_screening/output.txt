@@ -1,0 +1,4 @@
+fraud-style tabular anomaly screening
+precision=0.986, recall=0.986, detected=70
+radial_kurtosis=5.578, support=1098
+saved diagnostics to results/use_cases/fraud

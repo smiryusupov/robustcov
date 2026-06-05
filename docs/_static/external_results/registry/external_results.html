@@ -1,0 +1,42 @@
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>dataset</th>
+      <th>task</th>
+      <th>best_robustcov_method</th>
+      <th>headline_metric</th>
+      <th>headline_value</th>
+      <th>comparison_or_top_result</th>
+      <th>notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Credit-card fraud</td>
+      <td>fraud anomaly detection</td>
+      <td>robustcov FastMCD</td>
+      <td>PR-AUC</td>
+      <td>0.7121</td>
+      <td>IsolationForest PR-AUC 0.1427</td>
+      <td>External Kaggle-style result provided by local run</td>
+    </tr>
+    <tr>
+      <td>Finance market stress</td>
+      <td>single-day market stress</td>
+      <td>RegularizedCauchy</td>
+      <td>detected days</td>
+      <td>23.0000</td>
+      <td>top day 2020-09-11, distance 251.56</td>
+      <td>Synthetic finance CSV demo</td>
+    </tr>
+    <tr>
+      <td>Rolling-window finance</td>
+      <td>market regime anomaly</td>
+      <td>RegularizedCauchy</td>
+      <td>detected windows</td>
+      <td>5.0000</td>
+      <td>top window 2020-09-03 to 2020-09-30</td>
+      <td>Synthetic finance CSV demo</td>
+    </tr>
+  </tbody>
+</table>

@@ -1,0 +1,12 @@
+Robust diagnostic report: FastMCD
+n_samples=500, n_features=4, alpha=0.975
+detected_fraction=0.1340, threshold=11.1433
+radial_kurtosis=5.2420, qq_tail_deviation=3.8966
+condition_number=5.798, max_distance=88.9446
+support_fraction=0.8800
+effective_support_fraction=0.5040
+recommendations:
+  - Heavy tails detected: compare FastMCD with RegularizedTyler and inspect QQ diagnostics.
+  - Large detected fraction for the chosen alpha: consider threshold="empirical" or set a contamination prior.
+  - QQ tail deviation is large: tail behavior is far from Gaussian; use empirical thresholds for anomaly detection.
+saved diagnostics to results/use_cases/quality_control

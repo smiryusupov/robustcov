@@ -1,0 +1,5 @@
+portfolio covariance stress comparison
+empirical_risk=1.7601, empirical_cond=1418
+cauchy_risk=0.7936, cauchy_cond=108.4
+cauchy_radial_kurtosis=5.840
+saved diagnostics to results/use_cases/portfolio_stress

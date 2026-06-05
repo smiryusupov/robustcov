@@ -1,0 +1,7 @@
+IEEE-CIS fraud benchmark
+method,seconds,precision,recall,f1,roc_auc,pr_auc,detected
+robustcov RegularizedCauchy,1367.0149,0.1550,0.1550,0.1550,0.7641,0.0931,2561
+sklearn IsolationForest,1.1571,0.1390,0.1390,0.1390,0.7387,0.0838,2561
+sklearn EllipticEnvelope,3045.0699,0.0914,0.0914,0.0914,0.7578,0.0753,2561
+sklearn LocalOutlierFactor,27.7558,0.0633,0.0633,0.0633,0.6539,0.0452,2561
+saved outputs to results/external/ieee_cis_fraud

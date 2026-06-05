@@ -1,0 +1,5 @@
+image-feature one-class anomaly example
+normal_digit=0, anomaly_digit=1, anomaly_count=30, n=208, p=12
+precision=0.900, recall=0.900, detected=30
+radial_kurtosis=120.197
+saved diagnostics to results/use_cases/image_features

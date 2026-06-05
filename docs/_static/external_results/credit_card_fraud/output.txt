@@ -1,0 +1,6 @@
+method,seconds,precision,recall,f1,roc_auc,pr_auc,detected
+robustcov FastMCD,57.2020,0.8008,0.8008,0.8008,0.9573,0.7121,492
+sklearn IsolationForest,3.3915,0.2622,0.2622,0.2622,0.9475,0.1427,492
+sklearn EllipticEnvelope,12.5178,0.2134,0.2134,0.2134,0.9199,0.1248,492
+sklearn LocalOutlierFactor,35.9812,0.0000,0.0000,0.0000,0.5127,0.0021,492
+saved outputs to results/external/credit_card_fraud

@@ -1,0 +1,9 @@
+multimodal anomaly detection demo
+method,precision,recall,f1,detected
+global RegularizedCauchy,0.486,0.486,0.486,35
+cluster robust detector,0.800,0.800,0.800,35
+ClusterRobustOutlierDetector(n_clusters=3); cluster_sizes=[194, 188, 193]; valid_clusters=[True, True, True]; threshold=9.043; detected=35
+saved metrics to results/use_cases/multimodal_anomaly/metrics.csv
+saved figure: results/use_cases/multimodal_anomaly/cluster_distance_panel.png
+saved figure: results/use_cases/multimodal_anomaly/global_distance_profile.png
+saved diagnostics to results/use_cases/multimodal_anomaly

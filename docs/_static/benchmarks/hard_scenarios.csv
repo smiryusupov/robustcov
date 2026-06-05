@@ -1,0 +1,7 @@
+scenario,contamination,method,rel_fro_error,seconds,support_purity,outlier_leakage,support_size,radial_kurtosis
+mean_shift,0.2,robustcov FastMCD,0.1352,0.046352,1.0000,0.0000,786,142.4016
+mean_shift,0.2,sklearn MinCovDet,0.1107,0.123946,1.0000,0.0000,786,
+variance,0.2,robustcov RegTyler,0.1087,0.000875,,,,225.0001
+variance,0.2,robustcov FastMCD,0.1341,0.044778,1.0000,0.0000,790,341.7775
+heavy_tail_inliers,0.2,robustcov FastMCD,0.0886,0.046087,,,,7.7035
+heavy_tail_inliers,0.2,sklearn MinCovDet,0.1205,0.114427,,,,

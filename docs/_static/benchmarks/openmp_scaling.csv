@@ -1,0 +1,7 @@
+method,threads,median_seconds,min_seconds,max_seconds,speedup_vs_1
+FastMCD,1,0.679777,0.679550,0.683289,1.000
+FastMCD,2,0.381042,0.377283,0.381148,1.784
+FastMCD,4,0.234113,0.232033,0.240740,2.904
+RegularizedTyler,1,0.027655,0.026847,0.031376,1.000
+RegularizedTyler,2,0.016086,0.015778,0.017262,1.719
+RegularizedTyler,4,0.009717,0.009653,0.015875,2.846

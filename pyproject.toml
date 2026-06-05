@@ -1,0 +1,159 @@
+[build-system]
+requires = [
+  "scikit-build-core>=0.11.3",
+  "pybind11>=3.0.1",
+  "numpy>=2.3.4",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "robustcov"
+version = "0.0.1"
+description = "Robust covariance, heavy-tail scatter estimation, anomaly diagnostics, and benchmark galleries"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+
+authors = [
+  { name = "Shohruh Miryusupov", email = "shohruh@miryusupov.com" },
+]
+
+maintainers = [
+  { name = "Shohruh Miryusupov", email = "shohruh@miryusupov.com" },
+]
+
+dependencies = [
+  "numpy>=2.3.4",
+  "scipy>=1.16.1",
+  "matplotlib>=3.10.5",
+]
+
+keywords = [
+  "robust covariance",
+  "robust statistics",
+  "anomaly detection",
+  "outlier detection",
+  "heavy tails",
+  "MCD",
+  "Tyler estimator",
+  "scatter estimation",
+  "Mahalanobis distance",
+]
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: C++",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/smiryusupov/robustcov"
+Repository = "https://github.com/smiryusupov/robustcov"
+Documentation = "https://robustcov.readthedocs.io/"
+Issues = "https://github.com/smiryusupov/robustcov/issues"
+Changelog = "https://github.com/smiryusupov/robustcov/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "scikit-learn>=1.7.2",
+  "sphinx>=8",
+  "furo>=2025.1",
+  "build>=1.2",
+  "twine>=6",
+  "cibuildwheel>=3.1.4",
+]
+
+bench = [
+  "scikit-learn>=1.7.2",
+  "pandas>=2.2",
+]
+
+docs = [
+  "sphinx>=8",
+  "furo>=2025.1",
+  "myst-parser>=4",
+]
+
+examples = [
+  "scikit-learn>=1.7.2",
+  "pandas>=2.2",
+]
+
+all = [
+  "robustcov[dev,bench,docs,examples]",
+]
+
+[tool.scikit-build]
+wheel.packages = ["robustcov"]
+cmake.minimum-version = "3.18"
+
+[tool.scikit-build.sdist]
+include = [
+  "CMakeLists.txt",
+  "src/**",
+  "robustcov/**",
+  "tests/**",
+  "examples/**",
+  "examples_external/**",
+  "benchmarks/**",
+  "docs/**",
+  "notebooks/**",
+  "conda/**",
+  ".github/workflows/**",
+  ".readthedocs.yaml",
+  "CHANGELOG.md",
+  "CITATION.cff",
+  "CONTRIBUTING.md",
+  "LICENSE",
+  "NOTICE",
+  "README.md",
+  "RELEASE.md",
+]
+exclude = [
+  "docs/_build/**",
+  "results/**",
+  "build/**",
+  "dist/**",
+  ".pytest_cache/**",
+  ".venv/**",
+  "examples_external/data/**",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = [
+  "ignore:.*covariance matrix associated to your dataset is not full rank.*:UserWarning",
+  "ignore:.*Determinant has increased.*:RuntimeWarning",
+]
+
+[tool.cibuildwheel]
+build = "cp312-* cp313-* cp314-*"
+skip = "*-musllinux_* pp* *-win32 *-manylinux_i686"
+test-requires = ["pytest>=8", "scikit-learn>=1.7.2"]
+test-command = "python -c \"import robustcov as rc; print('version=', rc.__version__); print('openmp=', rc.has_openmp())\" && pytest {project}/tests && python -m compileall -q {project}/examples"
+environment = "OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]

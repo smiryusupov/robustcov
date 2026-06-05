@@ -1,0 +1,2 @@
+method,n_windows,window,step,n_assets,detected_windows,threshold,max_distance,radial_kurtosis
+RegularizedCauchy,176,20,5,8,5,152.36606980024123,214.0264973740177,3.9770869272091005

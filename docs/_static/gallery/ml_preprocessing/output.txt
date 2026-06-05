@@ -1,0 +1,6 @@
+robust preprocessing for downstream ML
+raw_training_accuracy_on_test=0.890
+robust_filtered_accuracy_on_test=0.871
+removed_training_rows=39
+scatter_radial_kurtosis=6883710114330931200.000
+saved diagnostics to results/use_cases/ml_preprocessing

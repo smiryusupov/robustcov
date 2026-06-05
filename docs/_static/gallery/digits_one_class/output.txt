@@ -1,0 +1,10 @@
+digits one-class anomaly detection
+method,seconds,precision,recall,f1,roc_auc,detected
+sklearn EllipticEnvelope,0.0397,0.9000,0.9000,0.9000,0.9908,30
+robustcov FastMCD,0.0443,0.9000,0.9000,0.9000,0.9871,30
+sklearn IsolationForest,0.1331,0.7333,0.7333,0.7333,0.9502,30
+sklearn LocalOutlierFactor,0.0027,0.5333,0.5333,0.5333,0.8672,30
+sklearn OneClassSVM,0.0020,0.4375,0.4667,0.4516,0.8687,32
+normal_digit=0, anomaly_digit=1, anomaly_count=30, n=208, p=12
+anomaly_fraction=0.144, robust_radial_kurtosis=120.197
+saved diagnostics to results/use_cases/digits_one_class
