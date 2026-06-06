@@ -1,5 +1,12 @@
 # robustcov
 
+[![PyPI](https://img.shields.io/pypi/v/robustcov.svg)](https://pypi.org/project/robustcov/)
+[![Python](https://img.shields.io/pypi/pyversions/robustcov.svg)](https://pypi.org/project/robustcov/)
+[![Docs](https://readthedocs.org/projects/robustcov/badge/?version=latest)](https://robustcov.readthedocs.io/en/latest/)
+[![CI](https://github.com/smiryusupov/robustcov/actions/workflows/tests.yml/badge.svg)](https://github.com/smiryusupov/robustcov/actions/workflows/tests.yml)
+[![Wheels](https://github.com/smiryusupov/robustcov/actions/workflows/wheels.yml/badge.svg)](https://github.com/smiryusupov/robustcov/actions/workflows/wheels.yml)
+[![License](https://img.shields.io/pypi/l/robustcov.svg)](https://github.com/smiryusupov/robustcov/blob/main/LICENSE)
+
 `robustcov` is an experimental Python/C++ library for robust covariance, heavy-tail scatter estimation, and interpretable anomaly diagnostics.
 
 It is designed for workflows where classical covariance estimates are unstable: contamination, heavy-tailed data, small samples, high-dimensional scatter estimation, and robust-distance based anomaly screening.
