@@ -7,9 +7,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-project = 'robustcov'
-author = 'robustcov contributors'
-release = '0.0.1'
+project = "robustcov"
+author = "Shohruh Miryusupov"
+copyright = "2026, Shohruh Miryusupov"
 
 extensions = [
     'sphinx.ext.autodoc',
