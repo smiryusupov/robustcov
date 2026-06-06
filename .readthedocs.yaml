@@ -6,7 +6,10 @@ build:
     python: "3.12"
   jobs:
     pre_build:
-      - python -c "import pathlib, compileall, sys; dirs=['robustcov','examples','benchmarks','docs']; ok=all(compileall.compile_dir(d, quiet=1, force=True) for d in dirs if pathlib.Path(d).exists()); sys.exit(0 if ok else 1)"
+      - python -m compileall -q robustcov
+      - python -m compileall -q examples
+      - python -m compileall -q benchmarks
+      - python -m compileall -q docs
 
 sphinx:
   configuration: docs/conf.py
