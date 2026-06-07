@@ -9,7 +9,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "robustcov"
 version = "0.0.2"
-description = "Robust covariance, heavy-tail scatter estimation, anomaly diagnostics, and benchmark galleries"
+description = "Robust scatter geometry for anomaly detection, kernels, and ML workflows in Python."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
@@ -31,13 +31,14 @@ dependencies = [
 keywords = [
   "robust covariance",
   "robust statistics",
+  "scatter estimation",
   "anomaly detection",
   "outlier detection",
   "heavy tails",
-  "MCD",
   "Tyler estimator",
-  "scatter estimation",
   "Mahalanobis distance",
+  "SPD geometry",
+  "kernel methods",
 ]
 
 classifiers = [
