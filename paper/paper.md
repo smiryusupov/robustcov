@@ -8,13 +8,12 @@ tags:
   - kernel methods
   - information geometry
 authors:
-  - name: S. MI
-    orcid: TODO
+  - name: Shohruh Miryusupov
     affiliation: 1
 affiliations:
-  - name: TODO
+  - name: Independent researcher
     index: 1
-date: TODO
+date: 2026-06-07
 bibliography: paper.bib
 ---
 
@@ -131,6 +130,7 @@ documentation, examples, references, and manuscript content.
 
 # Acknowledgements
 
-TODO.
+The author thanks early users and colleagues who provided feedback on the
+package scope, documentation, examples, and JOSS paper framing.
 
 # References
