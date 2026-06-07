@@ -1,6 +1,48 @@
 robustcov documentation
 =======================
 
+
+Why robustcov?
+--------------
+
+Many machine-learning workflows use covariance geometry implicitly: anomaly
+scores, whitening, Mahalanobis distances, kernel similarities, Gaussian models,
+portfolio risk, and embedding retrieval. Empirical covariance is fast and
+useful, but it can be strongly distorted by outliers, heavy tails, leverage
+points, and small contaminated subsets of the data.
+
+``robustcov`` provides robust covariance and scatter estimators together with
+practical machine-learning workflows around them: anomaly detection,
+diagnostics, benchmark galleries, robust kernel/input metrics, and SPD geometry
+utilities.
+
+The typical workflow is:
+
+.. code-block:: text
+
+   contaminated data
+        -> robust scatter estimate
+        -> robust precision / Mahalanobis geometry
+        -> anomaly score, whitening, similarity, kernel, or diagnostic
+
+When should I use this?
+-----------------------
+
+Use ``robustcov`` when covariance geometry matters and the data may contain
+outliers, heavy tails, small contaminated subsets, leverage points, or unstable
+directions. Typical use cases include tabular anomaly detection, sensor
+monitoring, financial features, embeddings, robust preprocessing, and kernel
+methods.
+
+Project status
+--------------
+
+``robustcov`` is under active development. The implemented estimators, examples,
+and diagnostics are tested and documented, but some APIs may evolve as the
+package matures. See :doc:`api_stability` for the current stability policy.
+
+
+
 ``robustcov`` is an experimental robust covariance, heavy-tail scatter, anomaly diagnostics, and benchmark-gallery package with a C++/pybind core.
 
 The project is organized around two reader-friendly entry points:
