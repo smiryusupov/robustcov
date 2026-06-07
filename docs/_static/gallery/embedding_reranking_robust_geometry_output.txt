@@ -1,0 +1,23 @@
+Robust embedding retrieval / RAG-style filtering
+================================================
+
+Dataset: 20 Newsgroups
+Embedding: TF-IDF + TruncatedSVD(32)
+Reference documents: 850
+Query documents: 250
+Injected leverage-like reference embeddings: 85
+
+Robust leverage filter
+filtered reference fraction:              0.200
+injected artifacts filtered:              1.000
+ordinary references filtered:             0.111
+
+Retrieval quality
+method                            top1_label_match   precision_at_5
+clean cosine                               0.824           0.757
+contaminated cosine                        0.720           0.665
+robust leverage filter                     0.812           0.724
+
+Leverage-like candidates in top-10
+contaminated cosine:                       0.683
+robust leverage filter:                    0.000

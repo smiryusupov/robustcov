@@ -30,3 +30,8 @@ Detailed pages
    :maxdepth: 1
 
    ../gallery/ml_preprocessing
+
+.. toctree::
+   :maxdepth: 1
+
+   ../gallery/embedding_reranking_robust_geometry

@@ -151,4 +151,5 @@ All detailed pages
    gallery/wine_class_screening
    gallery/ml_preprocessing
    gallery/gp_robust_input_metric
+   gallery/embedding_reranking_robust_geometry
    gallery/multimodal_anomaly

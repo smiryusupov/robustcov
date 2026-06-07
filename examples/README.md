@@ -15,6 +15,9 @@ Core examples:
 - `plot_contamination_accuracy.py` – plots benchmark CSVs as contamination curves.
 - `plot_speed_comparison.py` – plots benchmark speed CSVs.
 - `plot_speed_accuracy_pareto.py` – plots speed/error Pareto points.
+- `plot_spd_geometry_ml_use_cases.py` – plots SPD-geometry ML diagnostics for drift monitoring, estimator stability, and robust whitening.
+- `spd_geometry_ml_use_cases.py` – ML use-case patterns for SPD geometry: drift monitoring, scatter comparison, and robust similarity.
+- `spd_geometry_diagnostics.py` – SPD-geometry utilities for comparing robust scatter matrices and Tyler fixed-point residuals.
 - `gp_robust_input_metric.py` – robust GP kernel / input-metric example showing how contaminated input covariance can distort kernel geometry.
 
 
