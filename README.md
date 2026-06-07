@@ -18,6 +18,7 @@ It is designed for workflows where classical covariance estimates are unstable: 
 - Fast robust covariance via `FastMCD`
 - Heavy-tail scatter estimators: `RegularizedCauchy`, `StudentTScatter`, `RegularizedTyler`
 - Robust anomaly detection with Mahalanobis-style robust distances
+- Robust full-matrix input metrics for GP and kernel-method covariance functions
 - Cluster-aware robust diagnostics for multimodal data
 - Visual diagnostics: distance profiles, QQ plots, covariance heatmaps, anomaly panels
 - Optional OpenMP acceleration in the C++ backend
@@ -111,6 +112,49 @@ print(auto.summary())
 | `ClusterRobustOutlierDetector` | Multimodal data | Cluster-then-local-robust-scatter diagnostic |
 
 `KLRegularizedTyler` and `WieselTyler` are currently documented as aliases/prototype variants around the regularized Tyler implementation. `HellingerRegularizedTyler` is experimental.
+
+
+## Robust kernels for GP and kernel methods
+
+`robustcov` can expose a robust scatter estimate as a fixed full-matrix input
+metric for covariance functions. This deliberately does **not** add GP
+regression, KRR, Bayesian optimization, posterior inference, likelihoods, or
+training loops. The package only supplies the robust covariance structure.
+
+```python
+import robustcov as rc
+
+metric = rc.RobustInputMetric(
+    estimator=rc.RegularizedCauchy(alpha=0.05, scale_correction="radial_median"),
+).fit(X_train)
+
+K = rc.robust_rbf_kernel(
+    X_train,
+    precision=metric.precision_,
+    center=metric.location_,
+    length_scale=1.0,
+)
+```
+
+For scikit-learn's `GaussianProcessRegressor`, use the optional adapter:
+
+```python
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import ConstantKernel, WhiteKernel
+from robustcov.sklearn_kernels import RobustMahalanobisRBF
+
+kernel = (
+    ConstantKernel(1.0)
+    * RobustMahalanobisRBF(precision=metric.precision_, center=metric.location_)
+    + WhiteKernel(1e-2)
+)
+
+gp = GaussianProcessRegressor(kernel=kernel).fit(X_train, y_train)
+```
+
+For GPyTorch, `robustcov.gpytorch_kernels.RobustMahalanobisRBFKernel` and
+`RobustMahalanobisMaternKernel` provide frozen robust metric kernels that can be
+wrapped by `gpytorch.kernels.ScaleKernel`.
 
 ## Visual diagnostics
 

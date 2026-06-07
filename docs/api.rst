@@ -22,6 +22,32 @@ Auto selection
    :members:
    :undoc-members:
 
+
+Robust input metrics and kernels
+---------------------------------
+
+.. automodule:: robustcov.metrics
+   :members:
+   :undoc-members:
+
+.. automodule:: robustcov.kernels
+   :members:
+   :undoc-members:
+
+Scikit-learn kernel adapters
+----------------------------
+
+.. automodule:: robustcov.sklearn_kernels
+   :members:
+   :undoc-members:
+
+GPyTorch kernel adapters
+------------------------
+
+.. automodule:: robustcov.gpytorch_kernels
+   :members:
+   :undoc-members:
+
 Outlier detection
 -----------------
 

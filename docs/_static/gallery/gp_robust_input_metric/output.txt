@@ -1,0 +1,6 @@
+robust GP kernel input-metric example
+gp_empirical_input_covariance_rmse=0.3566
+gp_robust_input_covariance_rmse=0.1813
+empirical_covariance_diag= [0.6417 1.8476]
+robust_covariance_diag=    [0.5296 0.0273]
+saved diagnostics to results/use_cases/gp_robust_input_metric

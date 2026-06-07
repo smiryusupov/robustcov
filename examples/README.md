@@ -15,6 +15,7 @@ Core examples:
 - `plot_contamination_accuracy.py` – plots benchmark CSVs as contamination curves.
 - `plot_speed_comparison.py` – plots benchmark speed CSVs.
 - `plot_speed_accuracy_pareto.py` – plots speed/error Pareto points.
+- `gp_robust_input_metric.py` – robust GP kernel / input-metric example showing how contaminated input covariance can distort kernel geometry.
 
 
 Small-sample heavy-tail examples:

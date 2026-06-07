@@ -40,6 +40,7 @@ CASES = [
     GalleryCase("digits_one_class", "use_case_digits_one_class_baselines.py", "digits_one_class", ("baseline_f1.png", "distance_panel.png", "score_profile.png")),
     GalleryCase("wine_class_screening", "use_case_wine_class_screening.py", "wine_class", ("baseline_f1.png", "distance_panel.png", "score_profile.png")),
     GalleryCase("ml_preprocessing", "use_case_ml_preprocessing.py", "ml_preprocessing", ("accuracy_comparison.png", "distance_profile.png")),
+    GalleryCase("gp_robust_input_metric", "gp_robust_input_metric.py", "gp_robust_input_metric", ("kernel_comparison.png",)),
     GalleryCase("multimodal_anomaly", "use_case_multimodal_anomaly.py", "multimodal_anomaly", ("cluster_distance_panel.png", "global_distance_profile.png", "metrics.csv")),
 ]
 

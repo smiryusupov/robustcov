@@ -16,6 +16,8 @@ from .preprocessing import RobustMedianImputer
 from .diagnostics import diagnostic_report, RobustDiagnosticReport
 from .parallel import has_openmp, get_num_threads, set_num_threads, thread_limit
 from .external import top_k_mask, scores_to_submission
+from .metrics import RobustInputMetric, pairwise_mahalanobis_squared
+from .kernels import robust_rbf_kernel, robust_matern_kernel
 from .plotting import (
     plot_mahalanobis_diagnostics,
     plot_mahalanobis_qq,
@@ -67,6 +69,10 @@ __all__ = [
     "thread_limit",
     "top_k_mask",
     "scores_to_submission",
+    "RobustInputMetric",
+    "pairwise_mahalanobis_squared",
+    "robust_rbf_kernel",
+    "robust_matern_kernel",
 ]
 
 __version__ = "0.0.1"

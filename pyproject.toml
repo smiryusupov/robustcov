@@ -68,6 +68,15 @@ Issues = "https://github.com/smiryusupov/robustcov/issues"
 Changelog = "https://github.com/smiryusupov/robustcov/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
+sklearn = [
+  "scikit-learn>=1.7.2",
+]
+
+gpytorch = [
+  "torch>=2.0",
+  "gpytorch>=1.11",
+]
+
 dev = [
   "pytest>=8",
   "scikit-learn>=1.7.2",
@@ -95,7 +104,7 @@ examples = [
 ]
 
 all = [
-  "robustcov[dev,bench,docs,examples]",
+  "robustcov[dev,bench,docs,examples,sklearn,gpytorch]",
 ]
 
 [tool.scikit-build]
