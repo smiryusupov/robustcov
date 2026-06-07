@@ -4,6 +4,11 @@ Quickstart
 Robust covariance under contamination
 -------------------------------------
 
+This example creates a dataset with a contaminated tail and fits ``FastMCD``.
+When outliers pull empirical covariance away from the central data cloud,
+``FastMCD`` estimates a more stable covariance structure and gives robust
+Mahalanobis distances for anomaly screening.
+
 .. code-block:: python
 
    import numpy as np
@@ -22,6 +27,11 @@ Robust covariance under contamination
 Small-sample heavy-tail scatter
 -------------------------------
 
+Heavy-tailed data can produce unstable empirical covariance estimates,
+especially when the sample size is not large. Regularized robust scatter
+estimators provide a more stable geometry while still allowing heavy-tailed
+variation.
+
 .. code-block:: python
 
    est = rc.RegularizedCauchy(alpha=0.10).fit(X)
@@ -31,8 +41,22 @@ Small-sample heavy-tail scatter
 Automatic estimator selection
 -----------------------------
 
+When you are not sure which robust estimator to use, ``AutoRobustScatter`` gives
+a practical starting point. It fits a candidate estimator and exposes the same
+``location_``, ``covariance_``, and ``precision_`` attributes used by the rest of
+the package.
+
 .. code-block:: python
 
    auto = rc.AutoRobustScatter(selection="diagnostic").fit(X)
    print(auto.summary())
    cov = auto.covariance_
+
+
+Where to go next
+----------------
+
+After the quickstart, see :doc:`estimator_guide` for estimator selection,
+:doc:`use_case_gallery` for application examples, :doc:`benchmark_gallery` for
+evidence and comparisons, and :doc:`geometry` for robust SPD geometry utilities.
+
