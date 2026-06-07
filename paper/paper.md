@@ -49,9 +49,10 @@ includes `MinCovDet` as a classical robust covariance estimator
 small-sample, high-dimensional, and heavy-tailed settings remain less accessible
 in a focused Python package. These settings arise in finance, biomedical signal
 windows, sensor arrays, and embedding representations. `robustcov` provides
-Cauchy-family and Student-t scatter estimators, Tyler-style shape estimators, and
-regularized variants alongside FastMCD and automatic estimator-selection
-utilities.
+`RegularizedCauchy` and `StudentTScatter` estimators, Tyler-style shape
+estimators, regularized Tyler variants, FastMCD, and automatic
+estimator-selection utilities [@maronna2019robust; @tyler1987distribution;
+@ollila2014regularized].
 
 The second gap is geometric. Kernel and Gaussian-process methods usually assume
 an input metric, often Euclidean distance or an automatic-relevance-determination
@@ -67,10 +68,10 @@ input-robust kernel, Gaussian-process, retrieval, and similarity workflows.
 
 `robustcov` follows a modular design. Estimators expose fitted attributes such as
 `location_`, `covariance_`, and `precision_`, allowing downstream tools to use a
-common interface. FastMCD targets separable contamination; Cauchy-family and
-Student-t scatter estimators target small-sample and heavy-tailed settings;
-TylerShape and RegularizedTyler expose scale-invariant shape estimation; and
-AutoRobustScatter provides a practical default for users who do not want to
+common interface. FastMCD targets separable contamination; `RegularizedCauchy` and
+`StudentTScatter` target small-sample and heavy-tailed settings; `TylerShape`
+and `RegularizedTyler` expose scale-invariant shape estimation; and
+`AutoRobustScatter` provides a practical default for users who do not want to
 choose an estimator manually.
 
 The SPD geometry layer makes the covariance geometry explicit. It provides
@@ -94,8 +95,7 @@ the robust input geometry reusable without duplicating mature GP infrastructure
 
 The documentation includes reproducible benchmark and use-case galleries rather
 than embedding large result tables in this paper. Three results summarize the
-current evidence. In a 27-setting small-sample heavy-tail benchmark, the
-`robustcov` Cauchy estimator achieved median relative Frobenius error `0.5994`
+current evidence. In a 27-setting small-sample heavy-tail benchmark, `RegularizedCauchy` achieved median relative Frobenius error `0.5994`
 and win rate `0.7407`, compared with median error `2.1739` and win rate `0.1111`
 for scikit-learn `MinCovDet`. In the documented speed benchmark, `robustcov
 FastMCD` had median runtime `0.023761` seconds, compared with `0.191902` seconds
