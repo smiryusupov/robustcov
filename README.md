@@ -364,3 +364,15 @@ Apache-2.0. See `LICENSE`.
 ## Citation
 
 If you use `robustcov` in research or applied work, please cite the package using the metadata in `CITATION.cff`.
+
+
+## Citation and contributing
+
+If you use `robustcov` in research, please cite the software using the metadata
+in [`CITATION.cff`](CITATION.cff). A JOSS paper draft is being prepared in the
+`paper/` directory.
+
+Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for
+development setup and checks before opening a pull request. Release notes are
+tracked in [`CHANGELOG.md`](CHANGELOG.md).
+
