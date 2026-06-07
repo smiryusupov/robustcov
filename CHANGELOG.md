@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.2
+
+Release-readiness and repository metadata update.
+
+Highlights:
+- Added JOSS paper draft and bibliography.
+- Added verified benchmark-claim tracker.
+- Added citation, contributing, and changelog metadata.
+- Added release-readiness audit checklist.
+- Fixed Windows/headless CI plotting tests by using a non-interactive Matplotlib backend.
+- No public API changes.
+
 ## 0.0.1
 
 Initial public-development release.
