@@ -1,13 +1,13 @@
 cff-version: 1.2.0
-title: robustcov
+title: "robustcov"
 message: "If you use robustcov, please cite it using this metadata."
 type: software
 authors:
-  - family-names: Miryusupov
-    given-names: Shohruh
-    email: shohruh@miryusupov.com
+  - family-names: "Miryusupov"
+    given-names: "Shohruh"
+    email: "shohruh@miryusupov.com"
 repository-code: "https://github.com/smiryusupov/robustcov"
 url: "https://github.com/smiryusupov/robustcov"
-license: Apache-2.0
-version: 0.0.1
-date-released: 2026-06-06
+license: "Apache-2.0"
+version: "0.0.1"
+date-released: "2026-06-06"
