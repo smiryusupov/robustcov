@@ -1,16 +1,16 @@
 # Benchmark claims for future JOSS submission
 
 This file tracks quantitative claims that may appear in the JOSS paper. Each
-claim should have a source page, source script, and reproduction command before
-it is used in `paper.md`.
+claim has a source page, source artifact, and reproduction command or source
+file before it is used in `paper.md`.
 
 ## Claim 1: Heavy-tail scatter benchmark
 
-**Draft claim**
+**Paper-ready claim**
 
-Across 27 small-sample heavy-tail settings, `RegularizedCauchy` achieved median
-Frobenius error around 0.60, compared with around 2.17 for scikit-learn
-`MinCovDet`.
+Across 27 small-sample heavy-tail benchmark settings, the `robustcov Cauchy`
+estimator achieved median relative Frobenius error `0.5994`, compared with
+`2.1739` for scikit-learn `MinCovDet`.
 
 **Purpose in paper**
 
@@ -19,44 +19,33 @@ for small-sample, heavy-tailed settings.
 
 **Source docs**
 
-TODO: Add benchmark gallery page path.
-
-Example:
-
     docs/benchmarks/small_sample_heavy_tail.rst
 
 **Source script**
 
-TODO: Add script path.
-
-Example:
-
     benchmarks/small_sample_heavy_tail.py
 
-**Reproduction command**
+**Source artifact**
 
-TODO.
+    docs/_static/benchmarks/small_sample_summary.csv
 
-Example:
+**Exact rows**
 
-    python benchmarks/small_sample_heavy_tail.py
-
-**Exact output / table**
-
-TODO: Paste exact table row or summary here.
+    robustcov Cauchy,27,0,0.7407,1.4074,0.5994,0.7625,0.013307
+    sklearn MinCovDet,27,0,0.1111,6.2963,2.1739,15.6922,0.024392
 
 **Status**
 
-Not yet verified for paper.
+Verified for paper.
 
 ---
 
 ## Claim 2: Win rate / estimator ranking
 
-**Draft claim**
+**Paper-ready claim**
 
-`robustcov` estimators won about 74% of benchmark settings in the small-sample
-heavy-tail benchmark.
+In the same 27-setting heavy-tail benchmark, `robustcov Cauchy` had win rate
+`0.7407`, mean rank `1.4074`, and no failures.
 
 **Purpose in paper**
 
@@ -64,32 +53,33 @@ Supports the claim that the package is useful beyond one favorable example.
 
 **Source docs**
 
-TODO.
+    docs/benchmarks/small_sample_heavy_tail.rst
 
 **Source script**
 
-TODO.
+    benchmarks/small_sample_heavy_tail.py
 
-**Reproduction command**
+**Source artifact**
 
-TODO.
+    docs/_static/benchmarks/small_sample_summary.csv
 
-**Exact output / table**
+**Exact row**
 
-TODO.
+    robustcov Cauchy,27,0,0.7407,1.4074,0.5994,0.7625,0.013307
 
 **Status**
 
-Not yet verified for paper.
+Verified for paper.
 
 ---
 
-## Claim 3: C++ / OpenMP speed comparison
+## Claim 3: C++ / pybind speed comparison
 
-**Draft claim**
+**Paper-ready claim**
 
-The C++/pybind implementation with optional OpenMP showed up to about 8x speedup
-over scikit-learn `MinCovDet` in the documented speed benchmark.
+In the documented speed benchmark, `robustcov FastMCD` had median runtime
+`0.023761` seconds, compared with `0.191902` seconds for scikit-learn
+`MinCovDet`, corresponding to an approximately `8.08x` speedup.
 
 **Purpose in paper**
 
@@ -97,37 +87,40 @@ Supports the software-engineering contribution.
 
 **Source docs**
 
-TODO: Add benchmark gallery page path.
-
-Example:
-
     docs/benchmarks/speed_comparison.rst
     docs/benchmarks/openmp_scaling.rst
 
 **Source script**
 
-TODO.
+    benchmarks/speed_estimators.py
+    benchmarks/openmp_scaling.py
 
-**Reproduction command**
+**Source artifact**
 
-TODO.
+    docs/_static/benchmarks/speed.csv
 
-**Exact output / table**
+**Exact rows**
 
-TODO.
+    robustcov FastMCD,0.023761,0.023498,0.024421
+    sklearn MinCovDet,0.191902,0.190605,0.193694
+
+**Calculation**
+
+    0.191902 / 0.023761 = 8.0763
 
 **Status**
 
-Not yet verified for paper.
+Verified for paper.
 
 ---
 
 ## Claim 4: Robust GP / kernel input metric
 
-**Draft claim**
+**Paper-ready claim**
 
-In the robust GP input-metric example, RMSE improved from about 0.357 with the
-empirical input metric to about 0.181 with the robust input metric.
+In the robust GP input-metric example, RMSE improved from `0.3566` with the
+empirical input covariance metric to `0.1813` with the robust input covariance
+metric.
 
 **Purpose in paper**
 
@@ -136,70 +129,61 @@ likelihood robustness.
 
 **Source docs**
 
-TODO: Add gallery page path.
-
-Example:
-
     docs/gallery/gp_robust_input_metric.rst
 
 **Source script**
 
-TODO.
-
-Example:
-
     examples/gp_robust_input_metric.py
 
-**Reproduction command**
+**Source artifact**
 
-TODO.
+    docs/_static/gallery/gp_robust_input_metric/output.txt
 
-Example:
+**Exact output**
 
-    python examples/gp_robust_input_metric.py
-
-**Exact output / table**
-
-TODO.
+    gp_empirical_input_covariance_rmse=0.3566
+    gp_robust_input_covariance_rmse=0.1813
 
 **Status**
 
-Not yet verified for paper.
+Verified for paper.
 
 ---
 
 ## Claim 5: Hard contamination honesty statement
 
-**Draft claim**
+**Paper-ready claim**
 
-FastMCD does not always outperform scikit-learn `MinCovDet` in mean-shift or
-hard-contamination settings; the documentation reports both favorable and
-unfavorable scenarios.
+The hard-contamination benchmark reports both favorable and unfavorable
+scenarios. For example, in the mean-shift scenario scikit-learn `MinCovDet`
+has lower relative Frobenius error than `robustcov FastMCD`, while in the
+heavy-tail-inlier scenario `robustcov FastMCD` has lower relative Frobenius
+error.
 
 **Purpose in paper**
 
-Builds reviewer trust by showing the package does not overclaim.
+Builds reviewer trust by showing that the package does not overclaim.
 
 **Source docs**
-
-TODO: Add benchmark gallery page path.
-
-Example:
 
     docs/benchmarks/hard_contamination.rst
 
 **Source script**
 
-TODO.
+    benchmarks/hard_contamination_scenarios.py
 
-**Reproduction command**
+**Source artifact**
 
-TODO.
+    docs/_static/benchmarks/hard_scenarios.csv
 
-**Exact output / table**
+**Exact rows**
 
-TODO.
+    mean_shift,0.2,robustcov FastMCD,0.1352,0.046352,1.0000,0.0000,786,142.4016
+    mean_shift,0.2,sklearn MinCovDet,0.1107,0.123946,1.0000,0.0000,786,
+
+    heavy_tail_inliers,0.2,robustcov FastMCD,0.0886,0.046087,,,,7.7035
+    heavy_tail_inliers,0.2,sklearn MinCovDet,0.1205,0.114427,,,,
 
 **Status**
 
-Not yet verified for paper.
+Verified for paper.
