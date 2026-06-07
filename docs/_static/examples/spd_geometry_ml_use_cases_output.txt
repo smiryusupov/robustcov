@@ -1,0 +1,39 @@
+SPD geometry ML use cases
+=========================
+
+1) Robust covariance drift monitoring
+window                  affine_distance_to_baseline
+baseline_clean               0.1213
+baseline_contaminated        0.2011
+shifted_clean                2.4066
+shifted_contaminated         2.4065
+
+2) Empirical vs robust scatter under contamination
+empirical covariance diag: [1.2362 2.7985]
+robust covariance diag:    [1.3383 0.1814]
+affine distance empirical-vs-robust: 3.0156
+
+3) Estimator stability under the same contamination
+affine distance clean->corrupted empirical covariance: 3.198
+affine distance clean->corrupted robust covariance:    0.1775
+
+4) Robust similarity from robust scatter
+similarity(center, nearby point):         0.9721
+similarity(center, leverage-like point):  3.409e-20
+
+5) Regularized Tyler path geometry
+alpha   dist_to_tyler   condition_number   tyler_residual
+ 0.02         0.1289              7.175        1.198e-02
+ 0.05         0.2773              6.060        2.905e-02
+ 0.15         0.6060              4.115        8.314e-02
+ 0.40         1.0735              2.272        2.159e-01
+
+6) Robust whitening for preprocessing
+distance of clean whitened covariance to identity
+using empirical covariance from contaminated data: 3.0744
+using robust covariance from contaminated data:    0.1261
+
+7) Robust geometry for nearest-neighbor ranking
+candidate             euclidean_distance   robust_distance
+true nearby point               0.1700            0.2045
+leverage-like point             2.8004            8.6385

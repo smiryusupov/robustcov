@@ -75,3 +75,11 @@ Plotting
 .. automodule:: robustcov.plotting
    :members:
    :undoc-members:
+
+Geometry utilities
+------------------
+
+.. automodule:: robustcov.geometry
+   :members:
+   :undoc-members:
+   :show-inheritance:

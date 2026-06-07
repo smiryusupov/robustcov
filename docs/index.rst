@@ -43,6 +43,7 @@ Core ideas
    use_case_gallery
    benchmark_gallery
    algorithms
+   geometry
    diagnostics
    openmp
    faq
