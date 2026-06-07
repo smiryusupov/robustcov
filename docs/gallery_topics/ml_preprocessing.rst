@@ -11,6 +11,11 @@ This topic is for users who do not want anomaly detection as the final task, but
        <h3>Robust ML preprocessing</h3>
        <p>Remove suspicious training rows before fitting a downstream classifier.</p>
      </a>
+     <a class="gallery-card" href="../gallery/gp_robust_input_metric.html">
+       <img src="../_static/gallery/gp_robust_input_metric/kernel_comparison.png" alt="Robust GP kernel input metric">
+       <h3>Robust GP kernel / input metric</h3>
+       <p>Use robust covariance as input-space geometry for existing GP kernels.</p>
+     </a>
    </div>
 
 How to use this topic
