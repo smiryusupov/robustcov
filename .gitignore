@@ -80,3 +80,6 @@ desktop.ini
 # Conda
 .conda/
 conda-bld/
+
+/.quarto/
+**/*.quarto_ipynb
