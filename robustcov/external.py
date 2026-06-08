@@ -1,3 +1,6 @@
+# Copyright 2026 Shohruh Miryusupov
+# SPDX-License-Identifier: Apache-2.0
+
 """Helpers for optional external-data and Kaggle-style examples."""
 from __future__ import annotations
 
