@@ -1,3 +1,6 @@
+# Copyright 2026 Shohruh Miryusupov
+# SPDX-License-Identifier: Apache-2.0
+
 """Thread-control helpers for the optional OpenMP C++ backend."""
 
 from __future__ import annotations

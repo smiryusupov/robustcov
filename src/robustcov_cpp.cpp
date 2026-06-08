@@ -1,3 +1,6 @@
+// Copyright 2026 Shohruh Miryusupov
+// SPDX-License-Identifier: Apache-2.0
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>

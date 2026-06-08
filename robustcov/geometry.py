@@ -1,3 +1,6 @@
+# Copyright 2026 Shohruh Miryusupov
+# SPDX-License-Identifier: Apache-2.0
+
 """SPD-geometry utilities for robust covariance and scatter estimators.
 
 This module provides small, dependency-light utilities for working with
