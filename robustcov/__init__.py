@@ -37,6 +37,8 @@ from .plotting import (
 )
 
 __all__ = [
+    "FeatureGeometry",
+    "ClassConditionalFeatureGeometry",
     "FastMCD",
     "MinCovDet",
     "TylerShape",
@@ -79,3 +81,5 @@ __all__ = [
 ]
 
 __version__ = "0.0.2"
+
+from .features import FeatureGeometry, ClassConditionalFeatureGeometry
