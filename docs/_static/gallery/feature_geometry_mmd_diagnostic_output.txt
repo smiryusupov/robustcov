@@ -1,0 +1,31 @@
+Robust feature geometry: MMD diagnostic
+=======================================
+reference fit samples:        800
+reference MMD samples:        300 + 300
+new/current samples:          300
+feature dimension:            20
+reference contamination:      12%
+contaminated reference count: 96
+shift direction:              low-variance feature axis
+leverage strength:            18.0
+new-distribution shift:       4.0
+RBF length scale:             6.325
+
+Method                              ref-ref MMD^2   ref-new MMD^2   excess MMD^2
+Empirical clean references              0.0036          0.2221         0.2185
+Empirical contaminated                  0.0036          0.0107         0.0070
+Robust FastMCD clean refs               0.0037          0.2217         0.2180
+Robust FastMCD contaminated             0.0038          0.2230         0.2191
+
+Diagnostic summary
+------------------
+empirical contamination excess-MMD drop: +0.2115
+robust contamination excess-MMD drop:    -0.0012
+robust excess-MMD gain over contaminated empirical: +0.2121
+pattern: empirical metric MMD is weakened by leverage contamination, while MMD with a robust feature-space metric preserves sensitivity to the shifted distribution.
+
+Interpretation
+--------------
+This is ordinary kernel MMD computed with an RBF kernel induced by a fitted feature geometry.
+When empirical covariance is contaminated in a sensitive low-variance direction, the induced kernel can make reference and shifted distributions look too similar.
+A robust scatter estimate gives a more stable feature-space metric, so the MMD remains sensitive to the shift.

@@ -181,6 +181,7 @@ All detailed pages
    gallery/feature_geometry_class_conditional_ood
    gallery/feature_geometry_drift_detection
    gallery/feature_geometry_similarity_kernel
+   gallery/feature_geometry_mmd_diagnostic
    gallery/gp_robust_input_metric
    gallery/embedding_reranking_robust_geometry
    gallery/multimodal_anomaly
