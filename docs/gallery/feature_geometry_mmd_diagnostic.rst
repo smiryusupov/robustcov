@@ -1,5 +1,5 @@
 MMD with a robust feature-space metric
-=====================================
+======================================
 
 This example treats feature vectors as learned representations produced by an
 upstream model.  ``robustcov`` only sees the feature matrix.

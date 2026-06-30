@@ -46,6 +46,7 @@ Robust FastMCD geometry
 .. image:: ../_static/gallery/feature_geometry_synthetic_ood/fastmcd_scores.png
    :alt: Robust FastMCD feature geometry Mahalanobis scores
    :width: 720px
+   
 AUROC summary
 -------------
 
