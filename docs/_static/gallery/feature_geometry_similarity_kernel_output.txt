@@ -1,0 +1,33 @@
+Robust feature geometry: similarity-kernel diagnostic
+=====================================================
+reference fit samples:        800
+reference anchor samples:     400
+held-out reference samples:   400
+shifted/new samples:          400
+feature dimension:            20
+reference contamination:      12%
+contaminated reference count: 96
+shift direction:              low-variance feature axis
+leverage strength:            18.0
+new-distribution shift:       4.0
+RBF length scale:             6.325
+top-k similarity summary:     10
+
+Method                              same-ref top-k   new-ref top-k   contrast
+Empirical clean references                0.784          0.680      0.104
+Empirical contaminated                    0.798          0.793      0.005
+Robust FastMCD clean refs                 0.776          0.670      0.106
+Robust FastMCD contaminated               0.777          0.672      0.105
+
+Diagnostic summary
+------------------
+empirical contamination contrast drop: +0.099
+robust contamination contrast drop:    +0.001
+robust contrast gain over contaminated empirical: +0.099
+pattern: empirical RBF geometry loses contrast under leverage contamination, while robust feature geometry preserves kernel sensitivity to the shifted distribution.
+
+Interpretation
+--------------
+The RBF kernel is computed from distances induced by a fitted feature geometry.
+When empirical covariance is contaminated in a sensitive low-variance direction, shifted features can remain spuriously similar to reference features.
+A robust scatter estimate gives a more stable feature metric, so the kernel similarity to shifted features drops as expected.
