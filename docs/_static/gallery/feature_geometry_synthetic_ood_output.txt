@@ -1,0 +1,15 @@
+Robust feature geometry: synthetic OOD example
+================================================
+Reference features: 600
+Feature dimension:   16
+Reference leverage contamination: 12%
+
+Method                       AUROC    mean in-score    mean OOD-score
+Empirical covariance          0.528            3.856            3.922
+Robust FastMCD geometry       1.000            4.029            8.499
+
+Interpretation
+--------------
+The empirical covariance is fitted on a reference feature set that contains leverage-like contamination.
+This inflates variance along the contaminated direction and weakens Mahalanobis-based OOD scores.
+Robust feature geometry estimates the central feature-space shape more stably and restores separation in this synthetic example.
