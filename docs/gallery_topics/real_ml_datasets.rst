@@ -37,10 +37,7 @@ Start with the first card if you want the simplest demonstration.  Then move to 
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/breast_cancer_screening
-   ../gallery/digits_one_class
-   ../gallery/wine_class_screening
-   ../gallery/multimodal_anomaly
+- :doc:`Breast cancer screening <../gallery/breast_cancer_screening>`
+- :doc:`Digits one-class <../gallery/digits_one_class>`
+- :doc:`Wine class screening <../gallery/wine_class_screening>`
+- :doc:`Multimodal anomaly <../gallery/multimodal_anomaly>`

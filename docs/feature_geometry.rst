@@ -89,11 +89,3 @@ robust feature geometry restores separation.
 See :doc:`gallery/feature_geometry_class_conditional_ood` for a labeled
 feature-space example where robust class-conditional geometry improves
 nearest-class OOD scoring under class-wise leverage contamination.
-
-API
----
-
-.. autoclass:: robustcov.FeatureGeometry
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -31,9 +31,6 @@ Start with the first card if you want the simplest demonstration.  Then move to 
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/biomedical_signal
-   ../gallery/image_feature_anomaly
-   ../gallery/text_embedding_outliers
+- :doc:`Biomedical signal windows <../gallery/biomedical_signal>`
+- :doc:`Image-feature anomaly <../gallery/image_feature_anomaly>`
+- :doc:`Text embedding outliers <../gallery/text_embedding_outliers>`

@@ -91,3 +91,8 @@ Feature geometry
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. autoclass:: robustcov.ClassConditionalFeatureGeometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
