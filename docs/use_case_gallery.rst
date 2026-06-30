@@ -182,6 +182,7 @@ All detailed pages
    gallery/feature_geometry_drift_detection
    gallery/feature_geometry_similarity_kernel
    gallery/feature_geometry_mmd_diagnostic
+   gallery/feature_geometry_embedding_monitoring
    gallery/gp_robust_input_metric
    gallery/embedding_reranking_robust_geometry
    gallery/multimodal_anomaly

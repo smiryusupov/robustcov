@@ -1,0 +1,25 @@
+Practical embedding-monitoring workflow
+=======================================
+reference embeddings:          1000
+new-batch embeddings:          400
+feature dimension:             20
+reference contamination:       16%
+contaminated reference count:  160
+contamination strength:        2.70
+new-batch drift strength:      0.70
+MMD length scale:              4.472
+central reference kept:        80%
+
+Method                           kept  bad kept  baseline   thresh95   clean MMD   drift MMD   clean alert   drift alert   drift/thresh
+Empirical clean reference        800         0    0.0057     0.0078     0.0059      0.4322         False          True         55.59
+Empirical contaminated           800        90    0.0057     0.0081     0.0053      0.0127         False          True          1.56
+Robust FastMCD clean ref         800         0    0.0057     0.0077     0.0061      0.4228         False          True         54.89
+Robust FastMCD contaminated      800         0    0.0065     0.0079     0.0049      0.4201         False          True         53.32
+
+Monitoring interpretation
+-------------------------
+The workflow first keeps a central reference anchor under the fitted geometry. The clean new batch should stay near the reference-split threshold; the drifted batch should exceed it.
+When the reference window is contaminated, empirical covariance geometry can absorb the shifted direction and reduce the MMD drift signal.
+Robust feature geometry is intended to keep the monitoring metric closer to the central reference geometry.
+
+Robust contaminated drift-MMD gain over empirical contaminated: +0.4074

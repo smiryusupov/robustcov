@@ -89,3 +89,25 @@ robust feature geometry restores separation.
 See :doc:`gallery/feature_geometry_class_conditional_ood` for a labeled
 feature-space example where robust class-conditional geometry improves
 nearest-class OOD scoring under class-wise leverage contamination.
+
+
+Practical embedding monitoring
+------------------------------
+
+A practical use case is feature or embedding drift monitoring. A reference
+window of embeddings may contain corrupted or shifted observations, so fitting
+ordinary empirical covariance can distort the metric used by a drift detector.
+
+The gallery example :doc:`gallery/feature_geometry_embedding_monitoring` shows a
+simple workflow:
+
+* fit empirical and robust feature geometries on the reference window;
+* keep a central reference anchor under each fitted geometry;
+* calibrate an MMD-style threshold from reference splits;
+* compare a new batch against the reference anchor.
+
+In the example, empirical geometry keeps contaminated points in the reference
+anchor and loses most of the drift signal. Robust FastMCD geometry excludes the
+contaminated reference points from the anchor and preserves the MMD-style drift
+signal.
+
