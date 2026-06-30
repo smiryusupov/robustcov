@@ -83,3 +83,11 @@ Geometry utilities
    :members:
    :undoc-members:
    :show-inheritance:
+
+Feature geometry
+----------------
+
+.. autoclass:: robustcov.FeatureGeometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
