@@ -149,6 +149,19 @@ class FeatureGeometry:
         d2 = self.squared_mahalanobis(X)
         return np.sqrt(np.maximum(d2, 0.0))
 
+    def decision_function(self, X: np.ndarray) -> np.ndarray:
+        """Return anomaly-style feature scores.
+
+        Larger values mean farther from the fitted robust feature center.  This
+        follows the convention used by ``robustcov`` distance diagnostics rather
+        than the scikit-learn ``score_samples`` convention.
+        """
+        return self.mahalanobis_scores(X)
+
+    def fit_transform(self, X: np.ndarray, y: np.ndarray | None = None) -> np.ndarray:
+        """Fit robust feature geometry and return whitened features."""
+        return self.fit(X, y).transform(X)
+
     def pairwise_squared_distances(
         self,
         X: np.ndarray,
@@ -165,6 +178,15 @@ class FeatureGeometry:
         y2 = np.sum(Yw * Yw, axis=1)[None, :]
         D2 = x2 + y2 - 2.0 * Xw @ Yw.T
         return np.maximum(D2, 0.0)
+
+    def pairwise_distances(
+        self,
+        X: np.ndarray,
+        Y: np.ndarray | None = None,
+    ) -> np.ndarray:
+        """Return pairwise distances in the fitted robust metric."""
+        D2 = self.pairwise_squared_distances(X, Y)
+        return np.sqrt(np.maximum(D2, 0.0))
 
     def rbf_kernel(
         self,
@@ -239,6 +261,8 @@ class ClassConditionalFeatureGeometry:
             geometries.append(geom)
 
         self.classes_ = classes
+        self.class_geometries_ = geometries
+        # Backward-compatible internal alias for concise implementation.
         self.geometries_ = geometries
         self.n_features_in_ = X.shape[1]
 
@@ -280,8 +304,19 @@ class ClassConditionalFeatureGeometry:
         D2 = self.class_squared_mahalanobis(X)
         return np.sqrt(np.maximum(np.min(D2, axis=1), 0.0))
 
+    def decision_function(self, X: np.ndarray) -> np.ndarray:
+        """Return OOD-style distance-to-nearest-class scores.
+
+        Larger values mean farther from all fitted class geometries.
+        """
+        return self.ood_scores(X)
+
     def predict_nearest_class(self, X: np.ndarray) -> np.ndarray:
         """Predict the nearest class under robust class-conditional geometry."""
         D2 = self.class_squared_mahalanobis(X)
         idx = np.argmin(D2, axis=1)
         return self.classes_[idx]
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict the nearest class under robust class-conditional geometry."""
+        return self.predict_nearest_class(X)

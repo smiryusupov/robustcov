@@ -37,6 +37,7 @@ Basic usage
    ).fit(Z_train)
 
    scores = geom.mahalanobis_scores(Z_test)
+   anomaly_scores = geom.decision_function(Z_test)
    Z_white = geom.transform(Z_test)
    K = geom.rbf_kernel(Z_test, Z_train, length_scale=1.0)
 
@@ -55,12 +56,20 @@ feature geometry per class and exposes nearest-class and OOD-style scores.
        estimator=rc.FastMCD(n_init=40, random_state=0),
    ).fit(Z_train, y_train)
 
-   nearest_class = geom.predict_nearest_class(Z_test)
-   ood_scores = geom.ood_scores(Z_test)
+   nearest_class = geom.predict(Z_test)
+   ood_scores = geom.decision_function(Z_test)
    class_distances = geom.class_mahalanobis_scores(Z_test)
 
 This supports class-conditional Mahalanobis workflows on learned features while
 keeping the representation model outside ``robustcov``.
+
+Score convention
+----------------
+
+``decision_function`` returns distance-style scores: larger values mean farther
+from the fitted global geometry or farther from all fitted class geometries.
+The API intentionally does not expose ``score_samples`` yet, because that name
+often follows the opposite convention in scikit-learn-style anomaly APIs.
 
 Scope
 -----

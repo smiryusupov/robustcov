@@ -105,3 +105,47 @@ def test_class_conditional_feature_geometry_ood_scores_increase_for_far_points()
     ood_scores = geom.ood_scores(X_ood)
 
     assert ood_scores.mean() > in_scores.mean() + 3.0
+
+
+def test_feature_geometry_ergonomic_aliases():
+    rng = np.random.default_rng(987)
+    X = rng.normal(size=(70, 4))
+
+    geom = rc.FeatureGeometry(
+        estimator=rc.FastMCD(n_init=20, random_state=0),
+    )
+
+    Z = geom.fit_transform(X)
+    scores = geom.mahalanobis_scores(X)
+    decision = geom.decision_function(X)
+    D = geom.pairwise_distances(X[:5], X[:7])
+
+    assert Z.shape == X.shape
+    assert decision.shape == scores.shape
+    assert np.allclose(decision, scores)
+    assert D.shape == (5, 7)
+    assert np.all(np.isfinite(D))
+    assert np.all(D >= 0)
+
+
+def test_class_conditional_feature_geometry_aliases():
+    rng = np.random.default_rng(988)
+
+    X0 = rng.normal(loc=-2.0, scale=0.5, size=(70, 4))
+    X1 = rng.normal(loc=2.0, scale=0.5, size=(70, 4))
+    X = np.vstack([X0, X1])
+    y = np.r_[np.zeros(70, dtype=int), np.ones(70, dtype=int)]
+
+    geom = rc.ClassConditionalFeatureGeometry(
+        estimator=rc.FastMCD(n_init=20, random_state=0),
+    ).fit(X, y)
+
+    pred = geom.predict(X)
+    nearest = geom.predict_nearest_class(X)
+    decision = geom.decision_function(X)
+    scores = geom.ood_scores(X)
+
+    assert hasattr(geom, "class_geometries_")
+    assert len(geom.class_geometries_) == 2
+    assert np.all(pred == nearest)
+    assert np.allclose(decision, scores)
