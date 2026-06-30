@@ -40,6 +40,30 @@ The intended workflow is::
 The package should not train deep neural networks. It should operate on feature
 matrices produced elsewhere.
 
+Interpretability angle
+----------------------
+
+The feature-geometry layer is useful not only because it can improve a metric,
+but because it makes representation-space failures inspectable.
+
+When empirical covariance is fitted on contaminated features, the fitted metric
+may inflate variance along leverage directions.  Mahalanobis distances, nearest
+class scores, RBF kernels, and drift statistics can then become insensitive
+exactly in the directions where sensitivity is needed.
+
+A robust scatter estimate gives a more stable central geometry.  This makes it
+possible to compare:
+
+* clean empirical geometry;
+* contaminated empirical geometry;
+* clean robust geometry;
+* contaminated robust geometry.
+
+If the contaminated empirical geometry collapses while the contaminated robust
+geometry remains close to the clean-reference behavior, the diagnostic points to
+metric pollution rather than to a failure of the downstream OOD or retrieval
+task itself.
+
 Scope
 -----
 
