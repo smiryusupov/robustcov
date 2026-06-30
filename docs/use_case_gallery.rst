@@ -179,6 +179,7 @@ All detailed pages
    geometry
    gallery/feature_geometry_synthetic_ood
    gallery/feature_geometry_class_conditional_ood
+   gallery/feature_geometry_drift_detection
    gallery/gp_robust_input_metric
    gallery/embedding_reranking_robust_geometry
    gallery/multimodal_anomaly

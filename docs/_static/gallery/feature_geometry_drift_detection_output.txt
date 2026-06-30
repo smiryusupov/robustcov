@@ -1,0 +1,30 @@
+Robust feature geometry: drift detection diagnostic
+===================================================
+reference fit samples:        800
+held-out reference samples:   500
+new/current samples:          500
+feature dimension:            20
+reference contamination:      12%
+contaminated reference count: 96
+drift direction:              low-variance feature axis
+leverage strength:            18.0
+new-distribution shift:       4.0
+
+Method                              AUROC    mean ref    mean new     q90 ref     q90 new
+Empirical clean references         0.923       4.524       6.153       5.506       7.206
+Empirical contaminated             0.497       4.412       4.402       5.438       5.361
+Robust FastMCD clean refs          0.919       4.624       6.253       5.642       7.362
+Robust FastMCD contaminated        0.919       4.613       6.233       5.615       7.319
+
+Diagnostic summary
+------------------
+empirical contamination drop:       +0.426 AUROC
+robust contamination drop:          +0.001 AUROC
+robust gain over contaminated empirical: +0.421 AUROC
+pattern: empirical reference geometry is blinded by leverage contamination, while robust geometry preserves drift sensitivity.
+
+Interpretation
+--------------
+The example treats feature vectors as learned representations from an upstream model.
+The reference distribution is contaminated in the same low-variance direction where the new distribution later shifts.
+Empirical covariance inflates that direction and can make the drift look ordinary. Robust feature geometry estimates the central reference shape more stably.
