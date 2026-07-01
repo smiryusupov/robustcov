@@ -1,5 +1,26 @@
 :orphan:
 
+Scope and non-claims
+--------------------
+
+This design note treats robust covariance estimators as geometry constructors
+for feature matrices. The intended use case is to fit a stable reference
+geometry and reuse it for distances, kernels, class-conditional scores, and
+distribution-level drift diagnostics.
+
+The scope is deliberately limited:
+
+* this is a feature-geometry layer, not a replacement ML pipeline;
+* it is not a universal OOD detector;
+* it is not an adversarial defense;
+* it is not a new MMD estimator or new MMD theory;
+* MMD-style examples use ordinary kernel MMD with a robust feature-space metric;
+* adversarial examples, if mentioned, are exploratory and should be treated as
+  future work unless detector-aware adaptive attacks are evaluated.
+
+The strongest practical framing is embedding or feature monitoring under a
+possibly contaminated reference window.
+
 Robust feature geometry
 =======================
 
@@ -86,7 +107,7 @@ This direction should not turn ``robustcov`` into:
 * a deep-learning training framework;
 * a replacement for PyTorch, scikit-learn, GPyTorch, or dedicated OOD libraries;
 * a universal OOD detector;
-* a new robust MMD theory package;
+* a new MMD-style diagnostic with a robust feature-space metric theory package;
 * a benchmark leaderboard project;
 * a claim that robust covariance solves all deep-learning robustness problems.
 
