@@ -96,3 +96,80 @@ Feature geometry
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+Detailed API reference
+======================
+
+Robust covariance estimators
+----------------------------
+
+.. autoclass:: robustcov.FastMCD
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.MinCovDet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.RegularizedCauchy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.StudentTScatter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.RegularizedTyler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.AutoRobustScatter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Outlier detectors
+-----------------
+
+.. autoclass:: robustcov.RobustOutlierDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.ClusterRobustOutlierDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Feature geometry
+----------------
+
+.. autoclass:: robustcov.FeatureGeometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.ClassConditionalFeatureGeometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Robust input metrics and kernels
+--------------------------------
+
+.. autoclass:: robustcov.RobustInputMetric
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autofunction:: robustcov.robust_rbf_kernel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+

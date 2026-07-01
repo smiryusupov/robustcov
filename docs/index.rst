@@ -87,6 +87,7 @@ Core ideas
    :maxdepth: 2
    :caption: User guide
 
+   robust_geometry_layer
    installation
    quickstart
    estimator_guide
