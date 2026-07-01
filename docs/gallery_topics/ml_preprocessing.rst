@@ -26,12 +26,5 @@ Start with the first card if you want the simplest demonstration.  Then move to 
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/ml_preprocessing
-
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/embedding_reranking_robust_geometry
+- :doc:`ML preprocessing <../gallery/ml_preprocessing>`
+- :doc:`Embedding reranking with robust geometry <../gallery/embedding_reranking_robust_geometry>`

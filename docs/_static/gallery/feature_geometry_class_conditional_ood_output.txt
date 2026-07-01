@@ -1,0 +1,16 @@
+Class-conditional robust feature geometry
+=========================================
+Classes: 3
+Training features per class: 220
+Feature dimension: 12
+Class-wise leverage contamination: 10%
+
+Method                              AUROC    mean in-score    mean OOD-score
+Empirical class covariance         0.481            3.317            3.267
+Robust FastMCD class geometry      1.000            3.690            9.599
+
+Interpretation
+--------------
+The score is the distance from each test feature to its nearest fitted class geometry.
+Empirical class covariance is weakened when each class reference set contains leverage-like contamination.
+Robust class-conditional geometry estimates each central class shape more stably, which improves nearest-class OOD separation in this synthetic example.

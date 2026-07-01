@@ -43,7 +43,7 @@ package matures. See :doc:`api_stability` for the current stability policy.
 
 
 
-``robustcov`` is an experimental robust covariance, heavy-tail scatter, anomaly diagnostics, and benchmark-gallery package with a C++/pybind core.
+``robustcov`` is a Python/C++ package for robust covariance and scatter estimation, SPD geometry, anomaly diagnostics, and robust kernel, similarity, and feature-geometry workflows.
 
 The project is organized around two reader-friendly entry points:
 
@@ -70,9 +70,17 @@ The project is organized around two reader-friendly entry points:
 Core ideas
 ----------
 
+Core ideas
+----------
+
+Core ideas
+----------
+
 * ``FastMCD`` gives efficient classical robust covariance for separable contamination when ``n`` is comfortably larger than ``p``.
 * ``RegularizedCauchy`` and ``StudentTScatter`` target small-sample, high-dimensional, heavy-tailed covariance problems.
 * Robust-distance diagnostics turn fitted estimators into interpretable anomaly scores, profiles, QQ plots, and reports.
+* SPD geometry utilities compare covariance and scatter matrices with affine-invariant and log-Euclidean distances.
+* ``FeatureGeometry`` uses robust scatter estimates as a geometry layer for learned representations, kernels, similarities, and OOD-style diagnostics.
 * Optional OpenMP acceleration improves larger workloads and benchmark/report generation.
 
 .. toctree::
@@ -86,6 +94,7 @@ Core ideas
    benchmark_gallery
    algorithms
    geometry
+   feature_geometry
    diagnostics
    openmp
    faq

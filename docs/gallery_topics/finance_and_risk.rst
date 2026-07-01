@@ -26,8 +26,5 @@ Start with the first card if you want the simplest demonstration.  Then move to 
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/finance_risk
-   ../gallery/portfolio_stress
+- :doc:`Finance risk <../gallery/finance_risk>`
+- :doc:`Portfolio stress <../gallery/portfolio_stress>`
