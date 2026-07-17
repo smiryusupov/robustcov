@@ -34,6 +34,7 @@ ALL_SCRIPTS = QUICK_SCRIPTS + [
     "use_case_portfolio_stress.py",
     "use_case_maintenance_monitoring.py",
     "use_case_multimodal_anomaly.py",
+    "plot_robust_subspace_monitoring.py",
 ]
 
 

@@ -39,6 +39,8 @@ keywords = [
   "Mahalanobis distance",
   "SPD geometry",
   "kernel methods",
+  "drift monitoring",
+  "robust PCA",
 ]
 
 classifiers = [
@@ -109,8 +111,9 @@ all = [
 ]
 
 [tool.scikit-build]
+minimum-version = "build-system.requires"
 wheel.packages = ["robustcov"]
-cmake.minimum-version = "3.18"
+cmake.version = ">=3.18"
 
 [tool.scikit-build.sdist]
 include = [

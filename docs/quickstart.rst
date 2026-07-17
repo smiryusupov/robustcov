@@ -38,6 +38,28 @@ variation.
    report = rc.diagnostic_report(est)
    print(report.summary())
 
+Rolling production monitoring
+-----------------------------
+
+Use a frozen robust reference when batches arrive over time and the type of
+drift matters operationally.
+
+.. code-block:: python
+
+   monitor = rc.RobustSubspaceMonitor(
+       n_components=0.95,
+       estimator=rc.RegularizedCauchy(alpha=0.10),
+       window_size=100,
+       alarm_patience=2,
+   ).fit(X_reference)
+
+   result = monitor.update(X_new_batch)
+   if result.ready:
+       print(result.summary())
+       print(result.exceeded)
+
+See :doc:`monitoring` for calibration and interpretation details.
+
 Automatic estimator selection
 -----------------------------
 
@@ -58,5 +80,5 @@ Where to go next
 
 After the quickstart, see :doc:`estimator_guide` for estimator selection,
 :doc:`use_case_gallery` for application examples, :doc:`benchmark_gallery` for
-evidence and comparisons, and :doc:`geometry` for robust SPD geometry utilities.
+evidence and comparisons, and :doc:`geometry` for robust SPD geometry utilities, and :doc:`monitoring` for frozen-reference rolling drift diagnostics.
 

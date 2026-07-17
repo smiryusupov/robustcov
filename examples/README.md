@@ -65,6 +65,15 @@ Each gallery example has a corresponding Sphinx page under `docs/gallery/`. The 
 
 The gallery now includes additional reproducible sklearn-based ML examples: breast-cancer anomaly screening, digits one-class anomaly detection, and wine class screening.  These pages include baseline comparisons, captured output, and generated plots.  Optional Kaggle/external dataset examples are planned under `examples_external/` so core docs remain reproducible without downloads.
 
+## Robust PCA industry examples
+
+- `plot_robust_pca_embedding_monitoring.py` – production embedding drift and OOD monitoring using score and orthogonal distances.
+- `plot_robust_pca_yield_curve.py` – robust level, slope, and curvature extraction for yield-curve changes.
+- `plot_robust_pca_market_risk.py` – cross-asset factor decomposition separating systemic and idiosyncratic shocks.
+- `robust_pca_outlier_map.py` – compact synthetic introduction to robust PCA diagnostics.
+
+The three industry examples use deterministic synthetic data so they can run in CI and build into the documentation without network access.
+
 ## Optional external / Kaggle examples
 
 External examples live in `examples_external/` rather than `examples/` because they require downloaded datasets. They are designed for Kaggle notebooks and reproducible local runs but are intentionally not part of tests.

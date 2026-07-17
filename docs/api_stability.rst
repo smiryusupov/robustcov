@@ -13,8 +13,8 @@ In practice:
 * estimator names and core fitted attributes such as ``location_``,
   ``covariance_``, and ``precision_`` are intended to remain stable;
 * documented examples and user-guide workflows are maintained;
-* newer utility layers, such as SPD geometry and optional integration helpers,
-  may evolve based on user feedback;
+* newer utility layers, such as SPD geometry, robust PCA, rolling monitoring,
+  and optional integration helpers, may evolve based on user feedback;
 * breaking changes should be documented in release notes.
 
 The goal is to be honest about project maturity without suggesting that the
@@ -43,4 +43,5 @@ These may change significantly:
 * ``AutoRobustScatter`` scoring internals
 * ``HellingerRegularizedTyler``
 * exact KL/Wiesel variants beyond current aliases/prototypes
+* ``RobustPCA`` and ``RobustSubspaceMonitor`` calibration and monitoring APIs
 * benchmark script schemas

@@ -8,10 +8,9 @@ Predictive maintenance
 Status
 ------
 
-**Competitive, not dominant.**  ``robustcov Auto(StudentTScatter)`` gives the
-best F1 at the fixed detection budget, while IsolationForest has the strongest
-PR-AUC and is faster.  This is a good example of honest reporting: robustcov is
-useful, but it is not the only strong method for this dataset.
+``robustcov Auto(StudentTScatter)`` has the highest F1 at the fixed detection
+budget.  IsolationForest is faster and has the strongest PR-AUC, so neither
+method dominates the comparison.
 
 Problem
 -------
@@ -52,8 +51,8 @@ Result table
      - 0.4843
      - 0.0570
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/external_results/predictive_maintenance/output.txt
    :language: text
@@ -69,12 +68,12 @@ Plots
    :alt: Predictive-maintenance runtime comparison
    :width: 720px
 
-Interpretation
---------------
+Choosing between the methods
+----------------------------
 
 At the selected detection budget, robustcov slightly improves F1 over
 IsolationForest.  However, IsolationForest is faster and has substantially
-higher PR-AUC.  The most honest recommendation is therefore:
+higher PR-AUC.  A practical reading of the result is:
 
 * use robustcov when robust-distance interpretability or covariance-shaped
   sensor deviations are important;

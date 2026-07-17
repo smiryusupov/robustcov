@@ -1,0 +1,13 @@
+Cross-asset market-risk decomposition with RobustPCA
+====================================================
+observations: 650
+assets: 12
+retained factors: 4
+robust explained variance: 0.898
+robust subspace error: 0.078
+empirical subspace error: 0.405
+median score distance, ordinary days: 2.224
+median score distance, systemic shocks: 9.606
+median orthogonal distance, ordinary days: 0.546
+median orthogonal distance, idiosyncratic dislocations: 6.247
+median score/orthogonal distance, mixed shocks: 11.898 / 4.452

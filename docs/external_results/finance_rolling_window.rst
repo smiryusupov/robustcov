@@ -1,16 +1,15 @@
 Rolling-window finance anomaly detection
 ========================================
 
-Why this result matters
------------------------
+From isolated days to market regimes
+------------------------------------
 
-Single-day outliers are useful, but many financial anomalies are regimes:
-periods of unusual volatility, correlation, drawdown, or cross-asset behavior.
-This example converts price data into rolling-window features and scores each
-window with robust distances.
+A single unusual day may be noise.  This example instead summarizes 20-day
+windows and scores each window, so sustained changes in volatility, correlation,
+drawdown, or cross-asset behavior appear as a run of high values.
 
-What the data represent
------------------------
+Rolling-window construction
+---------------------------
 
 This documented run uses the same reproducible synthetic price table as the
 single-day market-stress example.  The script forms 20-trading-day windows with
@@ -27,8 +26,8 @@ Command
      --step 5 \
      --outdir results/external/finance_rolling_window
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/external_results/finance_rolling_window/output.txt
    :language: text
@@ -76,8 +75,8 @@ Plots
    Ranked window-level robust-distance profile.  Windows above the threshold are
    the first regime candidates to inspect.
 
-Interpretation
---------------
+Overlapping stress windows
+--------------------------
 
 The rolling example detects 5 windows above the threshold.  The top windows are:
 
@@ -109,19 +108,19 @@ The rolling example detects 5 windows above the threshold.  The top windows are:
      - 2022-09-21
      - 158.05
 
-The top windows overlap strongly, which is a useful signal in time series: a
-single anomalous day can be noisy, but repeated high-scoring overlapping windows
-suggest a persistent regime change.
+The leading windows overlap.  That pattern is expected when the underlying
+change lasts for several weeks and is more informative than one isolated high
+score.
 
-Why this estimator
-------------------
+Estimator choice
+----------------
 
 Use ``RegularizedCauchy`` when windows are high-dimensional or heavy-tailed.  If
 window features are smoother and closer to elliptical Student-t behavior, try
 ``StudentTScatter`` as a sensitivity check.
 
-Production notes
-----------------
+Using the signal in monitoring
+------------------------------
 
 For real markets, use rolling-window anomalies as a monitoring layer.  Review
 clusters of high-scoring windows, not just one row at a time.  Consider adding

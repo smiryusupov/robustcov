@@ -6,6 +6,11 @@ These examples focus on process monitoring: sensor streams, maintenance windows,
 .. raw:: html
 
    <div class="gallery-grid">
+     <a class="gallery-card" href="../gallery/robust_subspace_monitoring.html">
+       <img src="../_static/gallery/robust_subspace_monitoring/monitor_history.png" alt="Robust rolling subspace monitoring">
+       <h3>Rolling subspace monitoring</h3>
+       <p>Use a frozen robust reference to distinguish location, covariance, and factor drift.</p>
+     </a>
      <a class="gallery-card" href="../gallery/sensor_anomaly.html">
        <img src="../_static/gallery/sensor_anomaly/distance_panel.png" alt="Sensor anomaly detection">
        <h3>Sensor anomaly detection</h3>
@@ -31,6 +36,7 @@ Start with the first card if you want the simplest demonstration.  Then move to 
 Detailed pages
 --------------
 
+- :doc:`Rolling subspace monitoring <../gallery/robust_subspace_monitoring>`
 - :doc:`Sensor anomaly <../gallery/sensor_anomaly>`
 - :doc:`Maintenance monitoring <../gallery/maintenance_monitoring>`
 - :doc:`Quality control <../gallery/quality_control>`

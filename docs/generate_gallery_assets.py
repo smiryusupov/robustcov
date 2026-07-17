@@ -6,9 +6,13 @@ Sphinx pages show real outputs instead of only instructions.
 
 Run from the repository root:
     python docs/generate_gallery_assets.py
+
+Generate selected pages only:
+    python docs/generate_gallery_assets.py --only robust_pca_yield_curve
 """
 from __future__ import annotations
 
+import argparse
 import shutil
 import subprocess
 import sys
@@ -41,17 +45,39 @@ CASES = [
     GalleryCase("wine_class_screening", "use_case_wine_class_screening.py", "wine_class", ("baseline_f1.png", "distance_panel.png", "score_profile.png")),
     GalleryCase("ml_preprocessing", "use_case_ml_preprocessing.py", "ml_preprocessing", ("accuracy_comparison.png", "distance_profile.png")),
     GalleryCase("gp_robust_input_metric", "gp_robust_input_metric.py", "gp_robust_input_metric", ("kernel_comparison.png",)),
+    GalleryCase("robust_pca_embedding_monitoring", "plot_robust_pca_embedding_monitoring.py", "robust_pca_embedding_monitoring", ("batch_monitoring.png", "outlier_map.png", "subspace_recovery.png")),
+    GalleryCase("robust_subspace_monitoring", "plot_robust_subspace_monitoring.py", "robust_subspace_monitoring", ("monitor_history.png", "drift_mechanism_map.png", "final_batch_outlier_map.png")),
+    GalleryCase("robust_pca_yield_curve", "plot_robust_pca_yield_curve.py", "robust_pca_yield_curve", ("factor_loadings.png", "factor_scores.png", "outlier_map.png", "metrics.csv")),
+    GalleryCase("robust_pca_market_risk", "plot_robust_pca_market_risk.py", "robust_pca_market_risk", ("asset_loadings.png", "explained_variance.png", "outlier_map.png", "reconstruction_residual.png")),
     GalleryCase("multimodal_anomaly", "use_case_multimodal_anomaly.py", "multimodal_anomaly", ("cluster_distance_panel.png", "global_distance_profile.png", "metrics.csv")),
 ]
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--only",
+        nargs="*",
+        metavar="SLUG",
+        help="Generate only the selected gallery slugs.",
+    )
+    args = parser.parse_args()
+
+    cases = CASES
+    if args.only:
+        requested = set(args.only)
+        known = {case.slug for case in CASES}
+        unknown = sorted(requested - known)
+        if unknown:
+            parser.error("unknown gallery slug(s): " + ", ".join(unknown))
+        cases = [case for case in CASES if case.slug in requested]
+
     root = Path(__file__).resolve().parents[1]
     out_root = root / "docs" / "_static" / "gallery"
     out_root.mkdir(parents=True, exist_ok=True)
     rows: list[tuple[str, int]] = []
 
-    for case in CASES:
+    for case in cases:
         script_path = root / "examples" / case.script
         case_out = out_root / case.slug
         case_out.mkdir(parents=True, exist_ok=True)
@@ -95,12 +121,29 @@ def main() -> int:
         (case_out / "manifest.txt").write_text("\n".join(copied) + ("\n" if copied else ""), encoding="utf-8")
         rows.append((case.script, returncode))
 
-    summary = ["script,status"]
+    summary_path = out_root / "summary.csv"
+    statuses: dict[str, str] = {}
+    if args.only and summary_path.exists():
+        for line in summary_path.read_text(encoding="utf-8").splitlines()[1:]:
+            if "," in line:
+                script, status = line.split(",", 1)
+                statuses[script] = status
     for script, code in rows:
-        summary.append(f"{script},{'ok' if code == 0 else f'failed({code})'}")
-    (out_root / "summary.csv").write_text("\n".join(summary) + "\n", encoding="utf-8")
+        statuses[script] = "ok" if code == 0 else f"failed({code})"
 
-    print("\n".join(summary))
+    ordered_scripts = [case.script for case in CASES if case.script in statuses]
+    ordered_scripts.extend(
+        script for script in statuses if script not in set(ordered_scripts)
+    )
+    summary = ["script,status"] + [
+        f"{script},{statuses[script]}" for script in ordered_scripts
+    ]
+    summary_path.write_text("\n".join(summary) + "\n", encoding="utf-8")
+
+    print("\n".join(["script,status"] + [
+        f"{script},{'ok' if code == 0 else f'failed({code})'}"
+        for script, code in rows
+    ]))
     return 1 if any(code != 0 for _, code in rows) else 0
 
 

@@ -84,65 +84,23 @@ Geometry utilities
    :undoc-members:
    :show-inheritance:
 
-Feature geometry
-----------------
+Robust principal component analysis
+-----------------------------------
 
-.. autoclass:: robustcov.FeatureGeometry
+.. autoclass:: robustcov.RobustPCA
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: robustcov.ClassConditionalFeatureGeometry
+Robust rolling monitoring
+-------------------------
+
+.. autoclass:: robustcov.RobustSubspaceMonitor
    :members:
    :undoc-members:
    :show-inheritance:
 
-
-Detailed API reference
-======================
-
-Robust covariance estimators
-----------------------------
-
-.. autoclass:: robustcov.FastMCD
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: robustcov.MinCovDet
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: robustcov.RegularizedCauchy
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: robustcov.StudentTScatter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: robustcov.RegularizedTyler
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: robustcov.AutoRobustScatter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Outlier detectors
------------------
-
-.. autoclass:: robustcov.RobustOutlierDetector
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: robustcov.ClusterRobustOutlierDetector
+.. autoclass:: robustcov.SubspaceDriftResult
    :members:
    :undoc-members:
    :show-inheritance:
@@ -159,17 +117,3 @@ Feature geometry
    :members:
    :undoc-members:
    :show-inheritance:
-
-Robust input metrics and kernels
---------------------------------
-
-.. autoclass:: robustcov.RobustInputMetric
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autofunction:: robustcov.robust_rbf_kernel
-   :members:
-   :undoc-members:
-   :show-inheritance:
-

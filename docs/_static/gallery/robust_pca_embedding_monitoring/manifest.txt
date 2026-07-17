@@ -1,0 +1,3 @@
+batch_monitoring.png
+outlier_map.png
+subspace_recovery.png

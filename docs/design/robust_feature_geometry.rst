@@ -1,5 +1,8 @@
 :orphan:
 
+Robust feature geometry design
+==============================
+
 Scope and non-claims
 --------------------
 
@@ -20,9 +23,6 @@ The scope is deliberately limited:
 
 The strongest practical framing is embedding or feature monitoring under a
 possibly contaminated reference window.
-
-Robust feature geometry
-=======================
 
 Motivation
 ----------

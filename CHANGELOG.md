@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+Highlights:
+- Added estimator-driven `RobustPCA` with robust projection, reconstruction, whitening, and variance-based component selection.
+- Added score-distance and orthogonal-distance diagnostics plus a robust PCA outlier-map plot.
+- Added robust PCA tests, documentation, and a synthetic example.
+- Added production embedding monitoring, yield-curve factor, and cross-asset market-risk RobustPCA gallery examples.
+
+
 ## 0.0.2
 
 Release-readiness and repository metadata update.

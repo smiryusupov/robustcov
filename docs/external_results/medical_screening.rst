@@ -13,13 +13,12 @@ Status
    useful negative/competitive example: robust covariance is not expected to win
    every tabular anomaly benchmark.
 
-Why this matters
-----------------
+Dataset characteristics
+-----------------------
 
-Medical screening tables often contain mixed risk factors, nonlinear effects,
-and population-level confounders.  Robust covariance can still provide a useful
-interpretable anomaly score, but this is not always the best standalone detector
-for such data.
+The table contains risk factors with nonlinear effects and population-level
+confounding.  A single elliptical covariance model is therefore a limited
+description of the screening problem.
 
 Result summary
 --------------
@@ -72,22 +71,21 @@ Result summary
 
    Runtime comparison on a log scale.
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/external_results/medical_screening/output.txt
    :language: text
 
-Interpretation
---------------
+What the comparison says
+------------------------
 
-This is a useful trust-building result.  It shows that ``robustcov`` is not
-promoted as a universal winner.  The dataset likely contains risk structure that
-is not purely covariance-shaped; tree-based or supervised models may be more
-appropriate in a production medical screening setting.
+``robustcov`` is competitive but trails two baselines.  The result suggests
+that much of the class structure is not captured by one covariance geometry; a
+supervised or nonlinear model may be more appropriate.
 
-Recommendation
---------------
+Suggested use
+-------------
 
 Use ``robustcov`` here as a diagnostic score or preprocessing feature rather
 than the sole production detector.  If labels are available, evaluate the robust

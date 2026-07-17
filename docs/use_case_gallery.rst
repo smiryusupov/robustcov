@@ -101,12 +101,18 @@ Which topic should I open?
    * - Portfolio, returns, covariance, stress periods
      - Finance and risk
      - ``RegularizedCauchy``
+   * - Yield curves or cross-asset factor decomposition
+     - Finance and risk
+     - ``RobustPCA`` with ``FastMCD`` or ``RegularizedCauchy``
    * - Sensors, process drift, industrial faults
      - Sensors and quality control
-     - ``FastMCD`` or ``RegularizedCauchy``
+     - ``RobustSubspaceMonitor`` with ``RegularizedCauchy``
    * - Signal/image/embedding feature vectors
      - Biomedical, image, and embedding data
      - ``AutoRobustScatter`` or ``RegularizedCauchy``
+   * - Production embedding drift or out-of-subspace traffic
+     - Biomedical, image, and embedding data
+     - ``RobustPCA`` with ``RegularizedCauchy``
    * - Reproducible ML benchmark examples
      - Real ML datasets
      - ``RobustOutlierDetector`` with baseline comparison
@@ -162,6 +168,8 @@ All detailed pages
 .. toctree::
    :maxdepth: 1
 
+   gallery/robust_pca_yield_curve
+   gallery/robust_pca_market_risk
    gallery/finance_risk
    gallery/portfolio_stress
    gallery/fraud_screening
@@ -172,6 +180,8 @@ All detailed pages
    gallery/biomedical_signal
    gallery/image_feature_anomaly
    gallery/text_embedding_outliers
+   gallery/robust_pca_embedding_monitoring
+   gallery/robust_subspace_monitoring
    gallery/breast_cancer_screening
    gallery/digits_one_class
    gallery/wine_class_screening

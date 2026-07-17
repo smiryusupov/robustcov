@@ -1,38 +1,38 @@
 Digits one-class anomaly detection
 ==================================
 
-The digits example is intentionally visual and easy to understand: train on one digit and treat another digit as the anomaly.  It is a compact test of one-class feature geometry.
+Train on one handwritten digit, then ask whether a different digit rises to the top of the anomaly ranking.  The setup gives a compact visual check of one-class feature geometry.
 
-Result at a glance
-------------------
+Results
+-------
 
 FastMCD ties EllipticEnvelope at F1=0.900 and has ROC-AUC around 0.987.  IsolationForest, LOF, and OneClassSVM are lower in this setup.
 
-What the data represent
------------------------
+One-class setup
+---------------
 
 The example uses sklearn digits features with digit 0 as the normal class and digit 1 as the anomaly class in the captured run.
 
-Why this estimator
-------------------
+Why FastMCD fits this setup
+---------------------------
 
 ``FastMCD`` is appropriate because the normal digit features form a compact central group after preprocessing.
 
-Reproduce the result
---------------------
+Run the example
+---------------
 
 .. code-block:: bash
 
    python examples/use_case_digits_one_class_baselines.py
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/gallery/digits_one_class/output.txt
    :language: text
 
-Figures and diagnostics
------------------------
+Plots
+-----
 
 .. image:: ../_static/gallery/digits_one_class/baseline_f1.png
    :alt: Digits one-class anomaly detection — baseline f1
@@ -49,12 +49,12 @@ Figures and diagnostics
    :width: 760px
 
 
-How to read the result
-----------------------
+Ranking the anomaly digit
+-------------------------
 
-The score profile shows whether anomaly digits are concentrated at the top of the robust-distance ranking.  This is often more informative than a single threshold.
+The score profile shows whether the held-out digit is concentrated near the top of the ranking.  That ranking remains useful even when the final threshold is chosen later from a review budget.
 
-What this does not prove
-------------------------
+When one covariance is not enough
+---------------------------------
 
 If several digits or styles are valid normal data, a cluster-aware detector is usually more appropriate than one global covariance model.

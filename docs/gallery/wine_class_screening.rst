@@ -3,36 +3,36 @@ Wine class screening
 
 This small real dataset tests robustcov on a tabular problem where class structure is present but not necessarily covariance-shaped.
 
-Result at a glance
-------------------
+Benchmark result
+----------------
 
-LocalOutlierFactor is best in this run with F1=0.900.  robustcov Auto is second with F1=0.800 and strong ROC-AUC.  This is a good example of competitive but not dominant behavior.
+LocalOutlierFactor has the highest F1 at 0.900.  ``AutoRobustScatter`` reaches 0.800 with a strong ROC-AUC, but local density is a better fit for this particular class boundary.
 
-What the data represent
------------------------
+One-class wine task
+-------------------
 
 The sklearn wine dataset is reduced to a one-class screening task: one class is treated as normal and another as anomalous.
 
-Why this estimator
-------------------
+Automatic estimator selection
+-----------------------------
 
 ``AutoRobustScatter`` is used because the best robust scatter choice is not obvious in advance for this small real dataset.
 
-Reproduce the result
---------------------
+Run the comparison
+------------------
 
 .. code-block:: bash
 
    python examples/use_case_wine_class_screening.py
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/gallery/wine_class_screening/output.txt
    :language: text
 
-Figures and diagnostics
------------------------
+Plots
+-----
 
 .. image:: ../_static/gallery/wine_class_screening/baseline_f1.png
    :alt: Wine class screening — baseline f1
@@ -49,12 +49,12 @@ Figures and diagnostics
    :width: 760px
 
 
-How to read the result
-----------------------
+Where local density wins
+------------------------
 
 The baseline plot is the key figure.  It shows that robustcov is useful, but that local density can be better when class separation is more neighborhood-shaped than covariance-shaped.
 
-What this does not prove
-------------------------
+Purpose of the comparison
+-------------------------
 
-This page is intentionally not a victory lap.  It shows how to compare robustcov fairly against familiar sklearn baselines.
+The purpose of the page is comparison, not a claim that robust covariance is always the best detector.  Method choice should follow the geometry of the data and the operating metric.

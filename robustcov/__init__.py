@@ -34,11 +34,16 @@ from .plotting import (
     plot_robust_distance_profile,
     plot_robust_distance_panel,
     plot_cluster_robust_distances,
+    plot_robust_pca_outlier_map,
+    plot_subspace_monitor_history,
 )
 
 __all__ = [
+    "RobustPCA",
     "FeatureGeometry",
     "ClassConditionalFeatureGeometry",
+    "RobustSubspaceMonitor",
+    "SubspaceDriftResult",
     "FastMCD",
     "MinCovDet",
     "TylerShape",
@@ -68,6 +73,8 @@ __all__ = [
     "plot_robust_distance_profile",
     "plot_robust_distance_panel",
     "plot_cluster_robust_distances",
+    "plot_robust_pca_outlier_map",
+    "plot_subspace_monitor_history",
     "has_openmp",
     "get_num_threads",
     "set_num_threads",
@@ -83,3 +90,6 @@ __all__ = [
 __version__ = "0.0.2"
 
 from .features import FeatureGeometry, ClassConditionalFeatureGeometry
+from .pca import RobustPCA
+
+from .monitoring import RobustSubspaceMonitor, SubspaceDriftResult

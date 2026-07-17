@@ -1,69 +1,41 @@
-Robust covariance geometry as a layer
+Using robust covariance as a geometry
 =====================================
 
-``robustcov`` is a lightweight geometry layer for data matrices, feature
-matrices, and learned representations.
+Many algorithms rely on a covariance matrix even when covariance estimation is
+not the main task.  Mahalanobis distances, whitening, RBF kernels, Gaussian
+process input metrics, PCA, and several drift statistics all depend on a notion
+of scale and direction.
 
-It is not a replacement for scikit-learn, PyTorch, GPyTorch, kernel libraries,
-or drift-detection frameworks. Instead, it provides robust covariance geometry
-that can plug into those workflows.
+``robustcov`` supplies that geometry from a robust location and scatter fit.  It
+can be used on raw tabular data or on features produced by another model.
 
-The core chain is:
+From scatter to downstream tools
+--------------------------------
+
+A fitted scatter matrix can be reused in several ways:
 
 .. code-block:: text
 
-   data or features
-   -> robust scatter / covariance
-   -> robust precision matrix
-   -> Mahalanobis distance
-   -> whitening
-   -> robust kernels
-   -> GP input metrics
-   -> MMD-style drift diagnostics
-   -> anomaly, retrieval, OOD, finance, sensors, and monitoring workflows
+   observations or features
+       -> robust location and scatter
+       -> precision matrix and whitening
+       -> distances, kernels, PCA, and monitoring
 
-Why a geometry layer?
----------------------
+The package includes:
 
-Many machine-learning workflows depend on a reference geometry:
+* robust covariance and scatter estimators;
+* Mahalanobis distances and anomaly diagnostics;
+* whitening and precision-matrix helpers;
+* RBF kernels with a full robust metric;
+* adapters for scikit-learn and GPyTorch kernels;
+* ``FeatureGeometry`` for unlabeled or class-conditional embeddings;
+* ``RobustPCA`` for robust subspace estimation;
+* ``RobustSubspaceMonitor`` for comparison with a fixed reference period.
 
-* anomaly detectors score distance from a reference distribution;
-* OOD methods compare test features to training features;
-* kernels depend on a distance metric;
-* Gaussian processes depend on an input metric;
-* drift detectors compare reference and new-batch distributions;
-* retrieval systems compare embeddings.
+Feature vectors
+---------------
 
-If the reference data or reference features are contaminated, ordinary empirical
-covariance can distort this geometry. A few leverage points can inflate
-variance in important directions and weaken the resulting distance, kernel, or
-drift signal.
-
-``robustcov`` addresses this by fitting robust covariance or scatter estimators
-and exposing the induced geometry.
-
-What robustcov provides
------------------------
-
-The package provides estimators and utilities for:
-
-* robust covariance and scatter estimation;
-* robust Mahalanobis distances;
-* whitening and precision matrices;
-* robust RBF-style kernels;
-* robust input metrics for Gaussian-process workflows;
-* sklearn-compatible anomaly detectors;
-* feature-space geometry through ``FeatureGeometry`` and
-  ``ClassConditionalFeatureGeometry``;
-* MMD-style distribution diagnostics using a robust feature-space metric.
-
-The MMD component is ordinary kernel MMD. The contribution is the robust metric
-used inside the kernel, not a new MMD estimator.
-
-Feature geometry
-----------------
-
-A typical learned-representation workflow looks like this:
+A feature workflow can start with any two-dimensional array:
 
 .. code-block:: python
 
@@ -71,60 +43,60 @@ A typical learned-representation workflow looks like this:
 
    geom = rc.FeatureGeometry(
        estimator=rc.FastMCD(random_state=0),
-   ).fit(X_ref)
+   ).fit(X_reference)
 
-   scores = geom.decision_function(X_new)
+   distances = geom.mahalanobis_scores(X_new)
    K = geom.rbf_kernel(X_new, length_scale=1.0)
 
-Here ``X_ref`` may be embeddings from a model, latent vectors from an
-autoencoder, tabular features, or hidden-layer representations from a neural
-network.
+``X_reference`` might contain text embeddings, image features, sensor summaries,
+or latent vectors from an autoencoder.  The encoder remains outside
+``robustcov``; only its output is passed to the geometry model.
 
-Practical embedding monitoring
-------------------------------
+PCA and rolling comparison
+--------------------------
 
-A practical use case is monitoring embedding drift when the reference window
-may be contaminated.
+When a low-dimensional representation is useful, ``RobustPCA`` computes
+components from the same robust scatter estimates:
 
-The gallery example
-:doc:`gallery/feature_geometry_embedding_monitoring` demonstrates the workflow:
+.. code-block:: python
 
-.. code-block:: text
+   pca = rc.RobustPCA(
+       n_components=0.95,
+       estimator=rc.RegularizedCauchy(alpha=0.10),
+   ).fit(X_reference)
 
-   reference embeddings
-   new-batch embeddings
-   contaminated reference window
-   central reference-anchor selection
-   MMD-style drift calibration
-   empirical metric vs robust metric
+   scores = pca.transform(X_new)
+   orthogonal_distance = pca.orthogonal_distances(X_new)
 
-In that example, empirical geometry keeps contaminated points inside the central
-reference anchor and loses most of the drift signal. Robust geometry excludes
-the contaminated reference points and preserves the drift signal.
+For sequential batches, ``RobustSubspaceMonitor`` keeps the reference fit fixed
+and compares it with a robust model fitted to the current window:
 
-Scope and non-claims
---------------------
+.. code-block:: python
 
-``robustcov`` is deliberately scoped.
+   monitor = rc.RobustSubspaceMonitor(
+       n_components=0.95,
+       estimator=rc.RegularizedCauchy(alpha=0.10),
+       window_size=256,
+   ).fit(X_reference)
 
-It is:
+   result = monitor.update(X_batch)
+   print(result.exceeded)
 
-* a robust covariance geometry package;
-* a tool for constructing distances, kernels, precision matrices, and
-  feature-space metrics;
-* useful for contaminated reference distributions and monitoring workflows.
+See :doc:`robust_pca`, :doc:`monitoring`, and
+:doc:`gallery/robust_subspace_monitoring` for the full workflows.
 
-It is not:
+Kernel distribution comparisons
+-------------------------------
 
-* a universal OOD detector;
-* an adversarial defense;
-* a replacement for deep-learning frameworks;
-* a replacement for scikit-learn;
-* a new MMD estimator;
-* a benchmark-driven claim of state-of-the-art performance.
+The MMD helpers in the package use ordinary kernel MMD.  The robust part is the
+metric inside the kernel: distances are computed with a robust precision matrix
+rather than with unscaled Euclidean distance.  The package does not introduce a
+new MMD estimator.
 
-The safest way to think about the package is:
+Boundaries of the package
+-------------------------
 
-.. code-block:: text
-
-   robustcov provides robust covariance geometry that other ML workflows can use.
+``robustcov`` focuses on estimation and geometry.  It does not train neural
+networks, implement a full OOD system, or replace scikit-learn, PyTorch, or a
+production monitoring platform.  Its outputs are meant to be composed with
+those tools.

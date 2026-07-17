@@ -392,3 +392,166 @@ def plot_cluster_robust_distances(detector, X=None, labels=None, alpha=None, out
     fig.tight_layout()
     _maybe_save_show(fig, output_path=output_path, show=show)
     return fig
+
+
+def plot_robust_pca_outlier_map(
+    pca,
+    X=None,
+    labels=None,
+    score_cutoff=None,
+    orthogonal_cutoff=None,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot score distance against orthogonal distance for a fitted RobustPCA.
+
+    Parameters
+    ----------
+    pca : RobustPCA
+        Fitted robust PCA object.
+    X : array-like, optional
+        Observations to diagnose. If omitted, stored training distances are used.
+    labels : array-like, optional
+        Boolean or binary labels used only to highlight known observations.
+    score_cutoff : float, optional
+        Optional vertical reference line.
+    orthogonal_cutoff : float, optional
+        Optional horizontal reference line.
+    """
+    if X is None:
+        if not hasattr(pca, "score_distances_") or not hasattr(
+            pca, "orthogonal_distances_"
+        ):
+            raise RuntimeError(
+                "training distances are unavailable; fit with store_scores=True or pass X"
+            )
+        score_distance = np.asarray(pca.score_distances_, dtype=float)
+        orthogonal_distance = np.asarray(pca.orthogonal_distances_, dtype=float)
+    else:
+        score_distance = np.asarray(pca.score_distances(X), dtype=float)
+        orthogonal_distance = np.asarray(pca.orthogonal_distances(X), dtype=float)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(score_distance, orthogonal_distance, s=24, alpha=0.75)
+
+    if labels is not None:
+        labels = np.asarray(labels)
+        if labels.shape != score_distance.shape:
+            raise ValueError("labels must have one value per observation")
+        highlighted = labels.astype(bool)
+        if np.any(highlighted):
+            ax.scatter(
+                score_distance[highlighted],
+                orthogonal_distance[highlighted],
+                s=64,
+                facecolors="none",
+                edgecolors="black",
+                label="highlighted",
+            )
+            ax.legend()
+
+    if score_cutoff is not None:
+        ax.axvline(float(score_cutoff), linestyle="--")
+    if orthogonal_cutoff is not None:
+        ax.axhline(float(orthogonal_cutoff), linestyle="--")
+
+    ax.set_xlabel("Score distance")
+    ax.set_ylabel("Orthogonal distance")
+    ax.set_title(title or f"Robust PCA outlier map ({type(pca.estimator_).__name__})")
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig
+
+
+def plot_subspace_monitor_history(
+    monitor_or_results,
+    *,
+    metrics=None,
+    normalize=True,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot retained :class:`SubspaceDriftResult` monitoring history.
+
+    Parameters
+    ----------
+    monitor_or_results : RobustSubspaceMonitor or sequence of SubspaceDriftResult
+        Fitted monitor with retained ``history_`` or an explicit result sequence.
+    metrics : sequence of str, optional
+        Aggregate metrics shown in the upper panel.  Defaults to location,
+        covariance shape, maximum subspace angle, orthogonal-distance shift,
+        and combined outlier fraction.
+    normalize : bool, default=True
+        Divide every metric by its calibrated threshold.  In normalized mode,
+        the horizontal line at one marks the alarm boundary.
+    title : str, optional
+        Figure title.
+    """
+    if hasattr(monitor_or_results, "history_"):
+        results = list(monitor_or_results.history_)
+    else:
+        results = list(monitor_or_results)
+    ready = [result for result in results if getattr(result, "ready", False)]
+    if not ready:
+        raise ValueError("monitoring history contains no ready results")
+
+    if metrics is None:
+        metrics = (
+            "location_shift",
+            "shape_shift",
+            "max_subspace_angle",
+            "orthogonal_distance_shift",
+            "combined_outlier_fraction",
+        )
+    metrics = tuple(metrics)
+    valid = set(ready[0].metrics)
+    unknown = sorted(set(metrics) - valid)
+    if unknown:
+        raise ValueError("unknown monitoring metrics: " + ", ".join(unknown))
+
+    x = np.arange(1, len(ready) + 1)
+    fig = plt.figure(figsize=(10, 7))
+    ax1 = fig.add_subplot(211)
+    for name in metrics:
+        values = np.asarray([result.metrics[name] for result in ready], dtype=float)
+        if normalize:
+            thresholds = np.asarray(
+                [result.thresholds.get(name, np.nan) for result in ready],
+                dtype=float,
+            )
+            values = np.divide(
+                values,
+                thresholds,
+                out=np.full_like(values, np.nan),
+                where=np.isfinite(thresholds) & (thresholds > 0.0),
+            )
+        ax1.plot(x, values, marker="o", markersize=3, label=name.replace("_", " "))
+    if normalize:
+        ax1.axhline(1.0, linestyle="--", label="calibrated threshold")
+        ax1.set_ylabel("metric / threshold")
+    else:
+        ax1.set_ylabel("metric value")
+    ax1.set_title(title or "Robust rolling subspace monitoring")
+    ax1.legend(ncol=2, fontsize="small")
+
+    ax2 = fig.add_subplot(212, sharex=ax1)
+    combined = np.asarray(
+        [result.combined_outlier_fraction for result in ready], dtype=float
+    )
+    batch = np.asarray(
+        [result.batch_combined_outlier_fraction for result in ready], dtype=float
+    )
+    ax2.plot(x, combined, marker="o", label="rolling-window outlier fraction")
+    ax2.plot(x, batch, marker="s", label="incoming-batch outlier fraction")
+    alarms = np.asarray([result.alarm for result in ready], dtype=bool)
+    if np.any(alarms):
+        ymax = max(float(np.nanmax(combined)), float(np.nanmax(batch)), 1e-12)
+        ax2.scatter(x[alarms], np.full(np.sum(alarms), ymax), marker="x", s=55, label="alarm")
+    ax2.set_xlabel("ready monitoring update")
+    ax2.set_ylabel("outlier fraction")
+    ax2.legend(ncol=2, fontsize="small")
+    fig.tight_layout()
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig

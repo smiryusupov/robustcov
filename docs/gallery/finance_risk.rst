@@ -1,38 +1,38 @@
 Finance-style heavy-tail covariance
 ===================================
 
-Financial returns are often heavy-tailed and high-dimensional relative to the sample size.  This example asks a practical risk question: which covariance estimate stays stable when the sample is small and tails are heavy?
+This example compares covariance estimates in a difficult but common regime: 50 return series, only 80 observations, and very heavy tails.
 
-Result at a glance
-------------------
+Numerical result
+----------------
 
 Empirical covariance has a relative Frobenius error around 9.32 and condition number above 6300.  RegularizedCauchy, StudentTScatter, and RegularizedTyler all reduce the error below 0.48 and keep the condition number much more controlled.
 
-What the data represent
------------------------
+Small-sample return model
+-------------------------
 
 The simulation uses ``n=80`` observations, ``p=50`` assets/features, and Student-t-like heavy tails with ``df=2``.  This is intentionally a small-sample risk regime where ordinary covariance is fragile.
 
-Why this estimator
-------------------
+Regularization and heavy tails
+------------------------------
 
-``RegularizedCauchy`` is the recommended default here.  It combines strong radial downweighting with shrinkage, which is useful when a few large return vectors can dominate empirical covariance.
+``RegularizedCauchy`` combines radial downweighting with shrinkage.  In this simulation, that prevents a few large return vectors from dominating the covariance while keeping the matrix invertible.
 
-Reproduce the result
---------------------
+Run the example
+---------------
 
 .. code-block:: bash
 
    python examples/use_case_finance_risk.py
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/gallery/finance_risk/output.txt
    :language: text
 
-Figures and diagnostics
------------------------
+Covariance and distance plots
+-----------------------------
 
 .. image:: ../_static/gallery/finance_risk/covariance.png
    :alt: Finance-style heavy-tail covariance — covariance
@@ -44,12 +44,12 @@ Figures and diagnostics
    :width: 760px
 
 
-How to read the result
-----------------------
+What to compare
+---------------
 
 The heatmap and distance diagnostics should be read together.  A good risk estimator is not only lower-error in the synthetic benchmark; it should also avoid extreme condition numbers and produce a distance distribution that does not collapse around a few tail observations.
 
-What this does not prove
-------------------------
+Portfolio validation
+--------------------
 
 For real portfolios, covariance quality should be validated through downstream risk forecasts, drawdown behavior, and transaction-cost-aware portfolio tests.

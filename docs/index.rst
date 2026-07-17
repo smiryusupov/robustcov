@@ -1,87 +1,62 @@
 robustcov documentation
 =======================
 
+``robustcov`` is a Python/C++ package for covariance and scatter estimation when
+ordinary empirical covariance is too sensitive to a small part of the data.  It
+includes robust estimators, Mahalanobis diagnostics, PCA, feature-space metrics,
+SPD geometry, and rolling subspace monitoring.
 
-Why robustcov?
+The package is most useful when the data are heavy-tailed, contain leverage
+points or outliers, or provide too few observations for an unrestricted sample
+covariance matrix.
+
+Where to start
 --------------
-
-Many machine-learning workflows use covariance geometry implicitly: anomaly
-scores, whitening, Mahalanobis distances, kernel similarities, Gaussian models,
-portfolio risk, and embedding retrieval. Empirical covariance is fast and
-useful, but it can be strongly distorted by outliers, heavy tails, leverage
-points, and small contaminated subsets of the data.
-
-``robustcov`` provides robust covariance and scatter estimators together with
-practical machine-learning workflows around them: anomaly detection,
-diagnostics, benchmark galleries, robust kernel/input metrics, and SPD geometry
-utilities.
-
-The typical workflow is:
-
-.. code-block:: text
-
-   contaminated data
-        -> robust scatter estimate
-        -> robust precision / Mahalanobis geometry
-        -> anomaly score, whitening, similarity, kernel, or diagnostic
-
-When should I use this?
------------------------
-
-Use ``robustcov`` when covariance geometry matters and the data may contain
-outliers, heavy tails, small contaminated subsets, leverage points, or unstable
-directions. Typical use cases include tabular anomaly detection, sensor
-monitoring, financial features, embeddings, robust preprocessing, and kernel
-methods.
-
-Project status
---------------
-
-``robustcov`` is under active development. The implemented estimators, examples,
-and diagnostics are tested and documented, but some APIs may evolve as the
-package matures. See :doc:`api_stability` for the current stability policy.
-
-
-
-``robustcov`` is a Python/C++ package for robust covariance and scatter estimation, SPD geometry, anomaly diagnostics, and robust kernel, similarity, and feature-geometry workflows.
-
-The project is organized around two reader-friendly entry points:
 
 .. raw:: html
 
    <div class="gallery-grid">
      <a class="gallery-card" href="use_case_gallery.html">
        <div class="gallery-card-placeholder">Use-case<br>gallery</div>
-       <h3>Start from your application</h3>
-       <p>Topic-based gallery: finance/risk, fraud/security, sensors/quality, biomedical/images/embeddings, real ML datasets, and preprocessing.</p>
+       <h3>Browse applications</h3>
+       <p>Examples for finance, fraud, sensors, biomedical data, embeddings, and preprocessing.</p>
      </a>
      <a class="gallery-card" href="benchmark_gallery.html">
        <img src="_static/benchmarks/small_sample_rank.png" alt="Benchmark ranking plot">
-       <h3>Start from the evidence</h3>
-       <p>Small-sample heavy-tail ranking, speed comparisons, OpenMP scaling, anomaly baselines, and hard contamination scenarios.</p>
+       <h3>Review benchmark results</h3>
+       <p>Accuracy under contamination, heavy-tail experiments, runtime comparisons, and OpenMP scaling.</p>
      </a>
      <a class="gallery-card" href="algorithms.html">
        <div class="gallery-card-placeholder">Math<br>and API</div>
-       <h3>Understand the estimators</h3>
-       <p>FastMCD, Tyler shape, Regularized Tyler, Student-t scatter, Cauchy scatter, diagnostics, and references.</p>
+       <h3>Read about the estimators</h3>
+       <p>Assumptions, fitted quantities, references, and implementation notes for the main algorithms.</p>
      </a>
    </div>
 
-Core ideas
-----------
+A common workflow
+-----------------
 
-Core ideas
-----------
+.. code-block:: text
 
-Core ideas
-----------
+   data or feature matrix
+       -> robust location and scatter
+       -> precision matrix or principal subspace
+       -> distances, whitening, kernels, diagnostics, or monitoring
 
-* ``FastMCD`` gives efficient classical robust covariance for separable contamination when ``n`` is comfortably larger than ``p``.
-* ``RegularizedCauchy`` and ``StudentTScatter`` target small-sample, high-dimensional, heavy-tailed covariance problems.
-* Robust-distance diagnostics turn fitted estimators into interpretable anomaly scores, profiles, QQ plots, and reports.
-* SPD geometry utilities compare covariance and scatter matrices with affine-invariant and log-Euclidean distances.
-* ``FeatureGeometry`` uses robust scatter estimates as a geometry layer for learned representations, kernels, similarities, and OOD-style diagnostics.
-* Optional OpenMP acceleration improves larger workloads and benchmark/report generation.
+The main pieces are:
+
+* ``FastMCD`` for sparse, separable contamination when the sample is larger than
+  the feature dimension;
+* regularized Cauchy, Student-t, and Tyler estimators for heavy tails and
+  difficult covariance regimes;
+* robust-distance plots and reports for anomaly analysis;
+* ``RobustPCA`` for projection, reconstruction, and score/orthogonal-distance
+  diagnostics;
+* ``FeatureGeometry`` for robust distances and kernels on learned
+  representations;
+* ``RobustSubspaceMonitor`` for comparing rolling batches with a fixed
+  reference period;
+* SPD geometry and optional OpenMP acceleration for larger workloads.
 
 .. toctree::
    :maxdepth: 2
@@ -95,6 +70,8 @@ Core ideas
    benchmark_gallery
    algorithms
    geometry
+   robust_pca
+   monitoring
    feature_geometry
    diagnostics
    openmp
@@ -110,10 +87,12 @@ Core ideas
    external_results_gallery
    references
 
-Why not focus on MVE?
----------------------
+Project status
+--------------
 
-Minimum-volume ellipsoid estimators are historically important, but the benchmark evidence in this project points to a stronger niche: efficient MCD for separable outliers and regularized heavy-tail scatter for small samples. MVE may become an experimental add-on later, but it is not currently the core differentiator.
+The project is in active development.  The current estimators and examples are
+tested, but public APIs may still change before a stable release.  See
+:doc:`api_stability` for the compatibility policy.
 
 .. toctree::
    :maxdepth: 1

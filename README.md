@@ -7,25 +7,28 @@
 [![Wheels](https://github.com/smiryusupov/robustcov/actions/workflows/wheels.yml/badge.svg)](https://github.com/smiryusupov/robustcov/actions/workflows/wheels.yml)
 [![License](https://img.shields.io/pypi/l/robustcov.svg)](https://github.com/smiryusupov/robustcov/blob/main/LICENSE)
 
-`robustcov` is a Python/C++ library for robust covariance and scatter estimation, SPD geometry, anomaly diagnostics, and robust kernel/similarity workflows.
+`robustcov` is a Python/C++ library for robust covariance and scatter
+estimation. It also provides tools that reuse those estimates for Mahalanobis
+diagnostics, PCA, feature-space kernels, and rolling monitoring.
 
+It is intended for data with heavy tails, outliers, leverage points, or too few
+observations for a stable empirical covariance matrix.
 
-
-It is designed for workflows where classical covariance estimates are unstable: contamination, heavy-tailed data, small samples, high-dimensional scatter estimation, and robust-distance based anomaly screening.
-
-> Status: **alpha / experimental**. APIs and benchmark pages may change before a stable release.
+> Status: **alpha / experimental**. Public APIs may change before a stable
+> release.
 
 ## Highlights
 
-- Fast robust covariance via `FastMCD`
-- Heavy-tail scatter estimators: `RegularizedCauchy`, `StudentTScatter`, `RegularizedTyler`
-- Robust anomaly detection with Mahalanobis-style robust distances
-- Robust full-matrix input metrics for GP and kernel-method covariance functions
-- Cluster-aware robust diagnostics for multimodal data
-- Visual diagnostics: distance profiles, QQ plots, covariance heatmaps, anomaly panels
+- `FastMCD` for sparse, separable contamination
+- Regularized Cauchy, Student-t, and Tyler scatter estimators
+- Mahalanobis anomaly scores, QQ plots, distance profiles, and diagnostic reports
+- `RobustPCA` with score-distance and orthogonal-distance diagnostics
+- `RobustSubspaceMonitor` for comparison with a fixed reference period
+- `FeatureGeometry` for robust distances, whitening, and kernels on embeddings
+- Full-matrix input metrics for scikit-learn and GPyTorch kernels
+- Cluster-aware diagnostics for multimodal data
+- SPD distance and interpolation utilities
 - Optional OpenMP acceleration in the C++ backend
-- Sphinx documentation with benchmark and use-case galleries
-- Optional external/Kaggle examples for fraud, finance, maintenance, and medical screening
 
 ## Installation
 
@@ -102,6 +105,60 @@ print(auto.best_estimator_name_)
 print(auto.summary())
 ```
 
+## Robust PCA
+
+`RobustPCA` computes principal components from any compatible robust scatter
+estimator. The interface follows ordinary PCA, with additional distances for
+diagnosing unusual observations.
+
+```python
+pca = rc.RobustPCA(
+    n_components=0.95,
+    estimator=rc.RegularizedCauchy(alpha=0.10),
+).fit(X)
+
+Z = pca.transform(X)
+score_distance = pca.score_distances(X)
+orthogonal_distance = pca.orthogonal_distances(X)
+
+rc.plot_robust_pca_outlier_map(
+    pca,
+    output_path="robust_pca_outlier_map.png",
+    show=False,
+)
+```
+
+Score distance measures how far a row lies along the retained components.
+Orthogonal distance measures the part that those components cannot reconstruct.
+This implementation uses an eigendecomposition of a robust scatter matrix; it
+is not the low-rank-plus-sparse method with the same common name.
+
+## Rolling subspace monitoring
+
+`RobustSubspaceMonitor` compares incoming batches with a fixed reference fit. A
+separate robust model is fitted to the current rolling window, allowing the
+monitor to distinguish movement of the center from changes in scale, covariance
+shape, or principal directions.
+
+```python
+monitor = rc.RobustSubspaceMonitor(
+    n_components=0.95,
+    estimator=rc.RegularizedCauchy(alpha=0.10),
+    window_size=256,
+    threshold_scale=1.2,
+    alarm_patience=2,
+).fit(X_reference)
+
+result = monitor.update(X_batch)
+if result.ready:
+    print(result.summary())
+    print(result.exceeded)
+```
+
+New rows are scored against the reference before the rolling model is updated.
+A persistent production problem therefore cannot redefine the baseline before
+it is detected.
+
 ## Main estimators
 
 | Estimator | Best use case | Notes |
@@ -112,16 +169,16 @@ print(auto.summary())
 | `RegularizedTyler` | Heavy-tailed shape estimation | Scale-free shape unless scale correction is requested |
 | `AutoRobustScatter` | Exploratory estimator selection | Diagnostic or stability-based selector |
 | `ClusterRobustOutlierDetector` | Multimodal data | Cluster-then-local-robust-scatter diagnostic |
+| `RobustPCA` | Robust dimensionality reduction and subspace diagnostics | Eigendecomposition of a robust location and scatter estimate |
 
 `KLRegularizedTyler` and `WieselTyler` are currently documented as aliases/prototype variants around the regularized Tyler implementation. `HellingerRegularizedTyler` is experimental.
 
 
 ## Robust kernels for GP and kernel methods
 
-`robustcov` can expose a robust scatter estimate as a fixed full-matrix input
-metric for covariance functions. This deliberately does **not** add GP
-regression, KRR, Bayesian optimization, posterior inference, likelihoods, or
-training loops. The package only supplies the robust covariance structure.
+A robust scatter estimate can be used as a fixed full-matrix input metric for
+kernel methods. `robustcov` supplies the metric and kernel adapters; model
+fitting remains in scikit-learn, GPyTorch, or another downstream library.
 
 ```python
 import robustcov as rc
@@ -277,7 +334,9 @@ results/report/*.csv
 results/report/*.png
 ```
 
-The benchmark documentation is intentionally honest. `robustcov` is not expected to win every anomaly-detection task. The package is strongest when the signal is covariance-shaped, heavy-tailed, high-dimensional, or benefits from interpretable robust distances.
+The benchmark pages report both successful and weak cases. Covariance-based
+methods are most appropriate when anomalies or changes are expressed through
+location, scale, correlation, or a low-dimensional subspace.
 
 ## Examples
 

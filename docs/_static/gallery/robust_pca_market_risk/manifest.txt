@@ -1,0 +1,4 @@
+asset_loadings.png
+explained_variance.png
+outlier_map.png
+reconstruction_residual.png
