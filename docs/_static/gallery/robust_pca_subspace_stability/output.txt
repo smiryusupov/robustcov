@@ -1,0 +1,10 @@
+Bootstrap stability of yield-curve factors
+==========================================
+observations: 190
+maturities: 10
+quote-dislocation days: 28
+successful bootstrap fits, empirical / robust: 60 / 60
+median largest principal angle, empirical / robust: 42.763 / 2.169 degrees
+90% upper largest angle, empirical / robust: 80.419 / 3.502 degrees
+reference subspace error, empirical / robust: 1.424 / 0.048
+stable loading count, PC1 empirical / robust: 10 / 10

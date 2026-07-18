@@ -198,6 +198,14 @@ A few common choices are:
 the feature dimension and contamination is sparse.  A regularized estimator is
 usually safer when ``p`` is close to, or larger than, ``n``.
 
+Bootstrap stability
+-------------------
+
+A single fit does not show how much the loadings or retained subspace would
+change under resampling.  :doc:`subspace_stability` bootstraps the PCA fit,
+aligns the loading matrices, and reports loading intervals and principal-angle
+distributions.
+
 Worked examples
 ---------------
 

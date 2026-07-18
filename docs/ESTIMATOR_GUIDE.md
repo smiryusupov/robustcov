@@ -46,3 +46,19 @@ Auto selection is a diagnostic heuristic, not an oracle. Benchmark it when groun
 ## Experimental estimators
 
 `HellingerRegularizedTyler` is experimental. It is useful for exploratory comparisons but should not be described as a finalized published Hellinger optimizer yet.
+
+
+## MRCD
+
+Use `MRCD` when contamination is rowwise and an MCD-style hard subset is useful, but `p` is too large for an unregularized subset covariance. The target weight is calibrated to keep the standardized estimate well conditioned.
+
+
+## Matrix-valued observations
+
+Use `MMCD` when each sample is naturally a matrix and complete matrix observations may be contaminated. It estimates separate row and column covariance factors instead of flattening the sample and fitting an unrestricted covariance.
+
+```python
+rc.MMCD(contamination=0.20, random_state=0)
+```
+
+The Kronecker covariance assumption should be checked against the application. `MMCD` is not a cellwise robust estimator.

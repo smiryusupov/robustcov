@@ -8,6 +8,46 @@ Covariance estimators
    :members:
    :undoc-members:
 
+Minimum regularized covariance determinant
+------------------------------------------
+
+.. automodule:: robustcov.mrcd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Matrix minimum covariance determinant
+-------------------------------------
+
+.. automodule:: robustcov.mmcd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Cellwise minimum covariance determinant
+---------------------------------------
+
+.. automodule:: robustcov.cellmcd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Cellwise regularized covariance
+-------------------------------
+
+.. automodule:: robustcov.cellrcov
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Robust sparse precision matrices
+--------------------------------
+
+.. automodule:: robustcov.sparse_precision
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 M-estimators
 ------------
 
@@ -88,6 +128,22 @@ Robust principal component analysis
 -----------------------------------
 
 .. autoclass:: robustcov.RobustPCA
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Bootstrap PCA stability
+-----------------------
+
+.. automodule:: robustcov.stability
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Cellwise and casewise robust PCA
+--------------------------------
+
+.. automodule:: robustcov.cellpca
    :members:
    :undoc-members:
    :show-inheritance:

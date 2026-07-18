@@ -20,9 +20,16 @@ observations for a stable empirical covariance matrix.
 ## Highlights
 
 - `FastMCD` for sparse, separable contamination
+- `MRCD` for high-breakdown covariance estimation when `p` is close to or greater than `n`
+- `MMCD` for robust row/column covariance estimation when each observation is a matrix
+- `CellMCD` for covariance estimation with isolated corrupted or missing cells
+- `CellRCov` for high-dimensional covariance with bad cells, abnormal rows, and missing entries
+- `CellPCA` for low-rank structure with cellwise errors, abnormal rows, and missing entries
+- `RobustGraphicalLasso` for sparse precision matrices and conditional-dependence networks
 - Regularized Cauchy, Student-t, and Tyler scatter estimators
 - Mahalanobis anomaly scores, QQ plots, distance profiles, and diagnostic reports
 - `RobustPCA` with score-distance and orthogonal-distance diagnostics
+- `SubspaceStability` for IID, block, stationary, and cluster bootstrap diagnostics
 - `RobustSubspaceMonitor` for comparison with a fixed reference period
 - `FeatureGeometry` for robust distances, whitening, and kernels on embeddings
 - Full-matrix input metrics for scikit-learn and GPyTorch kernels
@@ -96,6 +103,81 @@ student = rc.StudentTScatter(df=3, alpha=0.05).fit(X)
 print(student.radial_kurtosis_)
 ```
 
+For high-dimensional data with a minority of contaminated rows:
+
+```python
+mrcd = rc.MRCD(
+    contamination=0.20,
+    max_condition_number=50,
+    random_state=0,
+).fit(X)
+
+print(mrcd.regularization_)
+print(mrcd.standardized_condition_number_)
+print(mrcd.support_)
+```
+
+For matrix-valued observations such as sensor-by-time windows:
+
+```python
+mmcd = rc.MMCD(
+    contamination=0.20,
+    random_state=0,
+).fit(X_matrices)
+
+print(mmcd.row_covariance_)
+print(mmcd.column_covariance_)
+print(mmcd.mahalanobis(X_matrices))
+```
+
+For tables with isolated bad cells and missing entries:
+
+```python
+cellmcd = rc.CellMCD(alpha=0.75, quantile=0.99).fit(X)
+
+print(cellmcd.cell_outlier_mask_)
+X_corrected = cellmcd.corrected_data_
+```
+
+For high-dimensional tables with bad cells, abnormal rows, and missing entries:
+
+```python
+cellrcov = rc.CellRCov(
+    n_components=4,
+    residual_shrinkage="auto",
+).fit(X)
+
+print(cellrcov.covariance_)
+print(cellrcov.residual_shrinkage_)
+print(cellrcov.cell_outlier_mask_)
+```
+
+For a sparse conditional-dependence graph:
+
+```python
+graph = rc.RobustGraphicalLasso(
+    alpha="ebic",
+    scatter_estimator=rc.CellMCD(
+        alpha=0.75,
+        min_samples_per_feature=None,
+    ),
+).fit(X)
+
+print(graph.partial_correlation_)
+print(graph.edge_list(feature_names))
+```
+
+For dimensionality reduction under cellwise and rowwise contamination:
+
+```python
+cellpca = rc.CellPCA(n_components=3).fit(X)
+
+Z = cellpca.transform(X)
+print(cellpca.cell_outlier_mask_)
+print(cellpca.case_outlier_mask_)
+X_corrected = cellpca.corrected_data_
+```
+
 For automatic exploratory selection:
 
 ```python
@@ -133,6 +215,25 @@ Orthogonal distance measures the part that those components cannot reconstruct.
 This implementation uses an eigendecomposition of a robust scatter matrix; it
 is not the low-rank-plus-sparse method with the same common name.
 
+Bootstrap the fitted loadings and retained subspace with:
+
+```python
+stability = rc.SubspaceStability(
+    pca=pca,
+    n_resamples=200,
+    resampling="stationary",
+    block_length=20,
+    random_state=0,
+).fit(X)
+
+print(stability.loading_interval_)
+print(stability.max_principal_angle_degrees_)
+```
+
+Use ``resampling="iid"`` for independent rows, a block or stationary bootstrap
+for ordered weakly dependent observations, and ``resampling="cluster"`` for
+repeated measurements grouped by subject, site, or account.
+
 ## Rolling subspace monitoring
 
 `RobustSubspaceMonitor` compares incoming batches with a fixed reference fit. A
@@ -164,6 +265,11 @@ it is detected.
 | Estimator | Best use case | Notes |
 |---|---|---|
 | `FastMCD` | Separable contamination, `n >> p` | Fast robust covariance and support diagnostics |
+| `MRCD` | Rowwise contamination with `p` close to or greater than `n` | Regularized high-breakdown subset covariance with automatic condition control |
+| `MMCD` | Matrix-valued observations with contaminated rows/samples | Robust mean matrix and Kronecker row/column covariance factors |
+| `CellMCD` | Tables with isolated corrupted or missing cells and `n > p` | Observed-likelihood covariance fit with cell-level flags and conditional predictions |
+| `CellRCov` | High-dimensional tables with bad cells, abnormal rows, and missing entries | Robust low-rank covariance plus a diagonally regularized residual covariance |
+| `CellPCA` | Low-rank tables with cell errors, abnormal rows, and missing entries | Cellwise and casewise redescending weights in a weighted low-rank fit |
 | `RegularizedCauchy` | Very heavy tails, small samples, `p` close to `n` | Strong radial downweighting plus shrinkage |
 | `StudentTScatter` | Diffuse heavy tails | Smooth heavy-tail scatter estimator |
 | `RegularizedTyler` | Heavy-tailed shape estimation | Scale-free shape unless scale correction is requested |
@@ -172,6 +278,8 @@ it is detected.
 | `RobustPCA` | Robust dimensionality reduction and subspace diagnostics | Eigendecomposition of a robust location and scatter estimate |
 
 `KLRegularizedTyler` and `WieselTyler` are currently documented as aliases/prototype variants around the regularized Tyler implementation. `HellingerRegularizedTyler` is experimental.
+
+For a scenario-specific decision table, capability limits, and cross-method results, see `docs/method_comparison.rst`. The comparison separates covariance, PCA, matrix-valued, and sparse-graph tasks rather than declaring one global winner.
 
 
 ## Robust kernels for GP and kernel methods
@@ -318,7 +426,20 @@ Do not commit `docs/_build/`; it is generated by Sphinx.
 
 ## Benchmarks
 
-Generate the benchmark report:
+Run the task-specific cross-method comparison:
+
+```bash
+OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=2 \
+python benchmarks/compare_methods.py \
+  --profile quick \
+  --csv results/method_comparison.csv \
+  --rst results/method_comparison.rst
+```
+
+The script compares methods only where their fitted quantities and ground-truth
+metrics are compatible. Use `--profile full --families scatter --repeats 3` (and repeat for the other families) for slower, more stable local timing runs.
+
+Generate the older benchmark report:
 
 ```bash
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \

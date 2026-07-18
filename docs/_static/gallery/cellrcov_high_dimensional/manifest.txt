@@ -1,0 +1,5 @@
+covariance_error.png
+covariance_spectrum.png
+distance_decomposition.png
+cell_residual_map.png
+metrics.csv

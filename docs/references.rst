@@ -14,6 +14,11 @@ Robust covariance and MCD
 * P. J. Rousseeuw. 1985. Multivariate estimation with high breakdown point. In *Mathematical Statistics and Applications*.
 * P. J. Rousseeuw and K. Van Driessen. 1999. A fast algorithm for the minimum covariance determinant estimator. *Technometrics*.
 * M. Hubert, M. Debruyne, and P. J. Rousseeuw. 2018. Minimum covariance determinant and extensions. *WIREs Computational Statistics*.
+* K. Boudt, P. J. Rousseeuw, S. Vanduffel, and T. Verdonck. 2020. The minimum regularized covariance determinant estimator. *Statistics and Computing*.
+* M. Mayrhofer, U. Radojičić, and P. Filzmoser. 2025. Robust covariance estimation and explainable outlier detection for matrix-valued data. *Technometrics*.
+* J. Raymaekers and P. J. Rousseeuw. 2024. The cellwise minimum covariance determinant estimator. *Journal of the American Statistical Association*, 119(548), 2610–2621.
+* F. Centofanti, M. Hubert, and P. J. Rousseeuw. 2026. Cellwise and casewise robust covariance in high dimensions. arXiv:2505.19925.
+* P. Dutilleul. 1999. The MLE algorithm for the matrix normal distribution. *Journal of Statistical Computation and Simulation*.
 
 Tyler and robust scatter M-estimation
 -------------------------------------
@@ -50,6 +55,12 @@ Robust anomaly diagnostics
 
 * P. J. Rousseeuw and A. M. Leroy. 1987. *Robust Regression and Outlier Detection*. Wiley.
 * M. Hubert, P. J. Rousseeuw, and K. Vanden Branden. 2005. ROBPCA: a new approach to robust principal component analysis. *Technometrics*.
+* F. Centofanti, M. Hubert, and P. J. Rousseeuw. 2026. Robust principal components by casewise and cellwise weighting. *Technometrics*.
+* M. E. Timmerman, E. Kiers, and A. C. Smilde. 2007. Estimating confidence intervals for principal component loadings: a comparison between the bootstrap and asymptotic results. *British Journal of Mathematical and Statistical Psychology*.
+* R. H. Abul Naga and G. Antille. 1990. Stability of robust and non-robust principal components analysis. *Computational Statistics & Data Analysis*.
+* H. R. Künsch. 1989. The jackknife and the bootstrap for general stationary observations. *The Annals of Statistics*.
+* D. N. Politis and J. P. Romano. 1994. The stationary bootstrap. *Journal of the American Statistical Association*.
+* D. N. Politis and H. White. 2004. Automatic block-length selection for the dependent bootstrap. *Econometric Reviews*.
 
 
 Robust clustering and mixtures

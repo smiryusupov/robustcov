@@ -1,0 +1,45 @@
+family,scenario,method,status,n_samples,n_features,repeat,seconds,python_peak_mb,covariance_error,location_error,row_outlier_auc,cell_outlier_auc,subspace_error,missing_reconstruction_mae,matrix_covariance_error,precision_error,edge_precision,edge_recall,edge_f1,n_edges,notes
+scatter,rowwise outliers,Empirical covariance,ok,180,8,0,0.00037982704816386104,,2.284845657594305,0.42126959162688865,0.9281045751633987,,,,,,,,,,non-robust baseline
+scatter,rowwise outliers,FastMCD,ok,180,8,0,0.0014691720134578645,,0.20034680702123006,0.06276526339801816,1.0,,,,,,,,,,separable rowwise outliers
+scatter,rowwise outliers,MRCD,ok,180,8,0,0.006229656981304288,,0.33178845671129775,0.09737726922548129,1.0,,,,,,,,,,regularized high-breakdown subset
+scatter,rowwise outliers,StudentTScatter,ok,180,8,0,0.002035330981016159,,0.7845226186804551,0.145930001635686,0.9987896393125151,,,,,,,,,,diffuse heavy tails
+scatter,rowwise outliers,RegularizedCauchy,ok,180,8,0,0.002926843997556716,,0.5769335414485733,0.11154156158438741,1.0,,,,,,,,,,very heavy tails and small samples
+scatter,rowwise outliers,RegularizedTyler,ok,180,8,0,0.0006104620406404138,,0.9378087860912302,0.42126959162688865,0.9842653110626967,,,,,,,,,,elliptical shape with shrinkage
+scatter,heavy-tailed elliptical,Empirical covariance,ok,180,8,0,0.0003681649686768651,,1.5970533190695098,0.178749253585432,,,,,,,,,,,non-robust baseline
+scatter,heavy-tailed elliptical,FastMCD,ok,180,8,0,0.0009670450235716999,,0.29502423049941806,0.07511081682623905,,,,,,,,,,,separable rowwise outliers
+scatter,heavy-tailed elliptical,MRCD,ok,180,8,0,0.005849450011737645,,0.38459897981001506,0.06494464590079979,,,,,,,,,,,regularized high-breakdown subset
+scatter,heavy-tailed elliptical,StudentTScatter,ok,180,8,0,0.0014228849904611707,,0.16881185513882,0.08030004794224156,,,,,,,,,,,diffuse heavy tails
+scatter,heavy-tailed elliptical,RegularizedCauchy,ok,180,8,0,0.002035891986452043,,0.20048050644872084,0.0704245210558417,,,,,,,,,,,very heavy tails and small samples
+scatter,heavy-tailed elliptical,RegularizedTyler,ok,180,8,0,0.0006277339998632669,,0.22046140523132568,0.178749253585432,,,,,,,,,,,elliptical shape with shrinkage
+scatter,high-dimensional row outliers,Empirical covariance,ok,64,80,0,0.00117405503988266,,1.4896810945050318,0.19160227653102407,0.9508928571428571,,,,,,,,,,non-robust baseline
+scatter,high-dimensional row outliers,MRCD,ok,64,80,0,0.01929579902207479,,0.998166122573455,0.1399022837348701,1.0,,,,,,,,,,rowwise outliers with p >= n
+scatter,high-dimensional row outliers,StudentTScatter,ok,64,80,0,0.04007128905504942,,0.8353991714467157,0.15398743354782002,0.9754464285714286,,,,,,,,,,diffuse heavy tails
+scatter,high-dimensional row outliers,RegularizedCauchy,ok,64,80,0,0.04760178201831877,,0.7923132558127114,0.15049425653281784,0.9799107142857143,,,,,,,,,,very heavy tails and small samples
+scatter,high-dimensional row outliers,RegularizedTyler,ok,64,80,0,0.03370897198328748,,0.8186866499599713,0.19160227653102407,0.9754464285714286,,,,,,,,,,elliptical shape with shrinkage
+scatter,cellwise errors + missing,Empirical covariance,ok,180,8,0,0.0006508190417662263,,4.090360242440377,0.11109323930210241,1.0,,,,,,,,,,non-robust baseline
+scatter,cellwise errors + missing,FastMCD,ok,180,8,0,0.001388489967212081,,1.7467848170270548,0.19954995323093747,0.9820188492063492,,,,,,,,,,separable rowwise outliers
+scatter,cellwise errors + missing,MRCD,ok,180,8,0,0.006453350011724979,,3.366551644035978,0.21058476865485998,0.9946676587301587,,,,,,,,,,regularized high-breakdown subset
+scatter,cellwise errors + missing,StudentTScatter,ok,180,8,0,0.0021100619924254715,,3.9900983551731772,0.0805640426762295,1.0,,,,,,,,,,diffuse heavy tails
+scatter,cellwise errors + missing,RegularizedCauchy,ok,180,8,0,0.0026260860031470656,,4.0315740812510565,0.08493865998766231,1.0,,,,,,,,,,very heavy tails and small samples
+scatter,cellwise errors + missing,RegularizedTyler,ok,180,8,0,0.0009250760194845498,,4.0699625742229895,0.11109323930210241,1.0,,,,,,,,,,elliptical shape with shrinkage
+scatter,cellwise errors + missing,CellMCD,ok,180,8,0,0.23700809298316017,,0.17696940140904832,0.08922798049875971,,1.0,,,,,,,,,cellwise contamination and missing values
+scatter,high-dimensional mixed contamination,Empirical covariance,ok,64,80,0,0.0014209119835868478,,1.512285300892232,0.31565236636654,0.7919799498746867,,,,,,,,,,non-robust baseline
+scatter,high-dimensional mixed contamination,MRCD,ok,64,80,0,0.019067368004471064,,1.00850899777073,0.27419551917548435,0.9097744360902256,,,,,,,,,,rowwise outliers with p >= n
+scatter,high-dimensional mixed contamination,StudentTScatter,ok,64,80,0,0.038392640999518335,,0.8623899863546205,0.22779053400439112,0.8145363408521303,,,,,,,,,,diffuse heavy tails
+scatter,high-dimensional mixed contamination,RegularizedCauchy,ok,64,80,0,0.04507562500657514,,0.8254690579049799,0.20732204430598897,0.8220551378446115,,,,,,,,,,very heavy tails and small samples
+scatter,high-dimensional mixed contamination,RegularizedTyler,ok,64,80,0,0.03424663603072986,,0.8543649346741443,0.31565236636654,0.7994987468671679,,,,,,,,,,elliptical shape with shrinkage
+scatter,high-dimensional mixed contamination,CellRCov,ok,64,80,0,0.1012664379668422,,0.382873398791526,0.13714630492919536,1.0,0.9993563641140155,,,,,,,,,high-dimensional cellwise/casewise contamination and missing values
+pca,rowwise low-rank outliers,Empirical PCA,ok,160,18,0,0.0002415659837424755,,,,0.7901348039215687,,0.8213073209896551,,,,,,,,non-robust baseline
+pca,rowwise low-rank outliers,RobustPCA(FastMCD),ok,160,18,0,0.002093081013299525,,,,1.0,,0.033545614058753115,,,,,,,,separable rowwise outliers
+pca,rowwise low-rank outliers,RobustPCA(MRCD),ok,160,18,0,0.007107254001311958,,,,1.0,,0.05698796390150577,,,,,,,,regularized high-breakdown scatter PCA
+pca,rowwise low-rank outliers,RobustPCA(StudentT),ok,160,18,0,0.003676128981169313,,,,1.0,,0.027682840973363952,,,,,,,,diffuse heavy tails
+pca,rowwise low-rank outliers,RobustPCA(Cauchy),ok,160,18,0,0.004312037955969572,,,,1.0,,0.02861187680114327,,,,,,,,very heavy tails
+pca,cellwise low-rank + missing,Median-imputed PCA,ok,160,18,0,0.00026629300555214286,,,,,0.9741716129219208,0.7037230367638765,0.5720801860836384,,,,,,,simple baseline
+pca,cellwise low-rank + missing,"RobustPCA(Cauchy, imputed)",ok,160,18,0,0.005091770028229803,,,,,0.9995677560502079,0.08441003210761752,0.4888417918222844,,,,,,,rowwise/heavy-tail robustness after imputation
+pca,cellwise low-rank + missing,CellMCD scatter PCA,ok,160,18,0,0.5991035369806923,,,,,0.9998068183464617,0.024284434590906175,0.498697921206418,,,,,,,cellwise robust scatter followed by eigendecomposition
+pca,cellwise low-rank + missing,CellPCA,ok,160,18,0,0.02315658499719575,,,,,1.0,0.020750855464114683,0.12461397703032141,,,,,,,joint cellwise and casewise low-rank fit
+matrix covariance,localized matrix faults,All-sample matrix-normal MLE,ok,72,24,0,0.022311380016617477,,,,0.9930555555555556,,,,0.2663333592240257,,,,,,non-robust separable baseline
+matrix covariance,localized matrix faults,MMCD,ok,72,24,0,0.042224683973472565,,,,1.0,,,,0.16150469089096567,,,,,,rowwise contamination in matrix-valued observations
+sparse precision,heavy tails + bad cells,Empirical graphical lasso,ok,170,10,0,0.0009589800029061735,,,,,,,,,0.19934745662619938,0.16666666666666666,0.36363636363636365,0.2285714285714286,24,non-robust baseline after median imputation
+sparse precision,heavy tails + bad cells,Cauchy graphical lasso,ok,170,10,0,0.0031084069632925093,,,,,,,,,0.13009680263205536,0.375,0.5454545454545454,0.4444444444444444,16,heavy-tail robust scatter after imputation
+sparse precision,heavy tails + bad cells,CellMCD graphical lasso,ok,170,10,0,0.24482363503193483,,,,,,,,,0.32803182735120706,0.2647058823529412,0.8181818181818182,0.39999999999999997,34,cellwise contamination and missing values

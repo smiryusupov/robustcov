@@ -555,3 +555,356 @@ def plot_subspace_monitor_history(
     fig.tight_layout()
     _maybe_save_show(fig, output_path=output_path, show=show)
     return fig
+
+
+def plot_matrix_outlier_contributions(
+    estimator,
+    X,
+    *,
+    index=0,
+    absolute=False,
+    row_labels=None,
+    column_labels=None,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot cell contributions to a matrix Mahalanobis distance.
+
+    Parameters
+    ----------
+    estimator : MatrixMinimumCovarianceDeterminant
+        Fitted matrix covariance estimator exposing ``cell_contributions``.
+    X : array-like of shape (n_samples, n_rows, n_columns)
+        Matrix-valued observations.
+    index : int, default=0
+        Observation displayed in the heatmap.
+    absolute : bool, default=False
+        Plot absolute magnitudes instead of signed quadratic contributions.
+    row_labels, column_labels : sequence of str, optional
+        Axis labels for the matrix dimensions.
+
+    Notes
+    -----
+    Signed contributions sum exactly to the squared matrix Mahalanobis distance.
+    They are quadratic-form contributions and should not be interpreted as
+    Shapley values.
+    """
+    X = np.asarray(X, dtype=float)
+    if X.ndim != 3:
+        raise ValueError("X must have shape (n_samples, n_rows, n_columns)")
+    index = int(index)
+    if index < 0:
+        index += X.shape[0]
+    if not (0 <= index < X.shape[0]):
+        raise IndexError("index is outside the sample")
+    contribution = np.asarray(
+        estimator.cell_contributions(X[index : index + 1])[0], dtype=float
+    )
+    shown = np.abs(contribution) if absolute else contribution
+
+    fig = plt.figure(figsize=(8, 4.8))
+    ax = fig.add_subplot(111)
+    image = ax.imshow(shown, aspect="auto", interpolation="nearest")
+    fig.colorbar(image, ax=ax, label=("absolute contribution" if absolute else "signed contribution"))
+    if row_labels is not None:
+        if len(row_labels) != shown.shape[0]:
+            raise ValueError("row_labels must match the number of matrix rows")
+        ax.set_yticks(np.arange(shown.shape[0]), labels=row_labels)
+    else:
+        ax.set_ylabel("matrix row")
+    if column_labels is not None:
+        if len(column_labels) != shown.shape[1]:
+            raise ValueError("column_labels must match the number of matrix columns")
+        ax.set_xticks(np.arange(shown.shape[1]), labels=column_labels, rotation=45, ha="right")
+    else:
+        ax.set_xlabel("matrix column")
+    distance = float(estimator.mahalanobis(X[index : index + 1])[0])
+    ax.set_title(title or f"Matrix-distance contributions (distance²={distance:.3g})")
+    fig.tight_layout()
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig
+
+
+def plot_cellwise_residual_map(
+    estimator,
+    X=None,
+    *,
+    row_labels=None,
+    column_labels=None,
+    clip=None,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot conditional standardized residuals from a fitted CellMCD model.
+
+    Parameters
+    ----------
+    estimator : CellwiseMinimumCovarianceDeterminant
+        Fitted estimator exposing ``standardized_residuals_`` and
+        ``cell_outlier_mask_``.
+    X : array-like, optional
+        New rows to diagnose.  When omitted, fitted-data diagnostics are used.
+    row_labels, column_labels : sequence of str, optional
+        Labels for observations and variables.
+    clip : float, optional
+        Symmetric display limit.  The default is at least the fitted cell cutoff
+        and otherwise follows the 99th percentile of finite residual magnitudes.
+    """
+    if X is None:
+        if not hasattr(estimator, "standardized_residuals_"):
+            raise RuntimeError("Estimator is not fitted")
+        residuals = np.asarray(estimator.standardized_residuals_, dtype=float)
+        outliers = np.asarray(estimator.cell_outlier_mask_, dtype=bool)
+        missing = np.asarray(estimator.missing_mask_, dtype=bool)
+    else:
+        diagnostics = estimator.cellwise_diagnostics(X)
+        residuals = np.asarray(diagnostics["standardized_residuals"], dtype=float)
+        outliers = np.asarray(diagnostics["cell_outlier_mask"], dtype=bool)
+        missing = np.asarray(diagnostics["missing_mask"], dtype=bool)
+
+    finite_abs = np.abs(residuals[np.isfinite(residuals)])
+    if clip is None:
+        empirical = float(np.quantile(finite_abs, 0.99)) if finite_abs.size else 1.0
+        clip = max(float(getattr(estimator, "cell_cutoff_", 0.0)), empirical, 1.0)
+    clip = float(clip)
+    if not np.isfinite(clip) or clip <= 0.0:
+        raise ValueError("clip must be positive and finite")
+
+    shown = np.clip(residuals, -clip, clip)
+    shown = np.ma.masked_invalid(shown)
+    height = max(4.2, min(10.0, 2.5 + 0.16 * residuals.shape[0]))
+    width = max(7.0, min(13.0, 4.5 + 0.55 * residuals.shape[1]))
+    fig = plt.figure(figsize=(width, height))
+    ax = fig.add_subplot(111)
+    image = ax.imshow(
+        shown,
+        aspect="auto",
+        interpolation="nearest",
+        vmin=-clip,
+        vmax=clip,
+        cmap="coolwarm",
+    )
+    fig.colorbar(image, ax=ax, label="conditional standardized residual")
+
+    outlier_rows, outlier_cols = np.where(outliers)
+    if outlier_rows.size:
+        ax.scatter(outlier_cols, outlier_rows, marker="s", facecolors="none", edgecolors="black", s=36, linewidths=0.8, label="flagged cell")
+    missing_rows, missing_cols = np.where(missing)
+    if missing_rows.size:
+        ax.scatter(missing_cols, missing_rows, marker="x", s=18, linewidths=0.7, label="missing cell")
+
+    if column_labels is not None:
+        if len(column_labels) != residuals.shape[1]:
+            raise ValueError("column_labels must match the number of features")
+        ax.set_xticks(np.arange(residuals.shape[1]), labels=column_labels, rotation=45, ha="right")
+    else:
+        ax.set_xlabel("feature")
+    if row_labels is not None:
+        if len(row_labels) != residuals.shape[0]:
+            raise ValueError("row_labels must match the number of observations")
+        ax.set_yticks(np.arange(residuals.shape[0]), labels=row_labels)
+    else:
+        ax.set_ylabel("observation")
+    ax.set_title(title or "Cellwise conditional residual map")
+    if outlier_rows.size or missing_rows.size:
+        ax.legend(loc="upper right", fontsize="small")
+    fig.tight_layout()
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig
+
+
+def plot_cellpca_outlier_map(
+    pca,
+    X=None,
+    labels=None,
+    case_cutoff=None,
+    cell_cutoff=None,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot casewise deviation against the largest cellwise residual.
+
+    Parameters
+    ----------
+    pca : CellwiseRobustPCA
+        Fitted cellwise robust PCA model.
+    X : array-like, optional
+        New observations.  When omitted, fitted training diagnostics are used.
+    labels : array-like, optional
+        Boolean labels used only to highlight known observations.
+    case_cutoff, cell_cutoff : float, optional
+        Optional vertical and horizontal reference lines.
+    """
+    if X is None:
+        if not hasattr(pca, "case_deviations_") or not hasattr(
+            pca, "max_cell_residuals_"
+        ):
+            raise RuntimeError("CellPCA is not fitted")
+        case_deviation = np.asarray(pca.case_deviations_, dtype=float)
+        max_cell = np.asarray(pca.max_cell_residuals_, dtype=float)
+    else:
+        mapping = np.asarray(pca.outlier_map(X), dtype=float)
+        case_deviation = mapping[:, 0]
+        max_cell = mapping[:, 1]
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(case_deviation, max_cell, s=24, alpha=0.75)
+
+    if labels is not None:
+        labels = np.asarray(labels)
+        if labels.shape != case_deviation.shape:
+            raise ValueError("labels must have one value per observation")
+        highlighted = labels.astype(bool)
+        if np.any(highlighted):
+            ax.scatter(
+                case_deviation[highlighted],
+                max_cell[highlighted],
+                s=64,
+                facecolors="none",
+                edgecolors="black",
+                label="highlighted",
+            )
+            ax.legend()
+
+    if case_cutoff is not None:
+        ax.axvline(float(case_cutoff), linestyle="--")
+    if cell_cutoff is not None:
+        ax.axhline(float(cell_cutoff), linestyle="--")
+
+    ax.set_xlabel("Casewise total deviation")
+    ax.set_ylabel("Maximum absolute cell residual")
+    ax.set_title(title or "CellPCA outlier map")
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig
+
+
+def plot_partial_correlation_network(
+    estimator,
+    feature_names=None,
+    min_abs_partial_correlation=0.05,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot a fitted sparse partial-correlation graph on a circular layout.
+
+    Edge width is proportional to absolute partial correlation. Solid and
+    dashed edges represent positive and negative conditional associations.
+    """
+    if not hasattr(estimator, "partial_correlation_"):
+        raise RuntimeError("estimator must be fitted before plotting")
+    partial = np.asarray(estimator.partial_correlation_, dtype=float)
+    adjacency = np.asarray(estimator.adjacency_, dtype=bool)
+    p = partial.shape[0]
+    if feature_names is None:
+        labels = [str(index) for index in range(p)]
+    else:
+        if len(feature_names) != p:
+            raise ValueError("feature_names must have one entry per feature")
+        labels = [str(value) for value in feature_names]
+    threshold = float(min_abs_partial_correlation)
+    if not np.isfinite(threshold) or threshold < 0.0:
+        raise ValueError("min_abs_partial_correlation must be non-negative")
+
+    angles = np.linspace(0.0, 2.0 * np.pi, p, endpoint=False)
+    positions = np.column_stack([np.cos(angles), np.sin(angles)])
+    fig = plt.figure(figsize=(7.0, 7.0))
+    ax = fig.add_subplot(111)
+
+    for i in range(p):
+        for j in range(i + 1, p):
+            value = float(partial[i, j])
+            if not adjacency[i, j] or abs(value) < threshold:
+                continue
+            ax.plot(
+                positions[[i, j], 0],
+                positions[[i, j], 1],
+                linewidth=0.6 + 4.0 * abs(value),
+                linestyle="-" if value >= 0.0 else "--",
+                alpha=0.75,
+            )
+
+    ax.scatter(positions[:, 0], positions[:, 1], s=520, zorder=3)
+    for (x_coord, y_coord), label in zip(positions, labels):
+        ax.text(x_coord, y_coord, label, ha="center", va="center", fontsize=8, zorder=4)
+    ax.set_aspect("equal")
+    ax.set_xlim(-1.25, 1.25)
+    ax.set_ylim(-1.25, 1.25)
+    ax.axis("off")
+    ax.set_title(title or "Robust partial-correlation network")
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig
+
+
+def plot_subspace_stability(
+    stability,
+    *,
+    component=0,
+    feature_names=None,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot bootstrap loading intervals and retained-subspace angle stability.
+
+    Parameters
+    ----------
+    stability : SubspaceStability
+        Fitted bootstrap stability analysis.
+    component : int, default=0
+        Component shown in the loading-interval panel.
+    feature_names : sequence of str, optional
+        Labels for the loading coordinates.
+    """
+    if not hasattr(stability, "loading_interval_"):
+        raise RuntimeError("SubspaceStability is not fitted")
+    component = int(component)
+    if component < 0 or component >= stability.n_components_:
+        raise IndexError("component index is out of range")
+
+    reference = np.asarray(stability.components_[component], dtype=float)
+    lower = np.asarray(stability.loading_interval_lower_[component], dtype=float)
+    upper = np.asarray(stability.loading_interval_upper_[component], dtype=float)
+    p = reference.size
+    if feature_names is None:
+        labels = [str(index) for index in range(p)]
+    else:
+        if len(feature_names) != p:
+            raise ValueError("feature_names must have one entry per feature")
+        labels = [str(value) for value in feature_names]
+
+    fig = plt.figure(figsize=(11.0, 4.6))
+    ax1 = fig.add_subplot(121)
+    x = np.arange(p)
+    ax1.vlines(x, lower, upper, linewidth=1.2)
+    ax1.hlines(lower, x - 0.08, x + 0.08, linewidth=1.0)
+    ax1.hlines(upper, x - 0.08, x + 0.08, linewidth=1.0)
+    ax1.scatter(x, reference, s=28, zorder=3)
+    ax1.axhline(0.0, linewidth=0.8, linestyle="--")
+    ax1.set_xticks(x, labels=labels, rotation=45, ha="right")
+    ax1.set_ylabel("loading")
+    ax1.set_title(
+        f"Component {component + 1}: "
+        f"{100.0 * stability.confidence_level:.0f}% bootstrap intervals"
+    )
+
+    ax2 = fig.add_subplot(122)
+    values = np.asarray(stability.max_principal_angle_degrees_, dtype=float)
+    ax2.hist(values, bins=min(25, max(8, int(np.sqrt(values.size)))))
+    median = float(np.median(values))
+    upper_angle = float(stability.max_principal_angle_interval_degrees_[1])
+    ax2.axvline(median, linestyle="--", label=f"median {median:.2f}°")
+    ax2.axvline(upper_angle, linestyle=":", label=f"upper interval {upper_angle:.2f}°")
+    ax2.set_xlabel("largest principal angle (degrees)")
+    ax2.set_ylabel("bootstrap count")
+    ax2.set_title("Retained-subspace variation")
+    ax2.legend()
+
+    fig.suptitle(title or "Bootstrap PCA subspace stability")
+    fig.tight_layout()
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig

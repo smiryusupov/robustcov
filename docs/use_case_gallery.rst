@@ -101,12 +101,27 @@ Which topic should I open?
    * - Portfolio, returns, covariance, stress periods
      - Finance and risk
      - ``RegularizedCauchy``
+   * - Isolated bad ticks or missing values in a multivariate table
+     - Finance and risk
+     - ``CellMCD``
+   * - Sparse conditional-dependence network under heavy tails or contamination
+     - Finance and risk
+     - ``RobustGraphicalLasso`` with ``CellMCD`` or ``RegularizedCauchy``
    * - Yield curves or cross-asset factor decomposition
      - Finance and risk
      - ``RobustPCA`` with ``FastMCD`` or ``RegularizedCauchy``
+   * - Check whether fitted PCA factors are stable under resampling
+     - Finance and risk
+     - ``SubspaceStability`` around a fitted ``RobustPCA`` model
    * - Sensors, process drift, industrial faults
      - Sensors and quality control
      - ``RobustSubspaceMonitor`` with ``RegularizedCauchy``
+   * - Low-rank process tables with bad cells, abnormal rows, or missing entries
+     - Sensors and quality control
+     - ``CellPCA``
+   * - Sensor-by-time, image-patch, or other matrix-valued observations
+     - Sensors and quality control
+     - ``MMCD``
    * - Signal/image/embedding feature vectors
      - Biomedical, image, and embedding data
      - ``AutoRobustScatter`` or ``RegularizedCauchy``
@@ -116,6 +131,9 @@ Which topic should I open?
    * - Reproducible ML benchmark examples
      - Real ML datasets
      - ``RobustOutlierDetector`` with baseline comparison
+   * - Rowwise outliers when the feature count is close to or larger than the sample size
+     - Robust ML preprocessing
+     - ``MRCD``
    * - Clean training data before a classifier
      - Robust ML preprocessing
      - robust-distance filtering
@@ -169,11 +187,18 @@ All detailed pages
    :maxdepth: 1
 
    gallery/robust_pca_yield_curve
+   gallery/robust_pca_subspace_stability
+   gallery/robust_pca_dependent_stability
    gallery/robust_pca_market_risk
    gallery/finance_risk
    gallery/portfolio_stress
+   gallery/cellmcd_market_data
+   gallery/cellrcov_high_dimensional
+   gallery/robust_graphical_lasso_market_network
+   gallery/cellpca_process_spectra
    gallery/fraud_screening
    gallery/network_traffic
+   gallery/mmcd_sensor_windows
    gallery/sensor_anomaly
    gallery/maintenance_monitoring
    gallery/quality_control
@@ -186,6 +211,7 @@ All detailed pages
    gallery/digits_one_class
    gallery/wine_class_screening
    gallery/ml_preprocessing
+   gallery/mrcd_high_dimensional_outliers
    geometry
    gallery/feature_geometry_synthetic_ood
    gallery/feature_geometry_class_conditional_ood

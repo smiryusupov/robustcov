@@ -6,6 +6,16 @@ These examples focus on process monitoring: sensor streams, maintenance windows,
 .. raw:: html
 
    <div class="gallery-grid">
+     <a class="gallery-card" href="../gallery/mmcd_sensor_windows.html">
+       <img src="../_static/gallery/mmcd_sensor_windows/contribution_heatmap.png" alt="MMCD matrix-distance contributions">
+       <h3>Matrix-valued sensor windows</h3>
+       <p>Estimate separate sensor and within-window covariance factors without flattening each observation.</p>
+     </a>
+     <a class="gallery-card" href="../gallery/cellpca_process_spectra.html">
+       <img src="../_static/gallery/cellpca_process_spectra/residual_cellmap.png" alt="CellPCA residual cellmap">
+       <h3>Process spectra with bad cells</h3>
+       <p>Fit a low-rank process model while separating bad wavelengths from abnormal batches.</p>
+     </a>
      <a class="gallery-card" href="../gallery/robust_subspace_monitoring.html">
        <img src="../_static/gallery/robust_subspace_monitoring/monitor_history.png" alt="Robust rolling subspace monitoring">
        <h3>Rolling subspace monitoring</h3>
@@ -37,6 +47,8 @@ Detailed pages
 --------------
 
 - :doc:`Rolling subspace monitoring <../gallery/robust_subspace_monitoring>`
+- :doc:`Matrix-valued sensor windows <../gallery/mmcd_sensor_windows>`
+- :doc:`Process spectra with cellwise and casewise contamination <../gallery/cellpca_process_spectra>`
 - :doc:`Sensor anomaly <../gallery/sensor_anomaly>`
 - :doc:`Maintenance monitoring <../gallery/maintenance_monitoring>`
 - :doc:`Quality control <../gallery/quality_control>`

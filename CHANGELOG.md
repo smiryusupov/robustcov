@@ -7,6 +7,16 @@ Highlights:
 - Added score-distance and orthogonal-distance diagnostics plus a robust PCA outlier-map plot.
 - Added robust PCA tests, documentation, and a synthetic example.
 - Added production embedding monitoring, yield-curve factor, and cross-asset market-risk RobustPCA gallery examples.
+- Added `MRCD`, a minimum regularized covariance determinant estimator for rowwise contamination in high-dimensional data.
+- Added MRCD mathematics, tests, API documentation, and a high-dimensional outlier example.
+- Added `MMCD` for robust matrix-valued location and Kronecker covariance estimation, including signed cell/row/column distance contributions.
+- Added MMCD mathematics, tests, plotting support, and a multichannel sensor-window example.
+- Added `CellMCD` for cellwise contamination and missing values, with conditional residual diagnostics, corrected-data transforms, tests, and a market-data example.
+- Added `CellPCA` for simultaneous cellwise errors, abnormal rows, and missing entries, with weighted low-rank diagnostics and a process-spectra example.
+- Added experimental `CellRCov` for high-dimensional full covariance estimation under mixed cellwise/casewise contamination and missingness, including residual-shrinkage selection and a benchmarked example.
+- Added `RobustGraphicalLasso` for sparse precision matrices from robust scatter estimates, including ADMM optimization, EBIC selection, graph diagnostics, and a contaminated market-network example.
+- Added `SubspaceStability` for bootstrap loading, eigenvalue, explained-variance, and principal-angle diagnostics around robust PCA fits.
+- Extended `SubspaceStability` with moving-block, circular-block, stationary, and cluster bootstrap designs for serially dependent and grouped observations.
 
 
 ## 0.0.2

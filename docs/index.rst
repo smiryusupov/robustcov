@@ -47,6 +47,14 @@ The main pieces are:
 
 * ``FastMCD`` for sparse, separable contamination when the sample is larger than
   the feature dimension;
+* ``MRCD`` for high-breakdown covariance estimation when the feature dimension is
+  close to or greater than the sample size;
+* ``MMCD`` for robust row/column covariance estimation on matrix-valued observations;
+* ``CellMCD`` for isolated corrupted or missing entries in otherwise useful rows;
+* ``CellRCov`` for full high-dimensional covariance recovery when bad cells, abnormal rows,
+  and missing entries occur together;
+* ``CellPCA`` for low-rank tables with cellwise errors, abnormal rows, and missing entries;
+* ``RobustGraphicalLasso`` for sparse conditional-dependence graphs built from robust scatter estimates;
 * regularized Cauchy, Student-t, and Tyler estimators for heavy tails and
   difficult covariance regimes;
 * robust-distance plots and reports for anomaly analysis;
@@ -66,11 +74,18 @@ The main pieces are:
    installation
    quickstart
    estimator_guide
+   method_comparison
    use_case_gallery
    benchmark_gallery
    algorithms
+   matrix_covariance
+   cellwise_covariance
+   cellwise_regularized_covariance
    geometry
    robust_pca
+   subspace_stability
+   cellwise_pca
+   sparse_precision
    monitoring
    feature_geometry
    diagnostics

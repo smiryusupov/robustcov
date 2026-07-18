@@ -1,0 +1,7 @@
+data shape: (260, 8)
+corrupted cells: 187 (9.0%)
+rows containing at least one bad cell: 131 (50.4%)
+missing cells: 41 (2.0%)
+relative covariance error, empirical / FastMCD / CellMCD: 1.099 / 0.266 / 0.143
+cell detection AUROC / precision / recall: 0.999 / 0.933 / 0.968
+CellMCD iterations: 14; converged: True

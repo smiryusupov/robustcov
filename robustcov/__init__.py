@@ -4,6 +4,13 @@
 """robustcov MVP: efficient robust covariance and shape estimators."""
 
 from .covariance import FastMCD, MinCovDet, TylerShape, RegularizedTyler
+from .mrcd import MinimumRegularizedCovarianceDeterminant, MRCD, MinRegularizedCovDet
+from .mmcd import MatrixMinimumCovarianceDeterminant, MatrixMCD, MMCD
+from .cellmcd import CellwiseMinimumCovarianceDeterminant, CellMCD, CellwiseMCD
+from .cellpca import CellwiseRobustPCA, CellPCA, CasewiseCellwisePCA
+from .cellrcov import CellwiseRegularizedCovariance, CellRCov, CellwiseRobustCovariance
+from .sparse_precision import RobustGraphicalLasso, SparseRobustPrecision
+from .stability import SubspaceStability
 from .m_estimators import (
     IterativeMScatter,
     StudentTScatter,
@@ -36,14 +43,37 @@ from .plotting import (
     plot_cluster_robust_distances,
     plot_robust_pca_outlier_map,
     plot_subspace_monitor_history,
+    plot_matrix_outlier_contributions,
+    plot_cellwise_residual_map,
+    plot_cellpca_outlier_map,
+    plot_partial_correlation_network,
+    plot_subspace_stability,
 )
 
 __all__ = [
     "RobustPCA",
+    "SubspaceStability",
     "FeatureGeometry",
     "ClassConditionalFeatureGeometry",
     "RobustSubspaceMonitor",
     "SubspaceDriftResult",
+    "CellwiseRegularizedCovariance",
+    "CellRCov",
+    "CellwiseRobustCovariance",
+    "CellwiseRobustPCA",
+    "CellPCA",
+    "CasewiseCellwisePCA",
+    "RobustGraphicalLasso",
+    "SparseRobustPrecision",
+    "CellwiseMinimumCovarianceDeterminant",
+    "CellMCD",
+    "CellwiseMCD",
+    "MatrixMinimumCovarianceDeterminant",
+    "MatrixMCD",
+    "MMCD",
+    "MinimumRegularizedCovarianceDeterminant",
+    "MRCD",
+    "MinRegularizedCovDet",
     "FastMCD",
     "MinCovDet",
     "TylerShape",
@@ -75,6 +105,11 @@ __all__ = [
     "plot_cluster_robust_distances",
     "plot_robust_pca_outlier_map",
     "plot_subspace_monitor_history",
+    "plot_matrix_outlier_contributions",
+    "plot_cellwise_residual_map",
+    "plot_cellpca_outlier_map",
+    "plot_partial_correlation_network",
+    "plot_subspace_stability",
     "has_openmp",
     "get_num_threads",
     "set_num_threads",

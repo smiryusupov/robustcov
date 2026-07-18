@@ -1,0 +1,11 @@
+Dependent bootstrap stability for robust PCA
+===========================================
+observations: 320
+features: 8
+lag-1 autocorrelation of first robust score: 0.942
+stationary-bootstrap expected block length: 16
+median largest principal angle, IID / stationary: 0.901 / 1.676 degrees
+90% upper largest angle, IID / stationary: 1.426 / 2.848 degrees
+mean loading-interval width, IID / stationary: 0.0130 / 0.0248
+first-eigenvalue standard error, IID / stationary: 1.602 / 2.988
+reference robust-subspace error: 0.045

@@ -5,8 +5,9 @@ The benchmark gallery is the main benchmark entry point.  It is designed for rea
 understand the evidence quickly: each card links to a focused benchmark page with plots, tables,
 commands, and interpretation.
 
-The gallery answers four practical questions:
+The gallery and method-comparison page answer five practical questions:
 
+* Which estimator matches the contamination model and dimensional regime?
 * Which estimator works best for small-sample heavy-tailed covariance?
 * How much faster is ``robustcov`` than common sklearn robust-covariance baselines?
 * Does optional OpenMP parallelism help at larger scale?
@@ -18,6 +19,11 @@ Gallery cards
 .. raw:: html
 
    <div class="gallery-grid">
+     <a class="gallery-card" href="method_comparison.html">
+       <div class="gallery-card-placeholder">Choose<br>a method</div>
+       <h3>Method comparison</h3>
+       <p>Capability tables and task-specific benchmarks for rowwise, cellwise, high-dimensional, matrix, PCA, and sparse-graph problems.</p>
+     </a>
      <a class="gallery-card" href="benchmarks/small_sample_heavy_tail.html">
        <img src="_static/benchmarks/small_sample_rank.png" alt="Small-sample heavy-tail ranking">
        <h3>Small-sample heavy-tail ranking</h3>
@@ -48,7 +54,18 @@ Gallery cards
 Recommended benchmark workflow
 ------------------------------
 
-Run the full report generator when you want the same assets used by the documentation:
+Run the task-specific comparison when choosing among the current estimator families:
+
+.. code-block:: bash
+
+   OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=2 \
+   python benchmarks/compare_methods.py \
+       --profile quick \
+       --csv results/method_comparison.csv
+
+See :doc:`method_comparison` for the benchmark design and interpretation.  Run
+the older report generator when you want the speed, OpenMP, anomaly-baseline,
+and heavy-tail gallery assets:
 
 .. code-block:: bash
 

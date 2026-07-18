@@ -43,5 +43,7 @@ These may change significantly:
 * ``AutoRobustScatter`` scoring internals
 * ``HellingerRegularizedTyler``
 * exact KL/Wiesel variants beyond current aliases/prototypes
+* ``MRCD`` search presets, initialization strategy, and diagnostic attribute names
+* ``MMCD`` initialization, numerical regularization, and contribution APIs
 * ``RobustPCA`` and ``RobustSubspaceMonitor`` calibration and monitoring APIs
 * benchmark script schemas

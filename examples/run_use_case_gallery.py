@@ -35,6 +35,11 @@ ALL_SCRIPTS = QUICK_SCRIPTS + [
     "use_case_maintenance_monitoring.py",
     "use_case_multimodal_anomaly.py",
     "plot_robust_subspace_monitoring.py",
+    "plot_mrcd_high_dimensional_outliers.py",
+    "plot_mmcd_sensor_windows.py",
+    "plot_cellmcd_market_data.py",
+    "plot_cellpca_process_spectra.py",
+    "plot_robust_graphical_lasso_market_network.py",
 ]
 
 

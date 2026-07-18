@@ -1,0 +1,5 @@
+matrix sample shape: (138, 5, 10)
+raw MMCD support: 107 / 138
+fault windows retained in raw support: 3
+outlier AUROC, all-row matrix MLE / MMCD: 0.894 / 0.967
+median robust distance, regular / fault: 46.12 / 75.69

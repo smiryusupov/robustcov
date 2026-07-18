@@ -21,6 +21,18 @@ Core examples:
 - `gp_robust_input_metric.py` – robust GP kernel / input-metric example showing how contaminated input covariance can distort kernel geometry.
 
 
+Cellwise-contamination example:
+
+- `plot_cellmcd_market_data.py` – detect isolated bad ticks, impute missing quotes, and recover a covariance matrix without discarding whole rows.
+
+Matrix-valued example:
+
+- `plot_mmcd_sensor_windows.py` – robust row/column covariance and cell contribution diagnostics for sensor-by-time windows.
+
+High-dimensional row-contamination example:
+
+- `plot_mrcd_high_dimensional_outliers.py` – MRCD covariance recovery and outlier scoring when the feature count exceeds the sample size.
+
 Small-sample heavy-tail examples:
 
 - `small_sample_heavy_tail.py` – compares regularized Tyler, Student-t scatter, Cauchy, and experimental Hellinger-style Tyler when `p` is close to or larger than `n`.

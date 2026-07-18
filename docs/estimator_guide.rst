@@ -4,27 +4,63 @@ Estimator guide
 Which estimator should I use?
 -----------------------------
 
+The short table below is a starting point.  See :doc:`method_comparison` for
+capability limits, methods that should not be compared directly, and
+reproducible cross-method benchmarks.
+
 .. list-table::
    :header-rows: 1
+   :widths: 24 20 28 28
 
    * - Situation
      - Recommended estimator
-     - Reason
+     - Why
+     - Main limitation
    * - ``n`` much larger than ``p`` and outliers are separable
      - ``FastMCD``
-     - High-breakdown robust covariance with support diagnostics.
-   * - Small sample, heavy tails, ``p`` close to or larger than ``n``
+     - High-breakdown covariance with explicit support diagnostics.
+     - Not suitable when a clean nonsingular subset cannot exist.
+   * - Rowwise contamination with ``p`` close to or larger than ``n``
+     - ``MRCD``
+     - High-breakdown subset estimation with target regularization.
+     - The target and condition-number bound influence covariance recovery.
+   * - Each observation is a matrix and contamination affects complete observations
+     - ``MMCD``
+     - Estimates separate row and column covariance factors.
+     - Assumes a scientifically meaningful separable covariance structure.
+   * - Individual cells are corrupted or missing but the rest of each row is useful
+     - ``CellMCD``
+     - Conditional prediction and cell-level flagging preserve clean cells.
+     - Not intended for unrestricted ``p >= n`` covariance estimation.
+   * - Bad cells, abnormal rows, and missing entries occur with ``p`` close to or above ``n``
+     - ``CellRCov``
+     - Combines a cellwise-robust low-rank covariance with a regularized residual covariance.
+     - Requires a defensible rank and benefits from genuine low-dimensional structure.
+   * - Low-rank data contain bad cells, abnormal rows, and missing entries
+     - ``CellPCA``
+     - Fits the low-rank model with separate cellwise and casewise weights.
+     - Requires a defensible component count and low-rank structure.
+   * - Conditional-dependence graph with heavy tails, outliers, or bad cells
+     - ``RobustGraphicalLasso``
+     - Sparse inverse covariance from a selectable robust scatter estimate.
+     - Edge recovery is sensitive to the penalty and the scatter estimator.
+   * - Small sample, very heavy tails, or ``p`` close to or larger than ``n``
      - ``RegularizedCauchy``
-     - Strong radial downweighting and shrinkage.
+     - Strong radial downweighting with shrinkage.
+     - Does not identify a high-breakdown clean subset.
    * - Diffuse heavy tails rather than point anomalies
      - ``StudentTScatter``
-     - Smooth heavy-tail M-estimator.
+     - Smooth heavy-tail weighting retains legitimate tail observations.
+     - The fixed degrees of freedom encode a tail assumption.
    * - Shape estimation for elliptical data
      - ``RegularizedTyler``
-     - Scale-free robust shape estimate.
+     - Scale-free shape estimate with high-dimensional regularization.
+     - Absolute covariance scale needs an explicit correction.
    * - Unsure which heavy-tail estimator to choose
      - ``AutoRobustScatter``
-     - Fits candidates and selects with diagnostic or stability score.
+     - Fits candidates and selects with a diagnostic or stability score.
+     - Selection is only as good as the candidate set and score.
+
 
 Estimator status
 ----------------
@@ -32,6 +68,11 @@ Estimator status
 Stable prototype APIs:
 
 * ``FastMCD``
+* ``MRCD``
+* ``MMCD``
+* ``CellMCD``
+* ``CellPCA``
+* ``RobustGraphicalLasso``
 * ``RegularizedCauchy``
 * ``StudentTScatter``
 * ``RobustOutlierDetector``
@@ -39,6 +80,8 @@ Stable prototype APIs:
 
 Experimental APIs:
 
+* ``CellRCov`` while its package-native CellPCA/FastMCD decomposition is cross-validated
+  against the reference implementation
 * ``HellingerRegularizedTyler``
 * exact KL/Wiesel variants beyond their current alias/prototype behavior
 * automatic model selection scores

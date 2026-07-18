@@ -1,0 +1,9 @@
+data shape: (180, 28); retained rank: 3
+corrupted cells: 277 (5.5%)
+abnormal batches: 12 (6.7%)
+missing cells: 151 (3.0%)
+subspace error, classical PCA / CellPCA: 1.438 / 0.157
+cell-outlier AUROC: 1.000
+case-outlier AUROC: 1.000
+missing-cell MAE, column median / CellPCA: 0.573 / 0.090
+CellPCA iterations: 20; converged: True

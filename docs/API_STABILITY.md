@@ -14,6 +14,9 @@ This is still an MVP/prototype package.
 
 ## Experimental
 
+- `MRCD` search presets, initialization strategy, and diagnostic attribute names
+- `MMCD` initialization, numerical regularization, and contribution APIs
+- `RobustGraphicalLasso` EBIC defaults, ADMM diagnostics, and graph helper APIs
 - `AutoRobustScatter` scoring details
 - `HellingerRegularizedTyler`
 - exact naming of KL/Wiesel Tyler aliases

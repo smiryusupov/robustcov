@@ -41,6 +41,10 @@ keywords = [
   "kernel methods",
   "drift monitoring",
   "robust PCA",
+  "cellwise covariance",
+  "cellwise robust PCA",
+  "graphical lasso",
+  "sparse precision matrix",
 ]
 
 classifiers = [

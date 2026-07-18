@@ -69,6 +69,264 @@ important under contamination: rescaling the final covariance using all observat
 outlier inflation. ``FastMCD`` is best when :math:`n \gg p` and outliers are separable. It is not the
 right tool for :math:`p > n` covariance recovery or diffuse heavy tails.
 
+Minimum Regularized Covariance Determinant
+------------------------------------------
+
+``MRCD`` extends the MCD subset idea to settings where the subset covariance is
+singular or poorly conditioned, including :math:`p \geq h`.  The observations
+are first standardized with coordinatewise medians and robust marginal scales:
+
+.. math::
+
+   u_i = D_X^{-1}(x_i-\nu_X),
+
+where :math:`\nu_X` contains the marginal medians and :math:`D_X` is diagonal.
+The default scale estimate is :math:`Q_n`.
+
+For an :math:`h`-subset :math:`H`, let :math:`S_U(H)` be its covariance in the
+standardized coordinates.  MRCD replaces that covariance by
+
+.. math::
+
+   K(H) = \rho T + (1-\rho)c_\alpha S_U(H),
+
+where :math:`T` is a fixed positive-definite target, :math:`c_\alpha` is the
+Gaussian consistency correction for the retained fraction, and
+:math:`0 \leq \rho \leq 1` controls regularization.  The selected subset is
+
+.. math::
+
+   H_{\mathrm{MRCD}}
+   \approx
+   \arg\min_{|H|=h} \det(K(H))^{1/p}.
+
+The default target is the identity matrix in standardized coordinates.  In the
+original units this corresponds to a diagonal covariance target based on the
+robust marginal scales.  An equicorrelation target or a custom SPD target can
+also be supplied.
+
+With automatic regularization, ``MRCD`` chooses the smallest target weight that
+keeps the target-whitened covariance below a requested condition number.  If
+:math:`\lambda_{\min}` and :math:`\lambda_{\max}` are the extreme eigenvalues
+of :math:`c_\alpha S_W(H)`, the calibrated matrix has condition number
+
+.. math::
+
+   \frac{\rho + (1-\rho)\lambda_{\max}}
+        {\rho + (1-\rho)\lambda_{\min}}.
+
+The package default bounds this quantity by 50.  This is a condition number
+relative to the target after robust standardization; rescaling the variables can
+change the ordinary condition number of the covariance in the original units.
+
+The subset search uses regularized C-steps.  At each step, robust distances are
+computed from the current subset mean and regularized covariance, and the next
+subset contains the :math:`h` smallest distances.  The regularized determinant
+does not increase under the MRCD C-step.
+
+``robustcov`` uses deterministic central starts together with randomized
+projection and elemental starts, short C-step screening, and full polishing of
+the best candidates.  This differs from the six DetMCD initial estimates used
+in the reference R implementation, but optimizes the same MRCD subset
+criterion.  ``MRCD`` is intended for rowwise contamination.  It does not model
+individual corrupted cells and it is not a sparse precision-matrix estimator.
+
+Cellwise Minimum Covariance Determinant
+---------------------------------------
+
+``CellMCD`` handles contamination at the level of individual entries rather
+than complete rows.  It introduces a binary mask :math:`W=(w_{ij})` and fits
+location, covariance, and the mask through an observed Gaussian likelihood with
+a penalty for flagged cells.  At least :math:`h` cells must remain in every
+column.
+
+For a retained pattern :math:`w_i`, the row contributes
+
+.. math::
+
+   \log|\Sigma^{(w_i)}| + |w_i|\log(2\pi)
+   + (x_i^{(w_i)}-\mu^{(w_i)})^T
+     (\Sigma^{(w_i)})^{-1}
+     (x_i^{(w_i)}-\mu^{(w_i)}).
+
+A concentration step first updates each column of the cell mask using
+conditional standardized residuals, then applies one missing-data EM update to
+:math:`\mu` and :math:`\Sigma`.  See :doc:`cellwise_covariance` for the full
+objective, diagnostics, and implementation limits.
+
+Cellwise Regularized Covariance
+---------------------------------
+
+``CellRCov`` targets high-dimensional tables containing cellwise contamination,
+casewise contamination, and missing entries.  After robust marginal
+standardization, a rank-:math:`q` CellPCA fit gives
+
+.. math::
+
+   Z_i = \widehat Z_i + E_i,
+   \qquad \widehat Z_i = \widehat\mu + Vt_i.
+
+A robust score covariance :math:`\widehat\Sigma_T` is mapped back to feature
+space,
+
+.. math::
+
+   \widehat\Sigma_{\mathrm{fit}}
+   = V\widehat\Sigma_TV^T.
+
+Cell and case weights from CellPCA are then used to form a positive-semidefinite
+residual covariance :math:`\widehat\Sigma_{\mathrm{res}}`.  The residual term
+is stabilized by diagonal shrinkage,
+
+.. math::
+
+   \widehat\Sigma_{\mathrm{res}}^{(\delta)}
+   = (1-\delta)\widehat\Sigma_{\mathrm{res}}
+   + \delta\operatorname{diag}(\widehat\Sigma_{\mathrm{res}}),
+
+and the standardized covariance estimate is
+
+.. math::
+
+   \widehat\Sigma_Z
+   = \widehat\Sigma_{\mathrm{fit}}
+   + \widehat\Sigma_{\mathrm{res}}^{(\delta)}.
+
+See :doc:`cellwise_regularized_covariance` for the effective-weight
+normalization, shrinkage selection, rank choice, and differences from the
+reference cellRCov software.
+
+Cellwise and Casewise Robust PCA
+-----------------------------------
+
+``CellPCA`` estimates a rank-:math:`q` approximation
+
+.. math::
+
+   \widehat X = \mathbf{1}\mu^T + T V^T,
+   \qquad V^T V = I_q,
+
+while assigning a weight to every observed cell and a second weight to every
+row.  For residual :math:`r_{ij}` and fixed robust residual scale :math:`s_j`,
+the cell weight is
+
+.. math::
+
+   w^{\mathrm{cell}}_{ij}
+   = \frac{\psi_c(r_{ij}/s_j)}{r_{ij}/s_j}.
+
+The bounded cell losses are summarized into a casewise total deviation
+:math:`t_i`, which yields a row weight
+
+.. math::
+
+   w^{\mathrm{case}}_i
+   = \frac{\psi_r(t_i/s_r)}{t_i/s_r}.
+
+Missing cells have weight zero, and the combined weights are used in
+alternating weighted least-squares updates of the center, scores, and loadings.
+See :doc:`cellwise_pca` for the residual scales, diagnostics, prediction on
+incomplete rows, and the implementation's relationship to the reference
+cellPCA algorithm.
+
+Bootstrap PCA subspace stability
+--------------------------------
+
+``SubspaceStability`` repeatedly resamples observations and refits a PCA-style
+estimator.  The resampling design can be IID, moving-block, circular-block,
+stationary, or cluster based.  Block methods preserve consecutive multivariate
+rows, while cluster sampling preserves every row belonging to a selected
+subject, site, or account.  If :math:`V_q` is the full-data basis and
+:math:`V_q^{(b)}` is a bootstrap basis, the singular values of
+
+.. math::
+
+   V_q {V_q^{(b)}}^T
+
+are the cosines of the principal angles between the two retained subspaces.
+Small angles indicate that the fitted subspace is insensitive to the sampled
+rows.
+
+Loading intervals require an additional alignment because eigenvector signs are
+arbitrary and nearby components can rotate.  The default orthogonal Procrustes
+alignment solves
+
+.. math::
+
+   Q_b = \arg\min_{Q^TQ=I}
+   \left\|Q V_q^{(b)} - V_q\right\|_F.
+
+Percentile intervals are then calculated from the aligned bootstrap loadings,
+eigenvalues, and explained-variance ratios.  These are sampling-stability
+diagnostics rather than finite-sample guarantees.  See
+:doc:`subspace_stability` for block-length choice, grouped resampling, and
+interpretation when eigenvalues are nearly tied.
+
+Robust graphical lasso
+----------------------
+
+``RobustGraphicalLasso`` estimates a sparse precision matrix from a robust
+scatter estimate.  If :math:`S` denotes that scatter matrix, it solves
+
+.. math::
+
+   \widehat\Theta
+   =
+   \arg\min_{\Theta \succ 0}
+   \left\{
+      \operatorname{tr}(S\Theta)-\log\det(\Theta)
+      + \alpha\sum_{j\ne k}|\Theta_{jk}|
+   \right\}.
+
+Zeros in the off-diagonal precision matrix define the estimated conditional-
+dependence graph.  The default implementation works on the robust correlation
+matrix before mapping the result back to the original feature scales.
+
+With ``alpha="ebic"``, a geometric penalty path is scored by the extended
+Bayesian information criterion.  The optimizer uses ADMM with an eigenvalue
+update for the positive-definite variable and off-diagonal soft thresholding for
+the sparse variable.
+
+Robustness comes from the supplied scatter estimator rather than from a new
+graphical-lasso likelihood.  ``RegularizedCauchy`` is the default; ``CellMCD``
+can be used for cellwise contamination and missing values.  See
+:doc:`sparse_precision` for partial correlations, EBIC selection, and the
+difference from robust CLIME and spatial-sign graphical-lasso methods.
+
+Matrix Minimum Covariance Determinant
+-------------------------------------
+
+``MMCD`` extends the MCD subset principle to matrix-valued observations.  For
+:math:`X_i \in \mathbb{R}^{r\times c}`, it estimates a mean matrix :math:`M`, a
+row covariance :math:`R`, and a column covariance :math:`C` under
+
+.. math::
+
+   \operatorname{Cov}(\operatorname{vec}(X_i)) = C \otimes R.
+
+The squared matrix Mahalanobis distance is
+
+.. math::
+
+   d_i^2 = \operatorname{tr}\left[
+      C^{-1}(X_i-M)^T R^{-1}(X_i-M)
+   \right].
+
+For each candidate :math:`h`-subset, the two covariance factors are fitted by
+alternating matrix-normal maximum-likelihood updates.  The selected subset
+approximately minimizes
+
+.. math::
+
+   \det(C_H \otimes R_H)
+   = \det(R_H)^c \det(C_H)^r.
+
+A matrix C-step retains the :math:`h` observations with the smallest current
+matrix Mahalanobis distances.  This avoids estimating an unrestricted
+:math:`rc \times rc` covariance after vectorization and preserves separate row
+and column dependence.  See :doc:`matrix_covariance` for the fitted equations,
+scale normalization, contribution decomposition, and implementation limits.
+
 Tyler shape estimator
 ---------------------
 

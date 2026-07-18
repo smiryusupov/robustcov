@@ -1,0 +1,9 @@
+metric,value
+empirical_relative_error,1.09878005
+fastmcd_relative_error,0.26584702
+cellmcd_relative_error,0.14309750
+cell_auc,0.99924926
+cell_precision,0.93298969
+cell_recall,0.96791444
+rows_with_bad_cells,131
+flagged_cells,194

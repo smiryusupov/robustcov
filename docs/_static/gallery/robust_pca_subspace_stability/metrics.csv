@@ -1,0 +1,4 @@
+metric,empirical,robust
+median_max_principal_angle_degrees,42.76287541,2.16896866
+upper_max_principal_angle_degrees,80.41914832,3.50220343
+reference_subspace_error,1.42432786,0.04827767

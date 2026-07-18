@@ -1,0 +1,4 @@
+metric,ledoit_wolf,mrcd
+outlier_auc,0.61029412,1.00000000
+relative_covariance_error,0.81992242,0.52785861
+subspace_error,1.70270808,1.50426210
