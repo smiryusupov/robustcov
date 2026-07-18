@@ -47,6 +47,7 @@ CASES = [
     GalleryCase("gp_robust_input_metric", "gp_robust_input_metric.py", "gp_robust_input_metric", ("kernel_comparison.png",)),
     GalleryCase("mrcd_high_dimensional_outliers", "plot_mrcd_high_dimensional_outliers.py", "mrcd_high_dimensional_outliers", ("distance_comparison.png", "covariance_spectrum.png", "distance_crossplot.png", "metrics.csv")),
     GalleryCase("kmrcd_nonlinear_manifold", "plot_kmrcd_nonlinear_manifold.py", "kmrcd_nonlinear_manifold", ("linear_distance_contours.png", "kernel_distance_contours.png", "auc_comparison.png", "bandwidth_sensitivity.png", "metrics.csv")),
+    GalleryCase("dets_detmm_tradeoff", "plot_dets_detmm_tradeoff.py", "dets_detmm_tradeoff", ("robust_ellipses.png", "covariance_error.png", "weight_functions.png", "clean_efficiency.png", "metrics.csv")),
     GalleryCase("mmcd_sensor_windows", "plot_mmcd_sensor_windows.py", "mmcd_sensor_windows", ("distance_comparison.png", "contribution_heatmap.png", "covariance_factors.png", "metrics.csv")),
     GalleryCase("cellmcd_market_data", "plot_cellmcd_market_data.py", "cellmcd_market_data", ("covariance_error.png", "cell_residual_map.png", "correlation_comparison.png", "metrics.csv")),
     GalleryCase("cellpca_process_spectra", "plot_cellpca_process_spectra.py", "cellpca_process_spectra", ("subspace_recovery.png", "residual_cellmap.png", "outlier_map.png", "loading_curves.png", "metrics.csv")),

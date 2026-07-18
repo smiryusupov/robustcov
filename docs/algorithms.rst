@@ -69,6 +69,69 @@ important under contamination: rescaling the final covariance using all observat
 outlier inflation. ``FastMCD`` is best when :math:`n \gg p` and outliers are separable. It is not the
 right tool for :math:`p > n` covariance recovery or diffuse heavy tails.
 
+Deterministic S and MM estimators
+---------------------------------
+
+A multivariate S-estimator writes the scatter matrix as
+
+.. math::
+
+   \Sigma=\sigma^2\Gamma,\qquad |\Gamma|=1,
+
+and minimizes :math:`\sigma` subject to
+
+.. math::
+
+   \frac{1}{n}\sum_{i=1}^{n}
+   \rho_0\!\left(
+      \frac{\sqrt{(x_i-\mu)^\mathsf{T}\Gamma^{-1}(x_i-\mu)}}{\sigma}
+   \right)=b.
+
+``DetS`` uses Tukey's bisquare loss
+
+.. math::
+
+   \rho_c(u)=
+   \begin{cases}
+   u^2/2-u^4/(2c^2)+u^6/(6c^4), & |u|\le c,\\
+   c^2/6, & |u|>c,
+   \end{cases}
+
+whose radial weight is
+
+.. math::
+
+   w_c(u)=\left(1-u^2/c^2\right)^2\mathbf{1}(|u|<c).
+
+For :math:`R\sim\chi_p`, the normal-consistency constant is
+:math:`b=E[\rho_c(R)]`.  The requested breakdown value determines the S tuning
+constant through :math:`b/\rho_c(\infty)`.  I-steps alternate an S-scale update,
+bisquare weighting, a weighted location/covariance update, and determinant
+normalization of :math:`\Gamma`.
+
+``DetMM`` begins from ``DetS`` and fixes its robust scale
+:math:`\widetilde\sigma`.  It then minimizes
+
+.. math::
+
+   \frac{1}{n}\sum_{i=1}^{n}
+   \rho_1\!\left(
+      \frac{\sqrt{(x_i-\mu)^\mathsf{T}\Gamma^{-1}(x_i-\mu)}}
+           {\widetilde\sigma}
+   \right),
+   \qquad |\Gamma|=1.
+
+The second bisquare cutoff is calibrated to a requested nominal location
+efficiency under a Gaussian model.  Its larger cutoff gives moderately distant
+observations more weight while the high-breakdown S-scale remains fixed.
+
+The package uses six deterministic robust correlation/projection starts inspired
+by DetS rather than the exact six DetMCD starts of the reference software.
+Consequently, the estimating equations follow DetS/DetMM but numerical identity
+with ``rrcov`` or FSDA is not claimed.  These estimators require
+:math:`\lceil n/2\rceil>p`; use MRCD or a regularized M-estimator when the
+central half-sample cannot have full-rank covariance.
+
 Minimum Regularized Covariance Determinant
 ------------------------------------------
 

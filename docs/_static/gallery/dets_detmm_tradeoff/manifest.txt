@@ -1,0 +1,5 @@
+robust_ellipses.png
+covariance_error.png
+weight_functions.png
+clean_efficiency.png
+metrics.csv

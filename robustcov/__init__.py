@@ -6,6 +6,7 @@
 from .covariance import FastMCD, MinCovDet, TylerShape, RegularizedTyler
 from .mrcd import MinimumRegularizedCovarianceDeterminant, MRCD, MinRegularizedCovDet
 from .kernel_mrcd import KernelMinimumRegularizedCovarianceDeterminant, KernelMRCD, KMRCD
+from .s_estimators import DeterministicSEstimator, DeterministicMMEstimator, DetS, DetMM
 from .mmcd import MatrixMinimumCovarianceDeterminant, MatrixMCD, MMCD
 from .cellmcd import CellwiseMinimumCovarianceDeterminant, CellMCD, CellwiseMCD
 from .cellpca import CellwiseRobustPCA, CellPCA, CasewiseCellwisePCA
@@ -84,6 +85,10 @@ __all__ = [
     "KernelMinimumRegularizedCovarianceDeterminant",
     "KernelMRCD",
     "KMRCD",
+    "DeterministicSEstimator",
+    "DeterministicMMEstimator",
+    "DetS",
+    "DetMM",
     "MinimumRegularizedCovarianceDeterminant",
     "MRCD",
     "MinRegularizedCovDet",

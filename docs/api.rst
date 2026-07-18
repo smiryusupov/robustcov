@@ -24,6 +24,14 @@ Kernel minimum regularized covariance determinant
    :undoc-members:
    :show-inheritance:
 
+Deterministic S and MM estimators
+---------------------------------
+
+.. automodule:: robustcov.s_estimators
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Matrix minimum covariance determinant
 -------------------------------------
 

@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Added deterministic multivariate `DetS` and `DetMM` estimators with Tukey-bisquare S-scale and fixed-scale MM refinement.
 - Added experimental ``SparseCellPCA`` for cellwise/casewise robust low-rank fitting with exact-zero elastic-net loadings.
 - Added ``KMRCD`` for robust subset-based anomaly detection in linear, RBF, polynomial, callable, or precomputed kernel spaces.
 

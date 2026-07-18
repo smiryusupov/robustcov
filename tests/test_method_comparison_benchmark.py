@@ -100,3 +100,20 @@ def test_kernel_family_quick_run_writes_kmrcd_rows(tmp_path):
     assert "KMRCD(RBF)" in text
     assert "KMRCD(linear)" in text
     assert "MRCD" in text
+
+
+def test_low_dimensional_scatter_factories_include_dets_and_detmm():
+    for scenario in ("rowwise outliers", "heavy-tailed elliptical"):
+        factories = BENCH.scatter_factories(scenario, BENCH.PROFILES["quick"])
+        names = [name for name, _, _ in factories]
+        assert "DetS" in names
+        assert "DetMM" in names
+
+
+def test_high_dimensional_scatter_factories_exclude_dets_and_detmm():
+    factories = BENCH.scatter_factories(
+        "high-dimensional row outliers", BENCH.PROFILES["quick"]
+    )
+    names = [name for name, _, _ in factories]
+    assert "DetS" not in names
+    assert "DetMM" not in names

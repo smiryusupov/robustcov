@@ -20,6 +20,10 @@ reproducible cross-method benchmarks.
      - ``FastMCD``
      - High-breakdown covariance with explicit support diagnostics.
      - Not suitable when a clean nonsingular subset cannot exist.
+   * - Rowwise contamination with smooth weights and deterministic fitting
+     - ``DetS`` or ``DetMM``
+     - DetS emphasizes breakdown; DetMM keeps the robust scale and improves Gaussian efficiency.
+     - Requires :math:`\lceil n/2 \rceil > p` and is not a cellwise or high-dimensional method.
    * - Rowwise contamination with ``p`` close to or larger than ``n``
      - ``MRCD``
      - High-breakdown subset estimation with target regularization.
@@ -76,6 +80,7 @@ Estimator status
 Stable prototype APIs:
 
 * ``FastMCD``
+* ``DetS`` and ``DetMM``
 * ``MRCD``
 * ``MMCD``
 * ``CellMCD``

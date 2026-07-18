@@ -35,6 +35,10 @@ than a ranking table.
      - ``FastMCD``
      - ``MRCD``; ``RegularizedCauchy``
      - Do not use FastMCD when a clean, nonsingular :math:`h`-subset cannot exist.
+   * - Complete-row contamination with smooth weights and deterministic fitting
+     - ``DetMM`` when efficiency matters; ``DetS`` when breakdown protection is primary
+     - ``FastMCD`` for explicit subset support; ``StudentTScatter`` for diffuse tails
+     - Requires :math:`\lceil n/2 \rceil > p` and does not address cellwise contamination.
    * - Complete-row contamination with :math:`p` close to or greater than :math:`n`
      - ``MRCD``
      - ``RegularizedCauchy``; ``RegularizedTyler``
@@ -108,6 +112,13 @@ with another estimator rather than handled directly.
      - Structured input
    * - ``FastMCD``
      - covariance and support
+     - Yes
+     - No
+     - Limited
+     - No
+     - vectors
+   * - ``DetS`` / ``DetMM``
+     - smooth high-breakdown covariance and radial weights
      - Yes
      - No
      - Limited
@@ -269,8 +280,11 @@ universal ordering.
   that lie inside the broad linear covariance envelope.  The result depends on
   the selected RBF bandwidth, so linear MRCD remains an important baseline.
 * Under separated rowwise contamination, FastMCD gives the smallest covariance
-  error in this run.  MRCD is somewhat more conservative but remains usable in
-  regimes where a raw subset covariance would be singular.
+  error in this run.  DetS and DetMM provide deterministic smooth weighting;
+  DetMM generally moves toward the clean-sample efficiency of classical
+  covariance without replacing the high-breakdown S-scale.  MRCD is somewhat
+  more conservative but remains usable in regimes where a raw subset covariance
+  would be singular.
 * Under diffuse Student-t tails, StudentTScatter and RegularizedCauchy recover
   covariance more accurately than empirical covariance or a hard subset.
 * In the :math:`p>n` scenario, the regularized M-estimators give the lowest

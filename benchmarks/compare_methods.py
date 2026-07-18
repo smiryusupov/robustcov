@@ -558,6 +558,9 @@ def scatter_factories(scenario: str, profile: Profile) -> list[tuple[str, Callab
     if not high_dimensional:
         common.insert(1, ("FastMCD", lambda: rc.FastMCD(missing_values="median" if has_missing else "raise", **fast), "separable rowwise outliers"))
         common.insert(2, ("MRCD", lambda: rc.MRCD(missing_values="median" if has_missing else "raise", **mrcd), "regularized high-breakdown subset"))
+        if scenario in {"rowwise outliers", "heavy-tailed elliptical"}:
+            common.insert(3, ("DetS", lambda: rc.DetS(max_iter=80, missing_values="median" if has_missing else "raise"), "deterministic high-breakdown S-estimator"))
+            common.insert(4, ("DetMM", lambda: rc.DetMM(efficiency=0.95, max_iter=80, missing_values="median" if has_missing else "raise"), "S-started MM refinement for higher Gaussian efficiency"))
     else:
         common.insert(1, ("MRCD", lambda: rc.MRCD(missing_values="median" if has_missing else "raise", **mrcd), "rowwise outliers with p >= n"))
     if scenario == "cellwise errors + missing":

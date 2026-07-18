@@ -214,6 +214,7 @@ All detailed pages
    gallery/ml_preprocessing
    gallery/mrcd_high_dimensional_outliers
    gallery/kmrcd_nonlinear_manifold
+   gallery/dets_detmm_tradeoff
    geometry
    gallery/feature_geometry_synthetic_ood
    gallery/feature_geometry_class_conditional_ood

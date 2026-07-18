@@ -1,6 +1,7 @@
 script,status
 plot_mrcd_high_dimensional_outliers.py,ok
 plot_kmrcd_nonlinear_manifold.py,ok
+plot_dets_detmm_tradeoff.py,ok
 plot_mmcd_sensor_windows.py,ok
 plot_cellmcd_market_data.py,ok
 plot_cellpca_process_spectra.py,ok

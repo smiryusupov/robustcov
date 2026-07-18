@@ -14,6 +14,7 @@ Robust covariance and MCD
 * P. J. Rousseeuw. 1985. Multivariate estimation with high breakdown point. In *Mathematical Statistics and Applications*.
 * P. J. Rousseeuw and K. Van Driessen. 1999. A fast algorithm for the minimum covariance determinant estimator. *Technometrics*.
 * M. Hubert, M. Debruyne, and P. J. Rousseeuw. 2018. Minimum covariance determinant and extensions. *WIREs Computational Statistics*.
+* M. Hubert, P. J. Rousseeuw, D. Vanpaemel, and T. Verdonck. 2015. The DetS and DetMM estimators for multivariate location and scatter. *Computational Statistics & Data Analysis*.
 * K. Boudt, P. J. Rousseeuw, S. Vanduffel, and T. Verdonck. 2020. The minimum regularized covariance determinant estimator. *Statistics and Computing*.
 * J. Schreurs, I. Vranckx, M. Hubert, J. A. K. Suykens, and P. J. Rousseeuw. 2021. Outlier detection in non-elliptical data by kernel MRCD. *Statistics and Computing*, 31:66.
 * M. Mayrhofer, U. Radojičić, and P. Filzmoser. 2025. Robust covariance estimation and explainable outlier detection for matrix-valued data. *Technometrics*.

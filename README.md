@@ -20,6 +20,7 @@ observations for a stable empirical covariance matrix.
 ## Highlights
 
 - `FastMCD` for sparse, separable contamination
+- `DetS` and `DetMM` for deterministic smooth high-breakdown scatter with a robustness--efficiency tradeoff
 - `MRCD` for high-breakdown covariance estimation when `p` is close to or greater than `n`
 - `KMRCD` for nonlinear robust outlier detection in a kernel feature space
 - `MMCD` for robust row/column covariance estimation when each observation is a matrix
@@ -94,6 +95,19 @@ print(est.radial_kurtosis_)
 det = rc.RobustOutlierDetector(estimator=est, contamination=0.075).fit(X)
 print(det.labels_)
 ```
+
+For deterministic smooth high-breakdown scatter and an efficiency refinement:
+
+```python
+dets = rc.DetS(breakdown=0.50).fit(X)
+detmm = rc.DetMM(breakdown=0.50, efficiency=0.95).fit(X)
+
+print(dets.weights_)
+print(detmm.covariance_)
+```
+
+These estimators require the central half-sample to be nonsingular. Use `MRCD`
+when `p` is too large for that condition.
 
 For small-sample or high-dimensional heavy-tailed data:
 
@@ -299,6 +313,8 @@ it is detected.
 | Estimator | Best use case | Notes |
 |---|---|---|
 | `FastMCD` | Separable contamination, `n >> p` | Fast robust covariance and support diagnostics |
+| `DetS` | Rowwise contamination with smooth high-breakdown weighting | Deterministic Tukey-bisquare S-estimator; requires `ceil(n/2) > p` |
+| `DetMM` | The same regime when higher Gaussian efficiency is desired | DetS start with fixed robust scale and a less aggressive MM refinement |
 | `MRCD` | Rowwise contamination with `p` close to or greater than `n` | Regularized high-breakdown subset covariance with automatic condition control |
 | `KMRCD` | Non-elliptical inlier structure or implicit kernel data | MRCD subset search in a positive-semidefinite kernel feature space |
 | `MMCD` | Matrix-valued observations with contaminated rows/samples | Robust mean matrix and Kronecker row/column covariance factors |

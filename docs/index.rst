@@ -47,6 +47,8 @@ The main pieces are:
 
 * ``FastMCD`` for sparse, separable contamination when the sample is larger than
   the feature dimension;
+* ``DetS`` and ``DetMM`` for deterministic smooth high-breakdown weighting and an
+  explicit robustness--efficiency tradeoff;
 * ``MRCD`` for high-breakdown covariance estimation when the feature dimension is
   close to or greater than the sample size;
 * ``KMRCD`` for nonlinear or kernel-defined inlier structure;
@@ -79,6 +81,7 @@ The main pieces are:
    use_case_gallery
    benchmark_gallery
    algorithms
+   s_estimators
    kernel_mrcd
    matrix_covariance
    cellwise_covariance
