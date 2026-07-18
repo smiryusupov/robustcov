@@ -1,0 +1,5 @@
+loading_comparison.png
+performance_comparison.png
+sparse_loadings.png
+outlier_map.png
+metrics.csv

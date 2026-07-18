@@ -172,3 +172,6 @@ Worked example
 :doc:`Process spectra with bad wavelengths and abnormal batches
 <gallery/cellpca_process_spectra>` compares CellPCA with classical PCA when
 cellwise errors, rowwise deviations, and missing measurements occur together.
+
+When the loading vectors should select a small set of variables, see
+:doc:`sparse_cellwise_pca`.

@@ -63,6 +63,10 @@ than a ranking table.
      - ``CellPCA``
      - ``CellMCD`` followed by an eigendecomposition
      - Median-imputed ordinary PCA can rotate toward corrupted coordinates.
+   * - The low-rank factors should use only a small, interpretable variable subset
+     - ``SparseCellPCA``
+     - Dense ``CellPCA`` as the robustness baseline
+     - A larger penalty can improve sparsity while damaging subspace recovery.
    * - Each observation is naturally a matrix
      - ``MMCD``
      - Vector methods only when Kronecker structure is not scientifically meaningful
@@ -179,6 +183,13 @@ with another estimator rather than handled directly.
      - Yes
      - Yes
      - tables
+   * - ``SparseCellPCA``
+     - sparse low-rank loadings and cell/case weights
+     - Yes
+     - Yes
+     - Yes
+     - Yes
+     - tables
    * - ``RobustGraphicalLasso``
      - sparse precision graph
      - Depends on scatter
@@ -225,9 +236,10 @@ contains four benchmark families:
    an ordinary input-space covariance estimate.
 
 ``pca``
-   Rowwise low-rank outliers and cellwise low-rank corruption with missing
-   entries.  The metrics are projection-matrix error, outlier AUROC, and
-   reconstruction error on deliberately hidden cells.
+   Rowwise low-rank outliers, dense cellwise low-rank corruption, and a sparse
+   loading scenario with missing entries.  The metrics are projection-subspace
+   error, outlier AUROC, hidden-cell reconstruction error, and—where the true
+   loading support is defined—support F1 and fitted sparsity.
 
 ``matrix covariance``
    Matrix-normal observations with localized faulty windows.  MMCD is compared
@@ -276,6 +288,10 @@ universal ordering.
   subspace recovery with substantially better reconstruction of the hidden
   entries.  CellMCD scatter PCA recovers the subspace well but is slower and is
   not itself a low-rank missing-data model.
+* In the sparse-loading scenario, SparseCellPCA preserves the CellPCA subspace
+  and hidden-cell reconstruction while recovering the simulated loading support.
+  Dense PCA methods necessarily score poorly on exact support because they do
+  not set coefficients to zero.
 * MMCD improves Kronecker covariance recovery in the matrix-valued example.
 * In the sparse-graph example, Cauchy scatter gives the best edge F1 at the
   common penalty.  CellMCD has higher recall but produces a denser graph.  This

@@ -50,6 +50,7 @@ CASES = [
     GalleryCase("mmcd_sensor_windows", "plot_mmcd_sensor_windows.py", "mmcd_sensor_windows", ("distance_comparison.png", "contribution_heatmap.png", "covariance_factors.png", "metrics.csv")),
     GalleryCase("cellmcd_market_data", "plot_cellmcd_market_data.py", "cellmcd_market_data", ("covariance_error.png", "cell_residual_map.png", "correlation_comparison.png", "metrics.csv")),
     GalleryCase("cellpca_process_spectra", "plot_cellpca_process_spectra.py", "cellpca_process_spectra", ("subspace_recovery.png", "residual_cellmap.png", "outlier_map.png", "loading_curves.png", "metrics.csv")),
+    GalleryCase("sparse_cellpca_spectra", "plot_sparse_cellpca_spectra.py", "sparse_cellpca_spectra", ("loading_comparison.png", "performance_comparison.png", "sparse_loadings.png", "outlier_map.png", "metrics.csv")),
     GalleryCase("cellrcov_high_dimensional", "plot_cellrcov_high_dimensional.py", "cellrcov_high_dimensional", ("covariance_error.png", "covariance_spectrum.png", "distance_decomposition.png", "cell_residual_map.png", "metrics.csv")),
     GalleryCase("robust_graphical_lasso_market_network", "plot_robust_graphical_lasso_market_network.py", "robust_graphical_lasso_market_network", ("partial_correlation_comparison.png", "robust_network.png", "ebic_path.png", "metrics.csv")),
     GalleryCase("robust_pca_embedding_monitoring", "plot_robust_pca_embedding_monitoring.py", "robust_pca_embedding_monitoring", ("batch_monitoring.png", "outlier_map.png", "subspace_recovery.png")),

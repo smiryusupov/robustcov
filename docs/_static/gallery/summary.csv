@@ -4,6 +4,7 @@ plot_kmrcd_nonlinear_manifold.py,ok
 plot_mmcd_sensor_windows.py,ok
 plot_cellmcd_market_data.py,ok
 plot_cellpca_process_spectra.py,ok
+plot_sparse_cellpca_spectra.py,ok
 plot_cellrcov_high_dimensional.py,ok
 plot_robust_graphical_lasso_market_network.py,ok
 plot_robust_pca_embedding_monitoring.py,ok

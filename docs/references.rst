@@ -57,6 +57,7 @@ Robust anomaly diagnostics
 * P. J. Rousseeuw and A. M. Leroy. 1987. *Robust Regression and Outlier Detection*. Wiley.
 * M. Hubert, P. J. Rousseeuw, and K. Vanden Branden. 2005. ROBPCA: a new approach to robust principal component analysis. *Technometrics*.
 * F. Centofanti, M. Hubert, and P. J. Rousseeuw. 2026. Robust principal components by casewise and cellwise weighting. *Technometrics*.
+* P. Pfeiffer, L. Vana-Gür, and P. Filzmoser. 2025. Cellwise robust and sparse principal component analysis. *Advances in Data Analysis and Classification*.
 * M. E. Timmerman, E. Kiers, and A. C. Smilde. 2007. Estimating confidence intervals for principal component loadings: a comparison between the bootstrap and asymptotic results. *British Journal of Mathematical and Statistical Psychology*.
 * R. H. Abul Naga and G. Antille. 1990. Stability of robust and non-robust principal components analysis. *Computational Statistics & Data Analysis*.
 * H. R. Künsch. 1989. The jackknife and the bootstrap for general stationary observations. *The Annals of Statistics*.

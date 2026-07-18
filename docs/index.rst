@@ -87,6 +87,7 @@ The main pieces are:
    robust_pca
    subspace_stability
    cellwise_pca
+   sparse_cellwise_pca
    sparse_precision
    monitoring
    feature_geometry

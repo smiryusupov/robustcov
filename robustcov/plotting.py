@@ -782,6 +782,69 @@ def plot_cellpca_outlier_map(
     return fig
 
 
+
+def plot_sparse_cellpca_loadings(
+    pca,
+    feature_names=None,
+    components=None,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot sparse robust PCA loadings as a component-by-feature heatmap.
+
+    Parameters
+    ----------
+    pca : SparseCellwiseRobustPCA
+        Fitted sparse cellwise robust PCA estimator.
+    feature_names : sequence of str, optional
+        Labels for the feature axis.
+    components : sequence of int, optional
+        Components to show.  The default displays every retained component.
+    """
+    if not hasattr(pca, "components_") or not hasattr(pca, "loading_support_"):
+        raise RuntimeError("SparseCellPCA is not fitted")
+    loadings = np.asarray(pca.components_, dtype=float)
+    if components is None:
+        selected = np.arange(loadings.shape[0])
+    else:
+        selected = np.asarray(components, dtype=int)
+        if selected.ndim != 1 or selected.size == 0:
+            raise ValueError("components must be a non-empty one-dimensional sequence")
+        if np.any((selected < 0) | (selected >= loadings.shape[0])):
+            raise ValueError("components contains an invalid component index")
+    shown = loadings[selected]
+    limit = max(float(np.max(np.abs(shown))), np.finfo(float).eps)
+    width = max(7.0, min(15.0, 5.0 + 0.28 * shown.shape[1]))
+    height = max(3.5, 2.2 + 0.7 * shown.shape[0])
+    fig = plt.figure(figsize=(width, height))
+    ax = fig.add_subplot(111)
+    image = ax.imshow(
+        shown,
+        aspect="auto",
+        interpolation="nearest",
+        cmap="coolwarm",
+        vmin=-limit,
+        vmax=limit,
+    )
+    fig.colorbar(image, ax=ax, label="loading")
+    ax.set_yticks(np.arange(selected.size), labels=[f"PC {i + 1}" for i in selected])
+    if feature_names is not None:
+        if len(feature_names) != shown.shape[1]:
+            raise ValueError("feature_names must match the number of features")
+        ax.set_xticks(
+            np.arange(shown.shape[1]),
+            labels=feature_names,
+            rotation=60,
+            ha="right",
+        )
+    else:
+        ax.set_xlabel("feature")
+    ax.set_title(title or "Sparse CellPCA loadings")
+    fig.tight_layout()
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig
+
 def plot_partial_correlation_network(
     estimator,
     feature_names=None,

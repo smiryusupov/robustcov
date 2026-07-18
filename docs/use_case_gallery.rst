@@ -196,6 +196,7 @@ All detailed pages
    gallery/cellrcov_high_dimensional
    gallery/robust_graphical_lasso_market_network
    gallery/cellpca_process_spectra
+   gallery/sparse_cellpca_spectra
    gallery/fraud_screening
    gallery/network_traffic
    gallery/mmcd_sensor_windows

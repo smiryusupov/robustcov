@@ -48,6 +48,14 @@ Cellwise regularized covariance
    :undoc-members:
    :show-inheritance:
 
+Sparse cellwise robust PCA
+---------------------------
+
+.. automodule:: robustcov.sparse_cellpca
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Robust sparse precision matrices
 --------------------------------
 

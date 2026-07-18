@@ -16,6 +16,11 @@ These examples focus on process monitoring: sensor streams, maintenance windows,
        <h3>Process spectra with bad cells</h3>
        <p>Fit a low-rank process model while separating bad wavelengths from abnormal batches.</p>
      </a>
+     <a class="gallery-card" href="../gallery/sparse_cellpca_spectra.html">
+       <img src="../_static/gallery/sparse_cellpca_spectra/sparse_loadings.png" alt="SparseCellPCA loading matrix">
+       <h3>Interpretable sparse spectra</h3>
+       <p>Retain cellwise robustness while selecting the wavelength bands that define each component.</p>
+     </a>
      <a class="gallery-card" href="../gallery/robust_subspace_monitoring.html">
        <img src="../_static/gallery/robust_subspace_monitoring/monitor_history.png" alt="Robust rolling subspace monitoring">
        <h3>Rolling subspace monitoring</h3>
@@ -49,6 +54,7 @@ Detailed pages
 - :doc:`Rolling subspace monitoring <../gallery/robust_subspace_monitoring>`
 - :doc:`Matrix-valued sensor windows <../gallery/mmcd_sensor_windows>`
 - :doc:`Process spectra with cellwise and casewise contamination <../gallery/cellpca_process_spectra>`
+- :doc:`Sparse robust process spectra <../gallery/sparse_cellpca_spectra>`
 - :doc:`Sensor anomaly <../gallery/sensor_anomaly>`
 - :doc:`Maintenance monitoring <../gallery/maintenance_monitoring>`
 - :doc:`Quality control <../gallery/quality_control>`

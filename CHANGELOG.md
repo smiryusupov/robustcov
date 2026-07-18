@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Added experimental ``SparseCellPCA`` for cellwise/casewise robust low-rank fitting with exact-zero elastic-net loadings.
 - Added ``KMRCD`` for robust subset-based anomaly detection in linear, RBF, polynomial, callable, or precomputed kernel spaces.
 
 Highlights:

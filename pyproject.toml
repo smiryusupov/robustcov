@@ -43,6 +43,7 @@ keywords = [
   "robust PCA",
   "cellwise covariance",
   "cellwise robust PCA",
+  "sparse robust PCA",
   "kernel MRCD",
   "nonlinear outlier detection",
   "graphical lasso",

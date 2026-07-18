@@ -26,6 +26,7 @@ observations for a stable empirical covariance matrix.
 - `CellMCD` for covariance estimation with isolated corrupted or missing cells
 - `CellRCov` for high-dimensional covariance with bad cells, abnormal rows, and missing entries
 - `CellPCA` for low-rank structure with cellwise errors, abnormal rows, and missing entries
+- `SparseCellPCA` for the same contamination model with exact-zero interpretable loadings
 - `RobustGraphicalLasso` for sparse precision matrices and conditional-dependence networks
 - Regularized Cauchy, Student-t, and Tyler scatter estimators
 - Mahalanobis anomaly scores, QQ plots, distance profiles, and diagnostic reports
@@ -171,6 +172,20 @@ print(cellrcov.residual_shrinkage_)
 print(cellrcov.cell_outlier_mask_)
 ```
 
+
+For sparse interpretable loadings under the same contamination model:
+
+```python
+sparse_pca = rc.SparseCellPCA(
+    n_components=3,
+    alpha=0.05,
+    sparsity_threshold=0.01,
+).fit(X)
+
+print(sparse_pca.n_nonzero_loadings_)
+print(sparse_pca.loading_support_)
+```
+
 For a sparse conditional-dependence graph:
 
 ```python
@@ -290,6 +305,7 @@ it is detected.
 | `CellMCD` | Tables with isolated corrupted or missing cells and `n > p` | Observed-likelihood covariance fit with cell-level flags and conditional predictions |
 | `CellRCov` | High-dimensional tables with bad cells, abnormal rows, and missing entries | Robust low-rank covariance plus a diagonally regularized residual covariance |
 | `CellPCA` | Low-rank tables with cell errors, abnormal rows, and missing entries | Cellwise and casewise redescending weights in a weighted low-rank fit |
+| `SparseCellPCA` | Interpretable low-rank tables with the same contamination model | CellPCA weights plus exact-zero elastic-net loading updates |
 | `RegularizedCauchy` | Very heavy tails, small samples, `p` close to `n` | Strong radial downweighting plus shrinkage |
 | `StudentTScatter` | Diffuse heavy tails | Smooth heavy-tail scatter estimator |
 | `RegularizedTyler` | Heavy-tailed shape estimation | Scale-free shape unless scale correction is requested |

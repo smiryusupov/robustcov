@@ -296,6 +296,28 @@ See :doc:`cellwise_pca` for the residual scales, diagnostics, prediction on
 incomplete rows, and the implementation's relationship to the reference
 cellPCA algorithm.
 
+Sparse cellwise robust PCA
+---------------------------
+
+``SparseCellPCA`` replaces the dense loading update with a weighted elastic-net
+regression.  For loading matrix :math:`B=(b_{jk})`, the package-specific
+criterion adds
+
+.. math::
+
+   \sum_{k=1}^{q}\alpha_k
+   \left[
+      \eta\lVert b_{\cdot k}\rVert_1
+      + \frac{1-\eta}{2}\lVert b_{\cdot k}\rVert_2^2
+   \right]
+
+
+to the robust cellwise reconstruction loss.  The same cell and row weights as
+``CellPCA`` protect the low-rank fit, while coordinate descent gives exact-zero
+loadings.  Sparse loading vectors are normalized but need not be mutually
+orthogonal.  See :doc:`sparse_cellwise_pca` for tuning, diagnostics, and the
+implementation's relationship to SCRAMBLE.
+
 Bootstrap PCA subspace stability
 --------------------------------
 

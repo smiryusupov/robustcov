@@ -44,6 +44,10 @@ reproducible cross-method benchmarks.
      - ``CellPCA``
      - Fits the low-rank model with separate cellwise and casewise weights.
      - Requires a defensible component count and low-rank structure.
+   * - The same low-rank setting, but component interpretation requires a small variable set
+     - ``SparseCellPCA``
+     - Adds exact-zero elastic-net loadings to the cellwise robust fit.
+     - Requires a penalty choice and sparse components are not generally orthogonal.
    * - Conditional-dependence graph with heavy tails, outliers, or bad cells
      - ``RobustGraphicalLasso``
      - Sparse inverse covariance from a selectable robust scatter estimate.
@@ -84,6 +88,7 @@ Stable prototype APIs:
 
 Experimental APIs:
 
+* ``SparseCellPCA`` while its alternating coordinate-descent fit is validated against SCRAMBLE and other sparse robust PCA implementations
 * ``KMRCD`` while its package-specific initial-support search is compared with the reference implementation
 * ``CellRCov`` while its package-native CellPCA/FastMCD decomposition is cross-validated
   against the reference implementation

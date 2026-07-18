@@ -9,6 +9,11 @@ from .kernel_mrcd import KernelMinimumRegularizedCovarianceDeterminant, KernelMR
 from .mmcd import MatrixMinimumCovarianceDeterminant, MatrixMCD, MMCD
 from .cellmcd import CellwiseMinimumCovarianceDeterminant, CellMCD, CellwiseMCD
 from .cellpca import CellwiseRobustPCA, CellPCA, CasewiseCellwisePCA
+from .sparse_cellpca import (
+    SparseCellwiseRobustPCA,
+    SparseCellPCA,
+    SparseCasewiseCellwisePCA,
+)
 from .cellrcov import CellwiseRegularizedCovariance, CellRCov, CellwiseRobustCovariance
 from .sparse_precision import RobustGraphicalLasso, SparseRobustPrecision
 from .stability import SubspaceStability
@@ -47,6 +52,7 @@ from .plotting import (
     plot_matrix_outlier_contributions,
     plot_cellwise_residual_map,
     plot_cellpca_outlier_map,
+    plot_sparse_cellpca_loadings,
     plot_partial_correlation_network,
     plot_subspace_stability,
 )
@@ -61,6 +67,9 @@ __all__ = [
     "CellwiseRegularizedCovariance",
     "CellRCov",
     "CellwiseRobustCovariance",
+    "SparseCellwiseRobustPCA",
+    "SparseCellPCA",
+    "SparseCasewiseCellwisePCA",
     "CellwiseRobustPCA",
     "CellPCA",
     "CasewiseCellwisePCA",
@@ -112,6 +121,7 @@ __all__ = [
     "plot_matrix_outlier_contributions",
     "plot_cellwise_residual_map",
     "plot_cellpca_outlier_map",
+    "plot_sparse_cellpca_loadings",
     "plot_partial_correlation_network",
     "plot_subspace_stability",
     "has_openmp",

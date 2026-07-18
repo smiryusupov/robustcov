@@ -37,6 +37,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 import numpy as np
+from scipy.optimize import linear_sum_assignment
 from scipy.stats import rankdata
 
 import robustcov as rc
@@ -118,6 +119,10 @@ CSV_FIELDS = [
     "cell_outlier_auc",
     "subspace_error",
     "missing_reconstruction_mae",
+    "loading_support_precision",
+    "loading_support_recall",
+    "loading_support_f1",
+    "loading_sparsity",
     "matrix_covariance_error",
     "precision_error",
     "edge_precision",
@@ -169,11 +174,33 @@ def binary_auc(labels: np.ndarray, scores: np.ndarray) -> float:
 def projection_error(components: np.ndarray, truth_basis: np.ndarray) -> float:
     components = np.asarray(components, dtype=float)
     truth_basis = np.asarray(truth_basis, dtype=float)
-    # Components are q x p. Truth basis is q x p.
-    P_est = components.T @ components
-    P_true = truth_basis.T @ truth_basis
+    # Sparse loading vectors need not be mutually orthogonal. Compare the
+    # column spaces through orthonormal bases instead of treating B B^T as a
+    # projection matrix. Components and truth_basis are q x p.
+    estimated_basis, _ = np.linalg.qr(components.T)
+    truth_orthonormal, _ = np.linalg.qr(truth_basis.T)
+    P_est = estimated_basis @ estimated_basis.T
+    P_true = truth_orthonormal @ truth_orthonormal.T
     q = truth_basis.shape[0]
     return float(np.linalg.norm(P_est - P_true, ord="fro") / math.sqrt(2.0 * q))
+
+
+def loading_support_metrics(components: np.ndarray, truth_basis: np.ndarray) -> tuple[float, float, float, float]:
+    components = np.asarray(components, dtype=float)
+    truth_basis = np.asarray(truth_basis, dtype=float)
+    similarity = np.abs(truth_basis @ components.T)
+    truth_order, estimate_order = linear_sum_assignment(-similarity)
+    aligned = components[estimate_order]
+    expected = np.abs(truth_basis[truth_order]) > 1e-12
+    predicted = np.abs(aligned) > 1e-12
+    tp = int(np.count_nonzero(expected & predicted))
+    fp = int(np.count_nonzero(~expected & predicted))
+    fn = int(np.count_nonzero(expected & ~predicted))
+    precision = tp / (tp + fp) if tp + fp else 0.0
+    recall = tp / (tp + fn) if tp + fn else 0.0
+    f1 = 2.0 * precision * recall / (precision + recall) if precision + recall else 0.0
+    sparsity = 1.0 - np.count_nonzero(components) / components.size
+    return float(precision), float(recall), float(f1), float(sparsity)
 
 
 def partial_correlation(precision: np.ndarray) -> np.ndarray:
@@ -349,6 +376,25 @@ def make_sparse_precision(p: int) -> tuple[np.ndarray, np.ndarray]:
         precision[j, j] = 1.0 + np.sum(np.abs(precision[j]))
     covariance = np.linalg.inv(precision)
     return precision, covariance
+
+
+def make_sparse_low_rank(
+    rng: np.random.Generator,
+    n: int,
+    p: int,
+    q: int,
+    noise: float = 0.10,
+) -> tuple[np.ndarray, np.ndarray]:
+    block = max(4, min(7, p // (q + 2)))
+    starts = np.linspace(1, p - block - 1, q, dtype=int)
+    loadings = np.zeros((p, q), dtype=float)
+    shape = np.linspace(1.0, 0.25, block)
+    for k, start in enumerate(starts):
+        loadings[start : start + block, k] = shape * (-1.0 if k % 2 else 1.0)
+    loadings, _ = np.linalg.qr(loadings)
+    scores = rng.normal(size=(n, q)) * np.linspace(3.0, 1.4, q)
+    X = scores @ loadings.T + noise * rng.normal(size=(n, p))
+    return X, loadings.T
 
 
 def matrix_normal_sample(
@@ -835,6 +881,104 @@ def run_pca_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[s
                 rows.append(base)
             except Exception as exc:
                 rows.append(_failure_row(family="pca", scenario="cellwise low-rank + missing", method=name, n=damaged.shape[0], p=damaged.shape[1], repeat=repeat, exc=exc))
+
+    rng = np.random.default_rng(seed + 22)
+    sparse_p = max(36, 2 * profile.pca_p)
+    sparse_clean, sparse_truth = make_sparse_low_rank(
+        rng, profile.pca_n, sparse_p, q
+    )
+    sparse_damaged, sparse_cell_labels, sparse_missing = add_cellwise_errors(
+        rng, sparse_clean, contamination=0.045, missing=0.03, magnitude=8.0
+    )
+    sparse_imputed, _ = median_impute(sparse_damaged)
+    sparse_observed = np.isfinite(sparse_damaged)
+
+    sparse_methods: list[tuple[str, Callable[[], Any], str]] = [
+        (
+            "Median-imputed PCA",
+            lambda: EmpiricalPCA(q).fit(sparse_imputed),
+            "dense non-robust baseline",
+        ),
+        (
+            "CellPCA",
+            lambda: rc.CellPCA(
+                n_components=q, max_iter=profile.pca_max_iter, tol=5e-4
+            ).fit(sparse_damaged),
+            "dense cellwise/casewise robust subspace",
+        ),
+        (
+            "SparseCellPCA",
+            lambda: rc.SparseCellPCA(
+                n_components=q,
+                alpha=0.055,
+                l1_ratio=1.0,
+                sparsity_threshold=0.02,
+                max_iter=min(profile.pca_max_iter, 60),
+                loading_max_iter=45,
+                tol=5e-4,
+            ).fit(sparse_damaged),
+            "cellwise/casewise robustness with exact-zero elastic-net loadings",
+        ),
+    ]
+
+    for repeat in range(repeats):
+        for name, fit_method, note in sparse_methods:
+            base = _base_row(
+                family="pca",
+                scenario="sparse cellwise low-rank + missing",
+                method=name,
+                n=sparse_damaged.shape[0],
+                p=sparse_damaged.shape[1],
+                repeat=repeat,
+            )
+            try:
+                model, seconds, peak = _measure(fit_method)
+                base["seconds"] = seconds
+                base["python_peak_mb"] = peak
+                base["subspace_error"] = projection_error(
+                    model.components_, sparse_truth
+                )
+                if isinstance(model, rc.CellwiseRobustPCA):
+                    reconstruction = np.asarray(model.fitted_values_, dtype=float)
+                    cell_scores = np.abs(
+                        np.asarray(model.standardized_residuals_, dtype=float)
+                    )
+                else:
+                    reconstruction = model.reconstruct(sparse_imputed)
+                    cell_scores = _pca_cell_scores(
+                        sparse_damaged, reconstruction, sparse_observed
+                    )
+                valid_cells = sparse_observed & ~sparse_missing
+                base["cell_outlier_auc"] = binary_auc(
+                    sparse_cell_labels[valid_cells], cell_scores[valid_cells]
+                )
+                base["missing_reconstruction_mae"] = float(
+                    np.mean(
+                        np.abs(
+                            reconstruction[sparse_missing]
+                            - sparse_clean[sparse_missing]
+                        )
+                    )
+                )
+                precision, recall, f1, sparsity = loading_support_metrics(
+                    model.components_, sparse_truth
+                )
+                base["loading_support_precision"] = precision
+                base["loading_support_recall"] = recall
+                base["loading_support_f1"] = f1
+                base["loading_sparsity"] = sparsity
+                base["notes"] = note
+                rows.append(base)
+            except Exception as exc:
+                rows.append(_failure_row(
+                    family="pca",
+                    scenario="sparse cellwise low-rank + missing",
+                    method=name,
+                    n=sparse_damaged.shape[0],
+                    p=sparse_damaged.shape[1],
+                    repeat=repeat,
+                    exc=exc,
+                ))
     return rows
 
 
@@ -1071,12 +1215,15 @@ def write_rst(path: Path, rows: list[dict[str, Any]], profile_name: str, repeats
         table.append([
             str(row["scenario"]), str(row["method"]), _format(row["subspace_error"]),
             _format(row["row_outlier_auc"]), _format(row["cell_outlier_auc"]),
-            _format(row["missing_reconstruction_mae"]), _format(row["seconds"]),
+            _format(row["missing_reconstruction_mae"]),
+            _format(row["loading_support_f1"]),
+            _format(row["loading_sparsity"]),
+            _format(row["seconds"]),
         ])
     lines.append(_rst_table(
-        ["Scenario", "Method", "Subspace error", "Row AUROC", "Cell AUROC", "Missing MAE", "Seconds"],
+        ["Scenario", "Method", "Subspace error", "Row AUROC", "Cell AUROC", "Missing MAE", "Support F1", "Sparsity", "Seconds"],
         table,
-        "22 25 12 9 9 11 8",
+        "20 22 10 8 8 10 9 8 8",
     ))
 
     matrix_rows = [row for row in aggregated if row["family"] == "matrix covariance"]
