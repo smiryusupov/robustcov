@@ -88,8 +88,8 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 python benchmarks/ope
 ## Cross-method suitability benchmark
 
 The cross-method benchmark compares methods only within compatible tasks. It
-covers scatter estimation, principal subspaces, matrix-valued covariance, and
-sparse precision recovery:
+covers scatter estimation, nonlinear kernel outlier detection, principal
+subspaces, matrix-valued covariance, and sparse precision recovery:
 
 ```bash
 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=2 \
@@ -99,6 +99,6 @@ python benchmarks/compare_methods.py \
   --rst results/method_comparison.rst
 ```
 
-Use `--profile full --families scatter --repeats 3` and repeat for `pca`, `matrix`, and `graph` for slower local runs. The generated tables
+Use `--profile full --families scatter --repeats 3` and repeat for `kernel`, `pca`, `matrix`, and `graph` for slower local runs. The generated tables
 are discussed in `docs/method_comparison.rst`. There is intentionally no global
 winner: each scenario uses metrics appropriate to that estimator family.

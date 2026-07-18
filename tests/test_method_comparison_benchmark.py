@@ -77,3 +77,26 @@ def test_high_dimensional_mixed_factories_include_cellrcov():
     assert "CellRCov" in names
     assert "CellMCD" not in names
     assert "FastMCD" not in names
+
+
+def test_kernel_family_quick_run_writes_kmrcd_rows(tmp_path):
+    output = tmp_path / "kernel.csv"
+    subprocess.run(
+        [
+            sys.executable,
+            str(MODULE_PATH),
+            "--profile",
+            "quick",
+            "--families",
+            "kernel",
+            "--csv",
+            str(output),
+        ],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+    text = output.read_text()
+    assert "KMRCD(RBF)" in text
+    assert "KMRCD(linear)" in text
+    assert "MRCD" in text

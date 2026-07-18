@@ -1,0 +1,7 @@
+observations: 290
+injected outliers: 50
+linear MRCD AUROC: 0.344
+RBF KMRCD AUROC: 0.967
+RBF gamma: 2.000
+feature-space regularization: 0.0040
+injected outliers retained in support: 11

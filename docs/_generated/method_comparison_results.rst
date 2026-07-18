@@ -27,14 +27,14 @@ Scatter and covariance
      - 0.177
      - —
      - 1.000
-     - 0.237
+     - 0.265
      - ok
    * - cellwise errors + missing
      - Empirical covariance
      - 4.090
      - 1.000
      - —
-     - 6.51e-04
+     - 0.001
      - ok
    * - cellwise errors + missing
      - FastMCD
@@ -48,7 +48,7 @@ Scatter and covariance
      - 3.367
      - 0.995
      - —
-     - 0.006
+     - 0.009
      - ok
    * - cellwise errors + missing
      - RegularizedCauchy
@@ -62,7 +62,7 @@ Scatter and covariance
      - 4.070
      - 1.000
      - —
-     - 9.25e-04
+     - 0.001
      - ok
    * - cellwise errors + missing
      - StudentTScatter
@@ -76,14 +76,14 @@ Scatter and covariance
      - 1.597
      - —
      - —
-     - 3.68e-04
+     - 3.13e-04
      - ok
    * - heavy-tailed elliptical
      - FastMCD
      - 0.295
      - —
      - —
-     - 9.67e-04
+     - 9.97e-04
      - ok
    * - heavy-tailed elliptical
      - MRCD
@@ -97,28 +97,28 @@ Scatter and covariance
      - 0.200
      - —
      - —
-     - 0.002
+     - 0.003
      - ok
    * - heavy-tailed elliptical
      - RegularizedTyler
      - 0.220
      - —
      - —
-     - 6.28e-04
+     - 7.28e-04
      - ok
    * - heavy-tailed elliptical
      - StudentTScatter
      - 0.169
      - —
      - —
-     - 0.001
+     - 0.002
      - ok
    * - high-dimensional mixed contamination
      - CellRCov
      - 0.383
      - 1.000
      - 0.999
-     - 0.101
+     - 0.112
      - ok
    * - high-dimensional mixed contamination
      - Empirical covariance
@@ -139,21 +139,21 @@ Scatter and covariance
      - 0.825
      - 0.822
      - —
-     - 0.045
+     - 0.046
      - ok
    * - high-dimensional mixed contamination
      - RegularizedTyler
      - 0.854
      - 0.799
      - —
-     - 0.034
+     - 0.037
      - ok
    * - high-dimensional mixed contamination
      - StudentTScatter
      - 0.862
      - 0.815
      - —
-     - 0.038
+     - 0.039
      - ok
    * - high-dimensional row outliers
      - Empirical covariance
@@ -174,7 +174,7 @@ Scatter and covariance
      - 0.792
      - 0.980
      - —
-     - 0.048
+     - 0.047
      - ok
    * - high-dimensional row outliers
      - RegularizedTyler
@@ -195,7 +195,7 @@ Scatter and covariance
      - 2.285
      - 0.928
      - —
-     - 3.80e-04
+     - 4.22e-04
      - ok
    * - rowwise outliers
      - FastMCD
@@ -209,7 +209,7 @@ Scatter and covariance
      - 0.332
      - 1.000
      - —
-     - 0.006
+     - 0.012
      - ok
    * - rowwise outliers
      - RegularizedCauchy
@@ -223,7 +223,7 @@ Scatter and covariance
      - 0.938
      - 0.984
      - —
-     - 6.10e-04
+     - 6.41e-04
      - ok
    * - rowwise outliers
      - StudentTScatter
@@ -231,6 +231,34 @@ Scatter and covariance
      - 0.999
      - —
      - 0.002
+     - ok
+
+Nonlinear kernel outlier detection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 12 9 36 8
+
+   * - Method
+     - Outlier AUROC
+     - Seconds
+     - Role
+     - Status
+   * - KMRCD(RBF)
+     - 0.929
+     - 0.119
+     - nonlinear feature-space subset fit; gamma fixed for this scenario
+     - ok
+   * - KMRCD(linear)
+     - 0.474
+     - 0.103
+     - kernel formulation with linear geometry
+     - ok
+   * - MRCD
+     - 0.477
+     - 0.005
+     - linear robust subset baseline
      - ok
 
 Principal subspaces
@@ -253,7 +281,7 @@ Principal subspaces
      - —
      - 1.000
      - 0.499
-     - 0.599
+     - 0.609
    * - cellwise low-rank + missing
      - CellPCA
      - 0.021
@@ -267,7 +295,7 @@ Principal subspaces
      - —
      - 0.974
      - 0.572
-     - 2.66e-04
+     - 2.21e-04
    * - cellwise low-rank + missing
      - RobustPCA(Cauchy, imputed)
      - 0.084
@@ -281,7 +309,7 @@ Principal subspaces
      - 0.790
      - —
      - —
-     - 2.42e-04
+     - 2.35e-04
    * - rowwise low-rank outliers
      - RobustPCA(Cauchy)
      - 0.029
@@ -368,4 +396,4 @@ Sparse conditional-dependence graphs
      - 0.364
      - 0.229
      - 24
-     - 9.59e-04
+     - 9.45e-04

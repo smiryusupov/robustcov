@@ -54,6 +54,7 @@ class Profile:
     graph_n: int
     graph_p: int
     subset_starts: int
+    kernel_subset_starts: int
     cell_max_iter: int
     pca_max_iter: int
     graph_n_alphas: int
@@ -75,6 +76,7 @@ PROFILES = {
         graph_n=170,
         graph_p=10,
         subset_starts=24,
+        kernel_subset_starts=20,
         cell_max_iter=35,
         pca_max_iter=60,
         graph_n_alphas=7,
@@ -91,6 +93,7 @@ PROFILES = {
         graph_n=240,
         graph_p=12,
         subset_starts=60,
+        kernel_subset_starts=30,
         cell_max_iter=60,
         pca_max_iter=100,
         graph_n_alphas=12,
@@ -638,6 +641,97 @@ def run_scatter_benchmarks(profile: Profile, repeats: int, seed: int) -> list[di
 
 
 # ---------------------------------------------------------------------------
+# Kernel outlier-detection benchmark
+
+
+def make_curved_manifold(
+    rng: np.random.Generator,
+    n_inliers: int,
+    n_outliers: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    x = rng.uniform(-2.5, 2.5, n_inliers)
+    inliers = np.column_stack([
+        x,
+        0.55 * x**2 + 0.08 * rng.normal(size=n_inliers),
+    ])
+
+    xo = rng.uniform(-1.8, 1.8, n_outliers)
+    yo = rng.uniform(0.2, 2.0, n_outliers)
+    close = np.abs(yo - 0.55 * xo**2) < 0.4
+    while np.any(close):
+        yo[close] = rng.uniform(0.2, 2.0, np.count_nonzero(close))
+        close = np.abs(yo - 0.55 * xo**2) < 0.4
+    outliers = np.column_stack([xo, yo])
+
+    X = np.vstack([inliers, outliers])
+    labels = np.r_[np.zeros(n_inliers, dtype=bool), np.ones(n_outliers, dtype=bool)]
+    return X, labels
+
+
+def run_kernel_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[str, Any]]:
+    rng = np.random.default_rng(seed + 10)
+    n_inliers = profile.scatter_n
+    n_outliers = max(20, int(round(0.20 * n_inliers)))
+    X, labels = make_curved_manifold(rng, n_inliers, n_outliers)
+
+    subset = dict(
+        contamination=n_outliers / X.shape[0],
+        n_init=profile.kernel_subset_starts,
+        n_best=3,
+        initial_c_steps=2,
+        max_iter=35,
+        random_state=0,
+    )
+    methods: list[tuple[str, Callable[[], Any], str]] = [
+        (
+            "MRCD",
+            lambda: rc.MRCD(**subset).fit(X),
+            "linear robust subset baseline",
+        ),
+        (
+            "KMRCD(linear)",
+            lambda: rc.KMRCD(kernel="linear", regularization="auto", **subset).fit(X),
+            "kernel formulation with linear geometry",
+        ),
+        (
+            "KMRCD(RBF)",
+            lambda: rc.KMRCD(kernel="rbf", gamma=2.0, **subset).fit(X),
+            "nonlinear feature-space subset fit; gamma fixed for this scenario",
+        ),
+    ]
+
+    rows: list[dict[str, Any]] = []
+    for repeat in range(repeats):
+        for name, fit_method, note in methods:
+            base = _base_row(
+                family="kernel outlier detection",
+                scenario="curved manifold + off-manifold rows",
+                method=name,
+                n=X.shape[0],
+                p=X.shape[1],
+                repeat=repeat,
+            )
+            try:
+                model, seconds, peak = _measure(fit_method)
+                base["seconds"] = seconds
+                base["python_peak_mb"] = peak
+                base["row_outlier_auc"] = binary_auc(labels, model.distances_)
+                base["notes"] = note
+                rows.append(base)
+            except Exception as exc:
+                rows.append(_failure_row(
+                    family="kernel outlier detection",
+                    scenario="curved manifold + off-manifold rows",
+                    method=name,
+                    n=X.shape[0],
+                    p=X.shape[1],
+                    repeat=repeat,
+                    exc=exc,
+                ))
+    return rows
+
+
+# ---------------------------------------------------------------------------
 # PCA benchmarks
 
 
@@ -958,6 +1052,18 @@ def write_rst(path: Path, rows: list[dict[str, Any]], profile_name: str, repeats
         "22 25 13 10 10 9 8",
     ))
 
+    kernel_rows = [row for row in aggregated if row["family"] == "kernel outlier detection"]
+    lines.extend(["Nonlinear kernel outlier detection", "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", ""])
+    table = [[
+        str(row["method"]), _format(row["row_outlier_auc"]),
+        _format(row["seconds"]), str(row["notes"]), str(row["status"]),
+    ] for row in kernel_rows]
+    lines.append(_rst_table(
+        ["Method", "Outlier AUROC", "Seconds", "Role", "Status"],
+        table,
+        "24 12 9 36 8",
+    ))
+
     pca = [row for row in aggregated if row["family"] == "pca"]
     lines.extend(["Principal subspaces", "~~~~~~~~~~~~~~~~~~~", ""])
     table = []
@@ -1014,7 +1120,7 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, default=None, help="Default: 1. Use 3 or more for stable timing comparisons.")
     parser.add_argument("--seed", type=int, default=20260718)
     parser.add_argument("--measure-python-memory", action="store_true", help="Record tracemalloc peak memory. This slows Python-heavy methods and excludes native allocations.")
-    parser.add_argument("--families", nargs="+", choices=["scatter", "pca", "matrix", "graph"], default=["scatter", "pca", "matrix", "graph"])
+    parser.add_argument("--families", nargs="+", choices=["scatter", "kernel", "pca", "matrix", "graph"], default=["scatter", "kernel", "pca", "matrix", "graph"])
     parser.add_argument("--csv", type=Path, default=None)
     parser.add_argument("--rst", type=Path, default=None)
     args = parser.parse_args()
@@ -1030,6 +1136,8 @@ def main() -> None:
     rows: list[dict[str, Any]] = []
     if "scatter" in args.families:
         rows.extend(run_scatter_benchmarks(profile, repeats, args.seed))
+    if "kernel" in args.families:
+        rows.extend(run_kernel_benchmarks(profile, repeats, args.seed))
     if "pca" in args.families:
         rows.extend(run_pca_benchmarks(profile, repeats, args.seed))
     if "matrix" in args.families:

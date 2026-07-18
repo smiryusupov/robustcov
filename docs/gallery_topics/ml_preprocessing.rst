@@ -21,6 +21,11 @@ This topic is for users who do not want anomaly detection as the final task, but
        <h3>High-dimensional row contamination</h3>
        <p>Estimate a well-conditioned covariance when the feature count exceeds the sample size.</p>
      </a>
+     <a class="gallery-card" href="../gallery/kmrcd_nonlinear_manifold.html">
+       <img src="../_static/gallery/kmrcd_nonlinear_manifold/kernel_distance_contours.png" alt="Kernel MRCD curved-manifold outlier detection">
+       <h3>Nonlinear robust distances</h3>
+       <p>Compare linear MRCD with an RBF kernel on a curved majority structure.</p>
+     </a>
    </div>
 
 How to use this topic

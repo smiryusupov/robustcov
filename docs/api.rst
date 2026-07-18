@@ -16,6 +16,14 @@ Minimum regularized covariance determinant
    :undoc-members:
    :show-inheritance:
 
+Kernel minimum regularized covariance determinant
+-------------------------------------------------
+
+.. automodule:: robustcov.kernel_mrcd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Matrix minimum covariance determinant
 -------------------------------------
 

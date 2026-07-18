@@ -44,6 +44,7 @@ These may change significantly:
 * ``HellingerRegularizedTyler``
 * exact KL/Wiesel variants beyond current aliases/prototypes
 * ``MRCD`` search presets, initialization strategy, and diagnostic attribute names
+* ``KMRCD`` kernel defaults, initial-support search, and out-of-sample diagnostics
 * ``MMCD`` initialization, numerical regularization, and contribution APIs
 * ``RobustPCA`` and ``RobustSubspaceMonitor`` calibration and monitoring APIs
 * benchmark script schemas

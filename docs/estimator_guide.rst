@@ -24,6 +24,10 @@ reproducible cross-method benchmarks.
      - ``MRCD``
      - High-breakdown subset estimation with target regularization.
      - The target and condition-number bound influence covariance recovery.
+   * - The regular observations follow a curved or otherwise non-elliptical structure
+     - ``KMRCD``
+     - Runs the regularized subset search in a kernel feature space.
+     - Kernel and bandwidth choices define the geometry and can dominate the result.
    * - Each observation is a matrix and contamination affects complete observations
      - ``MMCD``
      - Estimates separate row and column covariance factors.
@@ -80,6 +84,7 @@ Stable prototype APIs:
 
 Experimental APIs:
 
+* ``KMRCD`` while its package-specific initial-support search is compared with the reference implementation
 * ``CellRCov`` while its package-native CellPCA/FastMCD decomposition is cross-validated
   against the reference implementation
 * ``HellingerRegularizedTyler``

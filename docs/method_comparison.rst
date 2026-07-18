@@ -39,6 +39,10 @@ than a ranking table.
      - ``MRCD``
      - ``RegularizedCauchy``; ``RegularizedTyler``
      - Empirical covariance and unregularized subset covariance are singular.
+   * - The regular observations follow a curved or kernel-defined structure
+     - ``KMRCD``
+     - Linear ``MRCD`` as a baseline; compare several defensible bandwidths
+     - A poorly chosen kernel can manufacture separation or hide genuine outliers.
    * - Broad heavy tails rather than a small separated outlier group
      - ``StudentTScatter``
      - ``RegularizedCauchy``; ``RegularizedTyler``
@@ -112,6 +116,13 @@ with another estimator rather than handled directly.
      - Limited
      - Yes
      - vectors
+   * - ``KMRCD``
+     - kernel-space support and anomaly scores
+     - Yes
+     - No
+     - Limited
+     - Yes, through the kernel matrix
+     - vectors or PSD kernels
    * - ``StudentTScatter``
      - covariance/scatter
      - Smooth downweighting
@@ -206,6 +217,13 @@ contains four benchmark families:
    and missing entries.  The main metric is relative Frobenius covariance
    error.  AUROC is shown only when an injected outlier label is meaningful.
 
+
+``kernel outlier detection``
+   A noisy curved manifold with off-manifold row outliers.  Linear MRCD and
+   linear KMRCD are compared with RBF KMRCD using row-outlier AUROC and runtime.
+   No covariance error is reported because a nonlinear kernel does not define
+   an ordinary input-space covariance estimate.
+
 ``pca``
    Rowwise low-rank outliers and cellwise low-rank corruption with missing
    entries.  The metrics are projection-matrix error, outlier AUROC, and
@@ -235,6 +253,9 @@ How to read this snapshot
 The committed quick run supports several practical conclusions, but not a
 universal ordering.
 
+* In the nonlinear-manifold scenario, RBF KMRCD separates off-manifold points
+  that lie inside the broad linear covariance envelope.  The result depends on
+  the selected RBF bandwidth, so linear MRCD remains an important baseline.
 * Under separated rowwise contamination, FastMCD gives the smallest covariance
   error in this run.  MRCD is somewhat more conservative but remains usable in
   regimes where a raw subset covariance would be singular.
@@ -285,7 +306,7 @@ For a more stable local timing comparison:
        --repeats 3 \
        --csv results/scatter_method_comparison.csv
 
-Repeat the command with ``pca``, ``matrix``, or ``graph``.  Running the families
+Repeat the command with ``kernel``, ``pca``, ``matrix``, or ``graph``.  Running the families
 separately gives progress at natural checkpoints and avoids losing an entire
 long run if one method is interrupted.
 

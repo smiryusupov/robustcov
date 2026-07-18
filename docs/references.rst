@@ -15,6 +15,7 @@ Robust covariance and MCD
 * P. J. Rousseeuw and K. Van Driessen. 1999. A fast algorithm for the minimum covariance determinant estimator. *Technometrics*.
 * M. Hubert, M. Debruyne, and P. J. Rousseeuw. 2018. Minimum covariance determinant and extensions. *WIREs Computational Statistics*.
 * K. Boudt, P. J. Rousseeuw, S. Vanduffel, and T. Verdonck. 2020. The minimum regularized covariance determinant estimator. *Statistics and Computing*.
+* J. Schreurs, I. Vranckx, M. Hubert, J. A. K. Suykens, and P. J. Rousseeuw. 2021. Outlier detection in non-elliptical data by kernel MRCD. *Statistics and Computing*, 31:66.
 * M. Mayrhofer, U. Radojičić, and P. Filzmoser. 2025. Robust covariance estimation and explainable outlier detection for matrix-valued data. *Technometrics*.
 * J. Raymaekers and P. J. Rousseeuw. 2024. The cellwise minimum covariance determinant estimator. *Journal of the American Statistical Association*, 119(548), 2610–2621.
 * F. Centofanti, M. Hubert, and P. J. Rousseeuw. 2026. Cellwise and casewise robust covariance in high dimensions. arXiv:2505.19925.

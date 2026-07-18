@@ -49,6 +49,7 @@ The main pieces are:
   the feature dimension;
 * ``MRCD`` for high-breakdown covariance estimation when the feature dimension is
   close to or greater than the sample size;
+* ``KMRCD`` for nonlinear or kernel-defined inlier structure;
 * ``MMCD`` for robust row/column covariance estimation on matrix-valued observations;
 * ``CellMCD`` for isolated corrupted or missing entries in otherwise useful rows;
 * ``CellRCov`` for full high-dimensional covariance recovery when bad cells, abnormal rows,
@@ -78,6 +79,7 @@ The main pieces are:
    use_case_gallery
    benchmark_gallery
    algorithms
+   kernel_mrcd
    matrix_covariance
    cellwise_covariance
    cellwise_regularized_covariance

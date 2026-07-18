@@ -131,6 +131,73 @@ in the reference R implementation, but optimizes the same MRCD subset
 criterion.  ``MRCD`` is intended for rowwise contamination.  It does not model
 individual corrupted cells and it is not a sparse precision-matrix estimator.
 
+Kernel Minimum Regularized Covariance Determinant
+-------------------------------------------------
+
+``KMRCD`` applies the MRCD subset criterion in a reproducing-kernel Hilbert
+space.  Let :math:`k(x,y)=\langle\phi(x),\phi(y)\rangle` be a positive-semidefinite
+kernel and let :math:`H` contain :math:`h` observations.  Their feature-space
+center is
+
+.. math::
+
+   c_{\mathcal F}^H = \frac{1}{h}\sum_{i\in H}\phi(x_i).
+
+The centered subset covariance is regularized toward the identity in feature
+space,
+
+.. math::
+
+   \widehat\Sigma_{\mathrm{reg}}^H
+   = \frac{1-\rho}{h-1}
+     \sum_{i\in H}(\phi(x_i)-c_{\mathcal F}^H)
+                    (\phi(x_i)-c_{\mathcal F}^H)^T
+     + \rho I.
+
+KMRCD approximately minimizes its determinant over all :math:`h`-subsets.  The
+same optimization can be carried out with the centered subset kernel matrix
+:math:`\widetilde K^H` because
+
+.. math::
+
+   \widetilde K_{\mathrm{reg}}^H
+   = (1-\rho)\widetilde K^H + (h-1)\rho I_h
+
+has a determinant proportional to the feature-space regularized covariance
+determinant.
+
+For a new point :math:`x`, define the kernel vector and self-kernel after
+centering relative to the selected subset.  Its squared robust kernel distance
+is
+
+.. math::
+
+   d_{\mathcal F}^2(x)
+   = \frac{1}{\rho}\left[
+       \widetilde k(x,x)
+       -(1-\rho)\widetilde k(H,x)^T
+       (\widetilde K_{\mathrm{reg}}^H)^{-1}
+       \widetilde k(H,x)
+     \right].
+
+A kernel C-step keeps the :math:`h` observations with the smallest current
+kernel distances.  As in MRCD, the regularized determinant does not increase
+under this update.  ``regularization='auto'`` chooses a positive target weight
+that keeps the regularized subset kernel below the requested condition-number
+bound.
+
+The RBF default uses the paper's median squared-distance bandwidth heuristic.
+That heuristic is only a starting value: a bandwidth that is too large makes
+the model nearly linear, whereas a bandwidth that is too small can fragment the
+inlier cloud.
+
+``robustcov`` implements the KMRCD objective, kernel distance, and C-steps.  It
+uses kernel-central and randomized initial subsets instead of the four refined
+initial estimators in the reference MATLAB code, so numerical identity with
+that implementation is not claimed.  Use KMRCD for rowwise outliers around a
+non-elliptical majority structure.  It is not a cellwise method, and it does not
+produce an ordinary input-space covariance matrix for nonlinear kernels.
+
 Cellwise Minimum Covariance Determinant
 ---------------------------------------
 

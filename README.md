@@ -21,6 +21,7 @@ observations for a stable empirical covariance matrix.
 
 - `FastMCD` for sparse, separable contamination
 - `MRCD` for high-breakdown covariance estimation when `p` is close to or greater than `n`
+- `KMRCD` for nonlinear robust outlier detection in a kernel feature space
 - `MMCD` for robust row/column covariance estimation when each observation is a matrix
 - `CellMCD` for covariance estimation with isolated corrupted or missing cells
 - `CellRCov` for high-dimensional covariance with bad cells, abnormal rows, and missing entries
@@ -116,6 +117,24 @@ print(mrcd.regularization_)
 print(mrcd.standardized_condition_number_)
 print(mrcd.support_)
 ```
+
+
+For non-elliptical inlier structure, fit MRCD in a kernel feature space:
+
+```python
+kmrcd = rc.KMRCD(
+    kernel="rbf",
+    gamma="median",
+    contamination=0.15,
+    random_state=0,
+).fit(X)
+
+print(kmrcd.support_)
+print(kmrcd.distances_)
+```
+
+The RBF bandwidth strongly affects the geometry. The median heuristic is a useful
+starting point, not an automatic guarantee of good separation.
 
 For matrix-valued observations such as sensor-by-time windows:
 
@@ -266,6 +285,7 @@ it is detected.
 |---|---|---|
 | `FastMCD` | Separable contamination, `n >> p` | Fast robust covariance and support diagnostics |
 | `MRCD` | Rowwise contamination with `p` close to or greater than `n` | Regularized high-breakdown subset covariance with automatic condition control |
+| `KMRCD` | Non-elliptical inlier structure or implicit kernel data | MRCD subset search in a positive-semidefinite kernel feature space |
 | `MMCD` | Matrix-valued observations with contaminated rows/samples | Robust mean matrix and Kronecker row/column covariance factors |
 | `CellMCD` | Tables with isolated corrupted or missing cells and `n > p` | Observed-likelihood covariance fit with cell-level flags and conditional predictions |
 | `CellRCov` | High-dimensional tables with bad cells, abnormal rows, and missing entries | Robust low-rank covariance plus a diagonally regularized residual covariance |

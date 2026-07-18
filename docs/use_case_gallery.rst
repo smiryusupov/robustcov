@@ -212,6 +212,7 @@ All detailed pages
    gallery/wine_class_screening
    gallery/ml_preprocessing
    gallery/mrcd_high_dimensional_outliers
+   gallery/kmrcd_nonlinear_manifold
    geometry
    gallery/feature_geometry_synthetic_ood
    gallery/feature_geometry_class_conditional_ood

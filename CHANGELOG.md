@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Added ``KMRCD`` for robust subset-based anomaly detection in linear, RBF, polynomial, callable, or precomputed kernel spaces.
 
 Highlights:
 - Added estimator-driven `RobustPCA` with robust projection, reconstruction, whitening, and variance-based component selection.
