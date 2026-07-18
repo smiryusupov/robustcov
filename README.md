@@ -263,6 +263,20 @@ Orthogonal distance measures the part that those components cannot reconstruct.
 This implementation uses an eigendecomposition of a robust scatter matrix; it
 is not the low-rank-plus-sparse method with the same common name.
 
+For a direct low-rank fit with density-power residual weighting:
+
+```python
+dpd_pca = rc.DensityPowerRobustPCA(
+    n_components=5,
+    alpha=0.30,
+).fit(X)
+
+Z_dpd = dpd_pca.transform(X)
+cell_weights = dpd_pca.cell_weights(X)
+```
+
+This estimator requires a fixed component count and complete finite input.
+
 Bootstrap the fitted loadings and retained subspace with:
 
 ```python
@@ -328,6 +342,7 @@ it is detected.
 | `AutoRobustScatter` | Exploratory estimator selection | Diagnostic or stability-based selector |
 | `ClusterRobustOutlierDetector` | Multimodal data | Cluster-then-local-robust-scatter diagnostic |
 | `RobustPCA` | Robust dimensionality reduction and subspace diagnostics | Eigendecomposition of a robust location and scatter estimate |
+| `DensityPowerRobustPCA` | Direct robust low-rank fitting with cell residual weights | Gaussian density-power-divergence alternating regressions |
 
 `KLRegularizedTyler` and `WieselTyler` are currently documented as aliases/prototype variants around the regularized Tyler implementation. `HellingerRegularizedTyler` is experimental.
 

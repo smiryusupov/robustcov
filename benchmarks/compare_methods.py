@@ -820,6 +820,16 @@ def run_pca_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[s
         ("RobustPCA(MRCD)", lambda: rc.RobustPCA(q, estimator=rc.MRCD(**subset_args)), "regularized high-breakdown scatter PCA"),
         ("RobustPCA(StudentT)", lambda: rc.RobustPCA(q, estimator=rc.StudentTScatter(df=3, alpha=0.08, max_iter=180)), "diffuse heavy tails"),
         ("RobustPCA(Cauchy)", lambda: rc.RobustPCA(q, estimator=rc.RegularizedCauchy(alpha=0.12, max_iter=180)), "very heavy tails"),
+        (
+            "DensityPowerRobustPCA",
+            lambda: rc.DensityPowerRobustPCA(
+                n_components=q,
+                alpha=0.30,
+                max_iter=profile.pca_max_iter,
+                tol=5e-4,
+            ),
+            "direct Gaussian DPD low-rank fit",
+        ),
     ]
 
     for repeat in range(repeats):
@@ -856,9 +866,18 @@ def run_pca_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[s
     def make_cellpca() -> Any:
         return rc.CellPCA(n_components=q, max_iter=profile.pca_max_iter).fit(damaged)
 
+    def make_dpd_pca() -> Any:
+        return rc.DensityPowerRobustPCA(
+            n_components=q,
+            alpha=0.35,
+            max_iter=profile.pca_max_iter,
+            tol=5e-4,
+        ).fit(imputed)
+
     cell_methods: list[tuple[str, Callable[[], Any], str]] = [
         ("Median-imputed PCA", make_empirical, "simple baseline"),
         ("RobustPCA(Cauchy, imputed)", make_cauchy, "rowwise/heavy-tail robustness after imputation"),
+        ("DensityPowerRobustPCA, imputed", make_dpd_pca, "direct DPD low-rank fit after median imputation"),
         ("CellMCD scatter PCA", make_cellmcd, "cellwise robust scatter followed by eigendecomposition"),
         ("CellPCA", make_cellpca, "joint cellwise and casewise low-rank fit"),
     ]
@@ -874,6 +893,9 @@ def run_pca_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[s
                 if isinstance(model, rc.CellwiseRobustPCA):
                     reconstruction = np.asarray(model.fitted_values_, dtype=float)
                     cell_scores = np.abs(np.asarray(model.standardized_residuals_, dtype=float))
+                elif isinstance(model, rc.DensityPowerRobustPCA):
+                    reconstruction = model.reconstruct(imputed)
+                    cell_scores = 1.0 - model.cell_weights(imputed)
                 else:
                     reconstruction = model.reconstruct(imputed)
                     cell_scores = _pca_cell_scores(damaged, reconstruction, observed)

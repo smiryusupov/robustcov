@@ -207,6 +207,7 @@ All detailed pages
    gallery/image_feature_anomaly
    gallery/text_embedding_outliers
    gallery/robust_pca_embedding_monitoring
+   gallery/density_power_pca
    gallery/robust_subspace_monitoring
    gallery/breast_cancer_screening
    gallery/digits_one_class

@@ -117,3 +117,11 @@ def test_high_dimensional_scatter_factories_exclude_dets_and_detmm():
     names = [name for name, _, _ in factories]
     assert "DetS" not in names
     assert "DetMM" not in names
+
+
+def test_pca_family_includes_density_power_pca():
+    profile = BENCH.PROFILES["quick"]
+    rows = BENCH.run_pca_benchmarks(profile, repeats=1, seed=123)
+    names = {row["method"] for row in rows}
+    assert "DensityPowerRobustPCA" in names
+    assert "DensityPowerRobustPCA, imputed" in names

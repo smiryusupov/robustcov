@@ -156,6 +156,14 @@ Robust principal component analysis
    :undoc-members:
    :show-inheritance:
 
+Density-power robust PCA
+------------------------
+
+.. automodule:: robustcov.dpd_pca
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Bootstrap PCA stability
 -----------------------
 

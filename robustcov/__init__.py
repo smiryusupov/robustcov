@@ -7,6 +7,7 @@ from .covariance import FastMCD, MinCovDet, TylerShape, RegularizedTyler
 from .mrcd import MinimumRegularizedCovarianceDeterminant, MRCD, MinRegularizedCovDet
 from .kernel_mrcd import KernelMinimumRegularizedCovarianceDeterminant, KernelMRCD, KMRCD
 from .s_estimators import DeterministicSEstimator, DeterministicMMEstimator, DetS, DetMM
+from .dpd_pca import DensityPowerRobustPCA, DPDRobustPCA
 from .mmcd import MatrixMinimumCovarianceDeterminant, MatrixMCD, MMCD
 from .cellmcd import CellwiseMinimumCovarianceDeterminant, CellMCD, CellwiseMCD
 from .cellpca import CellwiseRobustPCA, CellPCA, CasewiseCellwisePCA
@@ -60,6 +61,8 @@ from .plotting import (
 
 __all__ = [
     "RobustPCA",
+    "DensityPowerRobustPCA",
+    "DPDRobustPCA",
     "SubspaceStability",
     "FeatureGeometry",
     "ClassConditionalFeatureGeometry",

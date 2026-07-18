@@ -55,6 +55,7 @@ CASES = [
     GalleryCase("cellrcov_high_dimensional", "plot_cellrcov_high_dimensional.py", "cellrcov_high_dimensional", ("covariance_error.png", "covariance_spectrum.png", "distance_decomposition.png", "cell_residual_map.png", "metrics.csv")),
     GalleryCase("robust_graphical_lasso_market_network", "plot_robust_graphical_lasso_market_network.py", "robust_graphical_lasso_market_network", ("partial_correlation_comparison.png", "robust_network.png", "ebic_path.png", "metrics.csv")),
     GalleryCase("robust_pca_embedding_monitoring", "plot_robust_pca_embedding_monitoring.py", "robust_pca_embedding_monitoring", ("batch_monitoring.png", "outlier_map.png", "subspace_recovery.png")),
+    GalleryCase("density_power_pca", "plot_density_power_pca.py", "density_power_pca", ("subspace_comparison.png", "alpha_tradeoff.png", "cell_weight_map.png", "outlier_map.png", "metrics.csv")),
     GalleryCase("robust_subspace_monitoring", "plot_robust_subspace_monitoring.py", "robust_subspace_monitoring", ("monitor_history.png", "drift_mechanism_map.png", "final_batch_outlier_map.png")),
     GalleryCase("robust_pca_yield_curve", "plot_robust_pca_yield_curve.py", "robust_pca_yield_curve", ("factor_loadings.png", "factor_scores.png", "outlier_map.png", "metrics.csv")),
     GalleryCase("robust_pca_subspace_stability", "plot_robust_pca_subspace_stability.py", "robust_pca_subspace_stability", ("loading_intervals.png", "principal_angle_distribution.png", "eigenvalue_intervals.png", "metrics.csv")),

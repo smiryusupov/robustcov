@@ -326,6 +326,53 @@ See :doc:`cellwise_regularized_covariance` for the effective-weight
 normalization, shrinkage selection, rank choice, and differences from the
 reference cellRCov software.
 
+Density-power robust PCA
+----------------------------
+
+``DensityPowerRobustPCA`` estimates a low-rank model directly rather than
+first estimating a full scatter matrix.  For centered data it uses
+
+.. math::
+
+   x_{ij}-\mu_j \approx a_i^T b_j + \varepsilon_{ij},
+
+where :math:`a_i` is the score vector of row :math:`i` and :math:`b_j` is the
+loading vector of feature :math:`j`.  With density-power parameter
+:math:`\alpha>0`, each residual contributes a bounded Gaussian
+density-power-divergence loss.  The corresponding weight is
+
+.. math::
+
+   w_{ij}
+   = \exp\left(
+       -\frac{\alpha r_{ij}^2}{2\sigma^2}
+     \right),
+   \qquad
+   r_{ij}=x_{ij}-\mu_j-a_i^Tb_j.
+
+Scores and loadings are updated by alternating weighted least squares.  The
+residual scale is updated from the density-power fixed-point equation
+
+.. math::
+
+   \sigma^2
+   =
+   \frac{\frac{1}{np}\sum_{i,j} w_{ij}r_{ij}^2}
+        {\frac{1}{np}\sum_{i,j}w_{ij}
+         -\alpha(1+\alpha)^{-3/2}}.
+
+At :math:`\alpha=0`, all weights equal one and the fit reduces to ordinary
+least-squares PCA.  Larger values bound the influence of large reconstruction
+errors more strongly.  A final singular-value decomposition puts the fitted
+rank-:math:`q` model into canonical PCA form, with eigenvalues
+:math:`s_k^2/n`.
+
+The package uses a geometric-median center, winsorized SVD initialization,
+block weighted least-squares updates, QR stabilization, and a final SVD.  It
+therefore implements a package-native density-power PCA variant and does not
+claim numerical identity with the reference rPCAdpd software.  See
+:doc:`density_power_pca` for diagnostics, tuning guidance, and limitations.
+
 Cellwise and Casewise Robust PCA
 -----------------------------------
 

@@ -41,6 +41,7 @@ keywords = [
   "kernel methods",
   "drift monitoring",
   "robust PCA",
+  "density power divergence",
   "cellwise covariance",
   "cellwise robust PCA",
   "sparse robust PCA",

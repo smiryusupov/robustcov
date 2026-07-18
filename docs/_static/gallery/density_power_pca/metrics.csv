@@ -1,0 +1,14 @@
+metric,value
+n_samples,220
+n_features,30
+n_components,3
+cell_contamination_fraction,0.045
+abnormal_row_fraction,0.08181818181818182
+empirical_subspace_error,0.5921330499146731
+cauchy_subspace_error,0.1559889515866063
+dpd_subspace_error,0.04229755221188977
+cellpca_subspace_error,0.02984786084550818
+dpd_cell_auc,0.9850944796208956
+dpd_row_auc,0.9974956445993032
+dpd_iterations,21
+dpd_residual_scale,0.16927245107987726

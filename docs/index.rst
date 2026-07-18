@@ -63,6 +63,8 @@ The main pieces are:
 * robust-distance plots and reports for anomaly analysis;
 * ``RobustPCA`` for projection, reconstruction, and score/orthogonal-distance
   diagnostics;
+* ``DensityPowerRobustPCA`` for a direct robust low-rank fit using density-power
+  alternating regressions;
 * ``FeatureGeometry`` for robust distances and kernels on learned
   representations;
 * ``RobustSubspaceMonitor`` for comparing rolling batches with a fixed
@@ -88,6 +90,7 @@ The main pieces are:
    cellwise_regularized_covariance
    geometry
    robust_pca
+   density_power_pca
    subspace_stability
    cellwise_pca
    sparse_cellwise_pca

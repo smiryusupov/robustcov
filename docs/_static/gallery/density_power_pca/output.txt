@@ -1,0 +1,8 @@
+data shape: (220, 30)
+cell contamination: 4.5%
+abnormal complete rows: 18
+subspace error, empirical / Cauchy / DPD / CellPCA:
+0.592 / 0.156 / 0.042 / 0.030
+DPD cell-outlier AUROC: 0.985
+DPD row-outlier AUROC: 0.997
+DPD iterations: 21; converged: True

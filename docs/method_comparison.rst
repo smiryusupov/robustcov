@@ -187,6 +187,13 @@ with another estimator rather than handled directly.
      - No
      - Depends on scatter
      - vectors
+   * - ``DensityPowerRobustPCA``
+     - direct low-rank subspace and residual weights
+     - DPD residual downweighting
+     - Yes, through cell residuals
+     - No
+     - Yes
+     - complete tables
    * - ``CellPCA``
      - low-rank subspace and cell/case weights
      - Yes
