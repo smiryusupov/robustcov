@@ -1073,10 +1073,96 @@ def run_matrix_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dic
 
 
 def run_graph_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+
+    # Heavy-tailed elliptical graph: spatial signs are designed for radial
+    # heavy tails and estimate a trace-normalized shape precision.
+    rng = np.random.default_rng(seed + 59)
+    truth_precision, truth_covariance = make_sparse_precision(profile.graph_p)
+    heavy = sample_multivariate_t(
+        rng, profile.graph_n, truth_covariance, df=2.0
+    )
+    radial_rows = rng.choice(
+        profile.graph_n,
+        size=max(1, int(round(0.12 * profile.graph_n))),
+        replace=False,
+    )
+    heavy[radial_rows] *= rng.uniform(4.0, 12.0, size=radial_rows.size)[:, None]
+    truth_adjacency = np.abs(truth_precision) > 1e-12
+    np.fill_diagonal(truth_adjacency, False)
+    truth_partial = partial_correlation(truth_precision)
+    heavy_kwargs = dict(
+        alpha=0.08,
+        max_iter=profile.graph_max_iter,
+        edge_tolerance=1e-6,
+    )
+    heavy_methods: list[tuple[str, Callable[[], Any], str]] = [
+        (
+            "Empirical graphical lasso",
+            lambda: rc.RobustGraphicalLasso(
+                scatter_estimator="empirical", **heavy_kwargs
+            ).fit(heavy),
+            "non-robust Gaussian baseline",
+        ),
+        (
+            "Cauchy graphical lasso",
+            lambda: rc.RobustGraphicalLasso(
+                scatter_estimator=rc.RegularizedCauchy(alpha=0.12, max_iter=180),
+                **heavy_kwargs,
+            ).fit(heavy),
+            "robust-scatter graphical lasso",
+        ),
+        (
+            "Spatial-sign graphical lasso",
+            lambda: rc.SGLASSO(**heavy_kwargs).fit(heavy),
+            "native spatial-sign shape graph for heavy-tailed elliptical data",
+        ),
+    ]
+    for repeat in range(repeats):
+        for name, fit_method, note in heavy_methods:
+            base = _base_row(
+                family="sparse precision",
+                scenario="heavy-tailed elliptical graph",
+                method=name,
+                n=heavy.shape[0],
+                p=heavy.shape[1],
+                repeat=repeat,
+            )
+            try:
+                model, seconds, peak = _measure(fit_method)
+                precision, recall, f1, n_edges = graph_metrics(
+                    model.adjacency_, truth_adjacency
+                )
+                base["seconds"] = seconds
+                base["python_peak_mb"] = peak
+                base["precision_error"] = relative_frobenius(
+                    model.partial_correlation_, truth_partial
+                )
+                base["edge_precision"] = precision
+                base["edge_recall"] = recall
+                base["edge_f1"] = f1
+                base["n_edges"] = n_edges
+                base["notes"] = note
+                rows.append(base)
+            except Exception as exc:
+                rows.append(_failure_row(
+                    family="sparse precision",
+                    scenario="heavy-tailed elliptical graph",
+                    method=name,
+                    n=heavy.shape[0],
+                    p=heavy.shape[1],
+                    repeat=repeat,
+                    exc=exc,
+                ))
+
+    # Mixed bad cells and missing values: spatial signs are intentionally not
+    # included because one damaged coordinate can rotate an entire sign vector.
     rng = np.random.default_rng(seed + 60)
     truth_precision, truth_covariance = make_sparse_precision(profile.graph_p)
     X = sample_multivariate_t(rng, profile.graph_n, truth_covariance, df=4.0)
-    damaged, _, _ = add_cellwise_errors(rng, X, contamination=0.05, missing=0.02, magnitude=9.0)
+    damaged, _, _ = add_cellwise_errors(
+        rng, X, contamination=0.05, missing=0.02, magnitude=9.0
+    )
     imputed, _ = median_impute(damaged)
     truth_adjacency = np.abs(truth_precision) > 1e-12
     np.fill_diagonal(truth_adjacency, False)
@@ -1090,21 +1176,54 @@ def run_graph_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict
         edge_tolerance=1e-6,
     )
     methods: list[tuple[str, Callable[[], Any], str]] = [
-        ("Empirical graphical lasso", lambda: rc.RobustGraphicalLasso(scatter_estimator="empirical", **graph_kwargs).fit(imputed), "non-robust baseline after median imputation"),
-        ("Cauchy graphical lasso", lambda: rc.RobustGraphicalLasso(scatter_estimator=rc.RegularizedCauchy(alpha=0.12, max_iter=180), **graph_kwargs).fit(imputed), "heavy-tail robust scatter after imputation"),
-        ("CellMCD graphical lasso", lambda: rc.RobustGraphicalLasso(scatter_estimator=rc.CellMCD(max_iter=profile.cell_max_iter, min_samples_per_feature=None), **graph_kwargs).fit(damaged), "cellwise contamination and missing values"),
+        (
+            "Empirical graphical lasso",
+            lambda: rc.RobustGraphicalLasso(
+                scatter_estimator="empirical", **graph_kwargs
+            ).fit(imputed),
+            "non-robust baseline after median imputation",
+        ),
+        (
+            "Cauchy graphical lasso",
+            lambda: rc.RobustGraphicalLasso(
+                scatter_estimator=rc.RegularizedCauchy(alpha=0.12, max_iter=180),
+                **graph_kwargs,
+            ).fit(imputed),
+            "heavy-tail robust scatter after imputation",
+        ),
+        (
+            "CellMCD graphical lasso",
+            lambda: rc.RobustGraphicalLasso(
+                scatter_estimator=rc.CellMCD(
+                    max_iter=profile.cell_max_iter,
+                    min_samples_per_feature=None,
+                ),
+                **graph_kwargs,
+            ).fit(damaged),
+            "cellwise contamination and missing values",
+        ),
     ]
 
-    rows: list[dict[str, Any]] = []
     for repeat in range(repeats):
         for name, fit_method, note in methods:
-            base = _base_row(family="sparse precision", scenario="heavy tails + bad cells", method=name, n=damaged.shape[0], p=damaged.shape[1], repeat=repeat)
+            base = _base_row(
+                family="sparse precision",
+                scenario="heavy tails + bad cells",
+                method=name,
+                n=damaged.shape[0],
+                p=damaged.shape[1],
+                repeat=repeat,
+            )
             try:
                 model, seconds, peak = _measure(fit_method)
-                precision, recall, f1, n_edges = graph_metrics(model.adjacency_, truth_adjacency)
+                precision, recall, f1, n_edges = graph_metrics(
+                    model.adjacency_, truth_adjacency
+                )
                 base["seconds"] = seconds
                 base["python_peak_mb"] = peak
-                base["precision_error"] = relative_frobenius(model.partial_correlation_, truth_partial)
+                base["precision_error"] = relative_frobenius(
+                    model.partial_correlation_, truth_partial
+                )
                 base["edge_precision"] = precision
                 base["edge_recall"] = recall
                 base["edge_f1"] = f1
@@ -1112,7 +1231,15 @@ def run_graph_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict
                 base["notes"] = note
                 rows.append(base)
             except Exception as exc:
-                rows.append(_failure_row(family="sparse precision", scenario="heavy tails + bad cells", method=name, n=damaged.shape[0], p=damaged.shape[1], repeat=repeat, exc=exc))
+                rows.append(_failure_row(
+                    family="sparse precision",
+                    scenario="heavy tails + bad cells",
+                    method=name,
+                    n=damaged.shape[0],
+                    p=damaged.shape[1],
+                    repeat=repeat,
+                    exc=exc,
+                ))
     return rows
 
 

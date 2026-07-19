@@ -17,7 +17,13 @@ from .sparse_cellpca import (
     SparseCasewiseCellwisePCA,
 )
 from .cellrcov import CellwiseRegularizedCovariance, CellRCov, CellwiseRobustCovariance
-from .sparse_precision import RobustGraphicalLasso, SparseRobustPrecision
+from .sparse_precision import (
+    RobustGraphicalLasso,
+    SparseRobustPrecision,
+    SpatialSignGraphicalLasso,
+    SpatialSignSparsePrecision,
+    SGLASSO,
+)
 from .stability import SubspaceStability
 from .m_estimators import (
     IterativeMScatter,
@@ -79,6 +85,9 @@ __all__ = [
     "CasewiseCellwisePCA",
     "RobustGraphicalLasso",
     "SparseRobustPrecision",
+    "SpatialSignGraphicalLasso",
+    "SpatialSignSparsePrecision",
+    "SGLASSO",
     "CellwiseMinimumCovarianceDeterminant",
     "CellMCD",
     "CellwiseMCD",

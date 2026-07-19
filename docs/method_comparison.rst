@@ -83,6 +83,10 @@ than a ranking table.
      - ``RobustGraphicalLasso``
      - Choose ``CellMCD`` or a heavy-tail scatter estimator underneath it
      - Graph edges are conditional associations, not causal links.
+   * - A sparse graph is required for high-dimensional elliptical data with unreliable radial magnitudes
+     - ``SGLASSO``
+     - ``RobustGraphicalLasso`` with ``RegularizedCauchy``
+     - Spatial signs do not identify absolute covariance scale and are not cellwise robust.
    * - Production batches must be compared with a fixed reference
      - ``RobustSubspaceMonitor``
      - ``FeatureGeometry`` for direct distance or kernel monitoring
@@ -215,6 +219,13 @@ with another estimator rather than handled directly.
      - Depends on scatter
      - Yes
      - vectors
+   * - ``SGLASSO``
+     - sparse shape-precision graph
+     - Radial heavy-tail robustness
+     - No
+     - Limited through median imputation
+     - Yes
+     - complete elliptical vectors
 
 Methods that are not direct competitors
 ---------------------------------------
@@ -265,10 +276,11 @@ contains four benchmark families:
    covariance error and matrix-distance AUROC.
 
 ``sparse precision``
-   A known sparse precision graph under heavy tails, cellwise corruption, and
-   missing values.  All methods use the same fixed graphical-lasso penalty so
-   the comparison isolates the scatter estimate.  EBIC path selection is
-   evaluated separately in the sparse-precision examples.
+   Two known sparse graphs are used.  One contains radial heavy tails under an
+   elliptical model and includes ``SGLASSO``.  The other contains bad cells and
+   missing values and compares empirical, Cauchy, and CellMCD scatter inputs.
+   Fixed penalties isolate the covariance/shape input; EBIC path selection is
+   evaluated separately in the gallery examples.
 
 The quick profile is small enough for documentation and continuous integration.
 The full profile increases sample sizes, dimensions, and subset starts.  Run
@@ -314,10 +326,13 @@ universal ordering.
   Dense PCA methods necessarily score poorly on exact support because they do
   not set coefficients to zero.
 * MMCD improves Kronecker covariance recovery in the matrix-valued example.
-* In the sparse-graph example, Cauchy scatter gives the best edge F1 at the
-  common penalty.  CellMCD has higher recall but produces a denser graph.  This
-  is a tuning tradeoff, not evidence that one scatter estimator always gives a
-  better graph.
+* In the radial heavy-tail graph, spatial-sign and Cauchy-scatter graphical
+  lasso substantially reduce partial-correlation error relative to empirical
+  covariance.  Spatial signs target shape rather than absolute covariance scale.
+* In the bad-cell graph, CellMCD has higher recall but produces a denser graph.
+  Spatial-sign graphical lasso is omitted because a single damaged coordinate
+  can rotate the entire sign vector.  These are tuning and contamination-model
+  tradeoffs, not a universal graph ranking.
 
 Reproducing the tables
 ----------------------

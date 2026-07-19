@@ -28,7 +28,8 @@ observations for a stable empirical covariance matrix.
 - `CellRCov` for high-dimensional covariance with bad cells, abnormal rows, and missing entries
 - `CellPCA` for low-rank structure with cellwise errors, abnormal rows, and missing entries
 - `SparseCellPCA` for the same contamination model with exact-zero interpretable loadings
-- `RobustGraphicalLasso` for sparse precision matrices and conditional-dependence networks
+- `RobustGraphicalLasso` for sparse precision matrices from a chosen robust scatter estimator
+- `SGLASSO` for scale-free sparse graphs under heavy-tailed elliptical data
 - Regularized Cauchy, Student-t, and Tyler scatter estimators
 - Mahalanobis anomaly scores, QQ plots, distance profiles, and diagnostic reports
 - `RobustPCA` with score-distance and orthogonal-distance diagnostics
@@ -214,6 +215,21 @@ graph = rc.RobustGraphicalLasso(
 print(graph.partial_correlation_)
 print(graph.edge_list(feature_names))
 ```
+
+For a sparse graph when radial magnitudes are extremely heavy-tailed:
+
+```python
+shape_graph = rc.SGLASSO(
+    alpha=0.12,
+).fit(X)
+
+print(shape_graph.partial_correlation_)
+print(shape_graph.edge_list(feature_names))
+```
+
+`SGLASSO` estimates a shape precision matrix up to a common scale. It is not
+cellwise robust; use a CellMCD-based `RobustGraphicalLasso` when individual
+coordinates are corrupted.
 
 For dimensionality reduction under cellwise and rowwise contamination:
 

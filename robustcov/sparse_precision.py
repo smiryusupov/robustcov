@@ -86,9 +86,15 @@ def _regularize_spd(matrix: np.ndarray, relative_floor: float) -> tuple[np.ndarr
     return _symmetrize(regularized), float(floor)
 
 
-def _soft_threshold_off_diagonal(matrix: np.ndarray, threshold: float) -> np.ndarray:
+def _soft_threshold(
+    matrix: np.ndarray,
+    threshold: float,
+    *,
+    penalize_diagonal: bool = False,
+) -> np.ndarray:
     result = np.sign(matrix) * np.maximum(np.abs(matrix) - threshold, 0.0)
-    np.fill_diagonal(result, np.diag(matrix))
+    if not penalize_diagonal:
+        np.fill_diagonal(result, np.diag(matrix))
     return _symmetrize(result)
 
 
@@ -117,12 +123,20 @@ def _sparse_spd_projection(matrix: np.ndarray, floor: float) -> np.ndarray:
     return base
 
 
-def _objective(scatter: np.ndarray, theta: np.ndarray, alpha: float) -> float:
+def _objective(
+    scatter: np.ndarray,
+    theta: np.ndarray,
+    alpha: float,
+    *,
+    penalize_diagonal: bool = False,
+) -> float:
     sign, logdet = np.linalg.slogdet(theta)
     if sign <= 0:
         return float("inf")
-    off = theta - np.diag(np.diag(theta))
-    return float(np.sum(scatter * theta) - logdet + alpha * np.sum(np.abs(off)))
+    penalized = theta if penalize_diagonal else theta - np.diag(np.diag(theta))
+    return float(
+        np.sum(scatter * theta) - logdet + alpha * np.sum(np.abs(penalized))
+    )
 
 
 def _solve_graphical_lasso_admm(
@@ -134,6 +148,7 @@ def _solve_graphical_lasso_admm(
     abs_tol: float,
     rel_tol: float,
     adaptive_rho: bool,
+    penalize_diagonal: bool = False,
     initial: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
 ) -> tuple[np.ndarray, dict[str, Any], tuple[np.ndarray, np.ndarray, np.ndarray]]:
     p = scatter.shape[0]
@@ -143,7 +158,12 @@ def _solve_graphical_lasso_admm(
         info = {
             "converged": True,
             "n_iter": 0,
-            "objective_path": np.array([_objective(scatter, precision, 0.0)]),
+            "objective_path": np.array([
+                _objective(
+                    scatter, precision, 0.0,
+                    penalize_diagonal=penalize_diagonal,
+                )
+            ]),
             "primal_residual_path": np.array([0.0]),
             "dual_residual_path": np.array([0.0]),
             "rho_path": np.array([rho]),
@@ -171,7 +191,11 @@ def _solve_graphical_lasso_admm(
         theta = _symmetrize((vectors * updated_values) @ vectors.T)
 
         z_previous = z
-        z = _soft_threshold_off_diagonal(theta + u, alpha / rho)
+        z = _soft_threshold(
+            theta + u,
+            alpha / rho,
+            penalize_diagonal=penalize_diagonal,
+        )
         u = u + theta - z
 
         primal = float(np.linalg.norm(theta - z, ord="fro"))
@@ -181,7 +205,12 @@ def _solve_graphical_lasso_admm(
         )
         eps_dual = p * abs_tol + rel_tol * np.linalg.norm(rho * u, ord="fro")
 
-        objective_path.append(_objective(scatter, theta, alpha))
+        objective_path.append(
+            _objective(
+                scatter, theta, alpha,
+                penalize_diagonal=penalize_diagonal,
+            )
+        )
         primal_path.append(primal)
         dual_path.append(dual)
         rho_path.append(rho)
@@ -345,6 +374,7 @@ class RobustGraphicalLasso:
                     abs_tol=self.abs_tol,
                     rel_tol=self.rel_tol,
                     adaptive_rho=self.adaptive_rho,
+                    penalize_diagonal=False,
                     initial=state,
                 )
                 edges = self._count_edges(precision_working)
@@ -368,6 +398,7 @@ class RobustGraphicalLasso:
                 abs_tol=self.abs_tol,
                 rel_tol=self.rel_tol,
                 adaptive_rho=self.adaptive_rho,
+                penalize_diagonal=False,
             )
 
         inverse_scales = 1.0 / scales
@@ -505,3 +536,385 @@ class RobustGraphicalLasso:
 
 
 SparseRobustPrecision = RobustGraphicalLasso
+
+
+def _spatial_median(
+    X: np.ndarray,
+    *,
+    tol: float = 1e-8,
+    max_iter: int = 300,
+    zero_tolerance: float = 1e-12,
+) -> tuple[np.ndarray, int, bool]:
+    """Return the multivariate spatial median using a safeguarded Weiszfeld step."""
+    X = np.asarray(X, dtype=float)
+    current = np.median(X, axis=0)
+    converged = False
+    iteration = 0
+    for iteration in range(1, max_iter + 1):
+        differences = X - current
+        distances = np.linalg.norm(differences, axis=1)
+        coincident = distances <= zero_tolerance
+        if np.any(coincident):
+            # A data point is a valid spatial-median candidate.  The modified
+            # Weiszfeld condition avoids division by zero and accepts it only
+            # when the subgradient contains zero.
+            candidate = np.mean(X[coincident], axis=0)
+            remaining = X[~coincident] - candidate
+            norms = np.linalg.norm(remaining, axis=1)
+            if remaining.size == 0:
+                current = candidate
+                converged = True
+                break
+            subgradient = np.sum(
+                remaining / np.maximum(norms[:, None], zero_tolerance), axis=0
+            )
+            if np.linalg.norm(subgradient) <= int(np.count_nonzero(coincident)):
+                current = candidate
+                converged = True
+                break
+            distances = np.maximum(np.linalg.norm(X - current, axis=1), zero_tolerance)
+        weights = 1.0 / np.maximum(distances, zero_tolerance)
+        updated = np.sum(weights[:, None] * X, axis=0) / np.sum(weights)
+        if np.linalg.norm(updated - current) <= tol * max(1.0, np.linalg.norm(current)):
+            current = updated
+            converged = True
+            break
+        current = updated
+    return np.asarray(current, dtype=float), int(iteration), bool(converged)
+
+
+def _spatial_sign_covariance(
+    X: np.ndarray,
+    location: np.ndarray,
+    *,
+    zero_tolerance: float = 1e-12,
+) -> tuple[np.ndarray, np.ndarray, int]:
+    centered = np.asarray(X, dtype=float) - np.asarray(location, dtype=float)
+    radii = np.linalg.norm(centered, axis=1)
+    nonzero = radii > zero_tolerance
+    signs = np.zeros_like(centered)
+    signs[nonzero] = centered[nonzero] / radii[nonzero, None]
+    covariance = signs.T @ signs / X.shape[0]
+    return _symmetrize(covariance), signs, int(np.count_nonzero(~nonzero))
+
+
+@dataclass
+class SpatialSignGraphicalLasso:
+    r"""Sparse shape-precision estimation from spatial signs.
+
+    The estimator calculates the sample spatial-sign covariance matrix
+
+    .. math::
+
+       \widehat S
+       = \frac{1}{n}\sum_{i=1}^{n}
+         U(x_i-\widehat\mu)U(x_i-\widehat\mu)^T,
+       \qquad U(z)=z/\lVert z\rVert_2,
+
+    where :math:`\widehat\mu` is the spatial median, and solves a graphical
+    lasso problem with :math:`p\widehat S` as the working scatter matrix.
+    Under the high-dimensional elliptical assumptions used by Lu and Feng
+    (2025), this targets the precision of the trace-normalized shape matrix,
+    up to the scale that is irrelevant for graph support and partial
+    correlations.
+
+    Parameters
+    ----------
+    alpha : float or {"ebic"}, default="ebic"
+        :math:`\ell_1` penalty. ``"ebic"`` selects a value from a geometric
+        path using a spatial-sign pseudo-likelihood EBIC.
+    penalize_diagonal : bool, default=True
+        Penalize diagonal entries as in the published SGLASSO objective.
+        Set to ``False`` for the more common off-diagonal-only graphical-lasso
+        convention.
+    missing_values : {"raise", "median"}, default="raise"
+        The spatial-sign theory assumes complete rows. ``"median"`` enables a
+        practical coordinate-median imputation before fitting but does not
+        inherit the paper's guarantees.
+    n_alphas, alpha_min_ratio, ebic_gamma : int, float, float
+        Penalty-path and EBIC settings used when ``alpha="ebic"``.
+    rho, max_iter, abs_tol, rel_tol, adaptive_rho :
+        ADMM solver settings.
+    scatter_floor : float, default=1e-8
+        Relative eigenvalue floor applied to :math:`p\widehat S` before the
+        sparse optimization.
+    edge_tolerance : float, default=1e-8
+        Absolute precision threshold used to define graph edges.
+    spatial_median_tol : float, default=1e-8
+        Relative convergence tolerance for the spatial median.
+    spatial_median_max_iter : int, default=300
+        Maximum safeguarded Weiszfeld iterations.
+    zero_tolerance : float, default=1e-12
+        Radius below which a centered observation has the zero spatial sign.
+
+    Notes
+    -----
+    This class implements the spatial-sign graphical-lasso objective. The
+    paper selects the penalty with an independent validation sample; the EBIC
+    path provided here is package-specific. Absolute covariance scale is not
+    identified by spatial signs, so ``covariance_`` is a normalized shape
+    matrix and ``precision_`` is its inverse up to a common scalar.
+    """
+
+    alpha: float | str = "ebic"
+    penalize_diagonal: bool = True
+    missing_values: str = "raise"
+    n_alphas: int = 20
+    alpha_min_ratio: float = 0.02
+    ebic_gamma: float = 0.5
+    rho: float = 1.0
+    max_iter: int = 300
+    abs_tol: float = 1e-5
+    rel_tol: float = 1e-4
+    adaptive_rho: bool = True
+    scatter_floor: float = 1e-8
+    edge_tolerance: float = 1e-8
+    spatial_median_tol: float = 1e-8
+    spatial_median_max_iter: int = 300
+    zero_tolerance: float = 1e-12
+
+    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> "SpatialSignGraphicalLasso":
+        """Fit the spatial median, sign covariance, and sparse shape precision."""
+        del y
+        X = _as_fit_array(X)
+        self._validate_parameters()
+        X_fit = self._prepare_fit_array(X)
+        n, p = X_fit.shape
+
+        location, median_iterations, median_converged = _spatial_median(
+            X_fit,
+            tol=self.spatial_median_tol,
+            max_iter=self.spatial_median_max_iter,
+            zero_tolerance=self.zero_tolerance,
+        )
+        sign_covariance, sign_vectors, zero_count = _spatial_sign_covariance(
+            X_fit,
+            location,
+            zero_tolerance=self.zero_tolerance,
+        )
+        raw_working = p * sign_covariance
+        working_scatter, floor = _regularize_spd(raw_working, self.scatter_floor)
+
+        if self.alpha == "ebic":
+            alphas = self._alpha_grid(working_scatter)
+            scores: list[float] = []
+            edge_counts: list[int] = []
+            models: list[
+                tuple[np.ndarray, dict[str, Any], tuple[np.ndarray, np.ndarray, np.ndarray]]
+            ] = []
+            state = None
+            for alpha in alphas:
+                precision, info, state = _solve_graphical_lasso_admm(
+                    working_scatter,
+                    alpha=float(alpha),
+                    rho=self.rho,
+                    max_iter=self.max_iter,
+                    abs_tol=self.abs_tol,
+                    rel_tol=self.rel_tol,
+                    adaptive_rho=self.adaptive_rho,
+                    penalize_diagonal=self.penalize_diagonal,
+                    initial=state,
+                )
+                edges = self._count_edges(precision)
+                scores.append(self._ebic(working_scatter, precision, n, edges))
+                edge_counts.append(edges)
+                models.append((precision, info, state))
+            best = int(np.argmin(scores))
+            alpha_selected = float(alphas[best])
+            precision, info, _ = models[best]
+            self.alphas_ = np.asarray(alphas, dtype=float)
+            self.ebic_scores_ = np.asarray(scores, dtype=float)
+            self.path_n_edges_ = np.asarray(edge_counts, dtype=int)
+            self.best_alpha_index_ = best
+        else:
+            alpha_selected = float(self.alpha)
+            precision, info, _ = _solve_graphical_lasso_admm(
+                working_scatter,
+                alpha=alpha_selected,
+                rho=self.rho,
+                max_iter=self.max_iter,
+                abs_tol=self.abs_tol,
+                rel_tol=self.rel_tol,
+                adaptive_rho=self.adaptive_rho,
+                penalize_diagonal=self.penalize_diagonal,
+            )
+
+        precision = _symmetrize(precision)
+        covariance = _symmetrize(np.linalg.inv(precision))
+        partial = _partial_correlations(precision)
+        adjacency = np.abs(precision) > self.edge_tolerance
+        np.fill_diagonal(adjacency, False)
+
+        self.location_ = location
+        self.spatial_median_ = location.copy()
+        self.spatial_median_n_iter_ = median_iterations
+        self.spatial_median_converged_ = median_converged
+        self.spatial_sign_covariance_ = sign_covariance
+        self.sign_vectors_ = sign_vectors
+        self.zero_sign_count_ = zero_count
+        self.raw_working_scatter_ = raw_working
+        self.working_scatter_ = working_scatter
+        self.scatter_floor_ = floor
+        self.alpha_ = alpha_selected
+        self.precision_ = precision
+        self.shape_precision_ = precision
+        self.covariance_ = covariance
+        self.shape_ = covariance
+        self.partial_correlation_ = partial
+        self.adjacency_ = adjacency
+        self.n_edges_ = int(np.count_nonzero(np.triu(adjacency, 1)))
+        self.graph_density_ = float(2 * self.n_edges_ / (p * (p - 1)))
+        self.conditional_coefficients_ = RobustGraphicalLasso._conditional_coefficients(
+            precision
+        )
+        self.converged_ = bool(info["converged"])
+        self.n_iter_ = int(info["n_iter"])
+        self.objective_path_ = info["objective_path"]
+        self.primal_residual_path_ = info["primal_residual_path"]
+        self.dual_residual_path_ = info["dual_residual_path"]
+        self.rho_path_ = info["rho_path"]
+        self.n_samples_in_ = n
+        self.n_features_in_ = p
+        return self
+
+    def _prepare_fit_array(self, X: np.ndarray) -> np.ndarray:
+        missing = np.isnan(X)
+        if missing.any():
+            if self.missing_values == "raise":
+                raise ValueError(
+                    "SpatialSignGraphicalLasso does not accept missing values unless "
+                    "missing_values='median'"
+                )
+            medians = np.nanmedian(X, axis=0)
+            if not np.all(np.isfinite(medians)):
+                raise ValueError("every feature needs at least one finite value")
+            self.imputation_values_ = medians
+            return np.where(missing, medians, X)
+        self.imputation_values_ = np.median(X, axis=0)
+        return np.asarray(X, dtype=float)
+
+    def _validate_parameters(self) -> None:
+        if isinstance(self.alpha, str):
+            if self.alpha != "ebic":
+                raise ValueError("alpha string must be 'ebic'")
+        elif not np.isscalar(self.alpha) or not np.isfinite(self.alpha) or self.alpha < 0:
+            raise ValueError("alpha must be a non-negative finite number or 'ebic'")
+        if not isinstance(self.penalize_diagonal, (bool, np.bool_)):
+            raise TypeError("penalize_diagonal must be a boolean")
+        if self.missing_values not in {"raise", "median"}:
+            raise ValueError("missing_values must be 'raise' or 'median'")
+        if not isinstance(self.adaptive_rho, (bool, np.bool_)):
+            raise TypeError("adaptive_rho must be a boolean")
+        if not isinstance(self.n_alphas, (int, np.integer)) or self.n_alphas < 2:
+            raise ValueError("n_alphas must be an integer of at least 2")
+        if not np.isfinite(self.alpha_min_ratio) or not (0 < self.alpha_min_ratio <= 1):
+            raise ValueError("alpha_min_ratio must be in (0, 1]")
+        if not np.isfinite(self.ebic_gamma) or self.ebic_gamma < 0:
+            raise ValueError("ebic_gamma must be non-negative")
+        for name in (
+            "rho", "abs_tol", "rel_tol", "scatter_floor",
+            "spatial_median_tol", "zero_tolerance",
+        ):
+            value = getattr(self, name)
+            if not np.isfinite(value) or value <= 0:
+                raise ValueError(f"{name} must be a positive finite number")
+        for name in ("max_iter", "spatial_median_max_iter"):
+            value = getattr(self, name)
+            if not isinstance(value, (int, np.integer)) or value < 1:
+                raise ValueError(f"{name} must be a positive integer")
+        if not np.isfinite(self.edge_tolerance) or self.edge_tolerance < 0:
+            raise ValueError("edge_tolerance must be a non-negative finite number")
+
+    def _alpha_grid(self, scatter: np.ndarray) -> np.ndarray:
+        off = scatter - np.diag(np.diag(scatter))
+        alpha_max = float(np.max(np.abs(off)))
+        if alpha_max <= 100.0 * _EPS:
+            alpha_max = 1e-3
+        alpha_min = max(alpha_max * self.alpha_min_ratio, 1e-8)
+        return np.geomspace(alpha_max, alpha_min, self.n_alphas)
+
+    def _count_edges(self, precision: np.ndarray) -> int:
+        return int(np.count_nonzero(np.abs(np.triu(precision, 1)) > self.edge_tolerance))
+
+    def _ebic(self, scatter: np.ndarray, precision: np.ndarray, n: int, edges: int) -> float:
+        sign, logdet = np.linalg.slogdet(precision)
+        if sign <= 0:
+            return float("inf")
+        negative_twice_pseudo_loglik = n * (
+            float(np.sum(scatter * precision)) - float(logdet)
+        )
+        p = precision.shape[0]
+        return float(
+            negative_twice_pseudo_loglik
+            + edges * np.log(max(n, 2))
+            + 4.0 * self.ebic_gamma * edges * np.log(max(p, 2))
+        )
+
+    def _check_fitted(self) -> None:
+        if not hasattr(self, "precision_"):
+            raise AttributeError("SpatialSignGraphicalLasso is not fitted yet")
+
+    def _prepare_new_array(self, X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=float)
+        if X.ndim != 2:
+            raise ValueError("X must be a 2D array")
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                f"X has {X.shape[1]} features, expected {self.n_features_in_}"
+            )
+        if np.any(np.isinf(X)):
+            raise ValueError("X must not contain infinite values")
+        if np.isnan(X).any():
+            if self.missing_values != "median":
+                raise ValueError("X contains missing values")
+            X = np.where(np.isnan(X), self.imputation_values_, X)
+        return X
+
+    def mahalanobis(self, X: np.ndarray) -> np.ndarray:
+        """Return squared shape distances under the fitted precision."""
+        self._check_fitted()
+        X = self._prepare_new_array(X)
+        centered = X - self.location_
+        return np.einsum("ij,jk,ik->i", centered, self.precision_, centered)
+
+    def shape_distances(self, X: np.ndarray) -> np.ndarray:
+        """Alias for :meth:`mahalanobis`, emphasizing unidentified scale."""
+        return self.mahalanobis(X)
+
+    def score_samples(self, X: np.ndarray) -> np.ndarray:
+        """Return Gaussian-shape pseudo log scores, defined up to radial scale."""
+        distances = self.mahalanobis(X)
+        sign, logdet = np.linalg.slogdet(self.precision_)
+        if sign <= 0:  # pragma: no cover
+            raise RuntimeError("fitted precision matrix is not positive definite")
+        constant = self.n_features_in_ * np.log(2.0 * np.pi)
+        return 0.5 * (logdet - constant - distances)
+
+    def edge_list(
+        self,
+        feature_names: Sequence[str] | None = None,
+        *,
+        min_abs_partial_correlation: float = 0.0,
+    ) -> list[tuple[str | int, str | int, float]]:
+        """Return graph edges sorted by absolute partial correlation."""
+        self._check_fitted()
+        if not np.isfinite(min_abs_partial_correlation) or min_abs_partial_correlation < 0:
+            raise ValueError("min_abs_partial_correlation must be non-negative")
+        if feature_names is None:
+            names: list[str | int] = list(range(self.n_features_in_))
+        else:
+            if len(feature_names) != self.n_features_in_:
+                raise ValueError("feature_names must have one entry per feature")
+            names = list(feature_names)
+        edges: list[tuple[str | int, str | int, float]] = []
+        for i in range(self.n_features_in_):
+            for j in range(i + 1, self.n_features_in_):
+                value = float(self.partial_correlation_[i, j])
+                if self.adjacency_[i, j] and abs(value) >= min_abs_partial_correlation:
+                    edges.append((names[i], names[j], value))
+        edges.sort(key=lambda edge: abs(edge[2]), reverse=True)
+        return edges
+
+
+SGLASSO = SpatialSignGraphicalLasso
+SpatialSignSparsePrecision = SpatialSignGraphicalLasso

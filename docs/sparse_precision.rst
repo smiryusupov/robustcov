@@ -133,11 +133,11 @@ Relationship to other robust graph estimators
 ----------------------------------------------
 
 This class is a **robust-scatter graphical lasso**.  Its robustness is inherited
-from the estimator that produces :math:`S`.  It is not an implementation of
-robust CLIME, the spatial-sign SCLIME/SGLASSO procedures, trimmed graphical
-lasso, or the multivariate-t graphical lasso.  Those methods use different
-objectives or contamination assumptions and should be exposed under separate
-APIs if added later.
+from the estimator that produces :math:`S`.  The package now exposes the
+spatial-sign SGLASSO objective separately through
+:doc:`spatial_sign_precision`.  Robust CLIME, trimmed graphical lasso, and the
+multivariate-t graphical lasso still use different objectives and are not
+implemented here.
 
 Example
 -------

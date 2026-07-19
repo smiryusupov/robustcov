@@ -60,6 +60,10 @@ reproducible cross-method benchmarks.
      - ``RobustGraphicalLasso``
      - Sparse inverse covariance from a selectable robust scatter estimate.
      - Edge recovery is sensitive to the penalty and the scatter estimator.
+   * - Sparse graph under high-dimensional elliptical data with unreliable radial magnitudes
+     - ``SGLASSO``
+     - Spatial signs remove observation-specific radius before graph estimation.
+     - Estimates shape only and is not robust to isolated bad cells.
    * - Small sample, very heavy tails, or ``p`` close to or larger than ``n``
      - ``RegularizedCauchy``
      - Strong radial downweighting with shrinkage.
@@ -102,6 +106,7 @@ Experimental APIs:
 * ``KMRCD`` while its package-specific initial-support search is compared with the reference implementation
 * ``CellRCov`` while its package-native CellPCA/FastMCD decomposition is cross-validated
   against the reference implementation
+* ``SGLASSO`` while the package-specific EBIC path and ADMM implementation are validated against the reference R workflow
 * ``HellingerRegularizedTyler``
 * exact KL/Wiesel variants beyond their current alias/prototype behavior
 * automatic model selection scores

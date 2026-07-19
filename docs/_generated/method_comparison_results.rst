@@ -27,28 +27,28 @@ Scatter and covariance
      - 0.177
      - —
      - 1.000
-     - 0.256
+     - 0.237
      - ok
    * - cellwise errors + missing
      - Empirical covariance
      - 4.090
      - 1.000
      - —
-     - 8.05e-04
+     - 7.91e-04
      - ok
    * - cellwise errors + missing
      - FastMCD
      - 1.747
      - 0.982
      - —
-     - 0.001
+     - 0.010
      - ok
    * - cellwise errors + missing
      - MRCD
      - 3.367
      - 0.995
      - —
-     - 0.007
+     - 0.009
      - ok
    * - cellwise errors + missing
      - RegularizedCauchy
@@ -62,21 +62,21 @@ Scatter and covariance
      - 4.070
      - 1.000
      - —
-     - 0.001
+     - 9.61e-04
      - ok
    * - cellwise errors + missing
      - StudentTScatter
      - 3.990
      - 1.000
      - —
-     - 0.003
+     - 0.002
      - ok
    * - heavy-tailed elliptical
      - DetMM
      - 0.472
      - —
      - —
-     - 0.024
+     - 0.023
      - ok
    * - heavy-tailed elliptical
      - DetS
@@ -90,14 +90,14 @@ Scatter and covariance
      - 1.597
      - —
      - —
-     - 3.50e-04
+     - 3.51e-04
      - ok
    * - heavy-tailed elliptical
      - FastMCD
      - 0.295
      - —
      - —
-     - 7.60e-04
+     - 9.46e-04
      - ok
    * - heavy-tailed elliptical
      - MRCD
@@ -118,7 +118,7 @@ Scatter and covariance
      - 0.220
      - —
      - —
-     - 6.97e-04
+     - 6.66e-04
      - ok
    * - heavy-tailed elliptical
      - StudentTScatter
@@ -132,112 +132,112 @@ Scatter and covariance
      - 0.383
      - 1.000
      - 0.999
-     - 0.108
+     - 0.174
      - ok
    * - high-dimensional mixed contamination
      - Empirical covariance
      - 1.512
      - 0.792
      - —
-     - 0.001
+     - 0.003
      - ok
    * - high-dimensional mixed contamination
      - MRCD
      - 1.009
      - 0.910
      - —
-     - 0.020
+     - 0.031
      - ok
    * - high-dimensional mixed contamination
      - RegularizedCauchy
      - 0.825
      - 0.822
      - —
-     - 0.046
+     - 0.080
      - ok
    * - high-dimensional mixed contamination
      - RegularizedTyler
      - 0.854
      - 0.799
      - —
-     - 0.036
+     - 0.042
      - ok
    * - high-dimensional mixed contamination
      - StudentTScatter
      - 0.862
      - 0.815
      - —
-     - 0.041
+     - 0.064
      - ok
    * - high-dimensional row outliers
      - Empirical covariance
      - 1.490
      - 0.951
      - —
-     - 0.001
+     - 0.002
      - ok
    * - high-dimensional row outliers
      - MRCD
      - 0.998
      - 1.000
      - —
-     - 0.020
+     - 0.027
      - ok
    * - high-dimensional row outliers
      - RegularizedCauchy
      - 0.792
      - 0.980
      - —
-     - 0.049
+     - 0.076
      - ok
    * - high-dimensional row outliers
      - RegularizedTyler
      - 0.819
      - 0.975
      - —
-     - 0.036
+     - 0.041
      - ok
    * - high-dimensional row outliers
      - StudentTScatter
      - 0.835
      - 0.975
      - —
-     - 0.039
+     - 0.094
      - ok
    * - rowwise outliers
      - DetMM
      - 0.523
      - 1.000
      - —
-     - 0.079
+     - 0.080
      - ok
    * - rowwise outliers
      - DetS
      - 0.520
      - 1.000
      - —
-     - 0.015
+     - 0.016
      - ok
    * - rowwise outliers
      - Empirical covariance
      - 2.285
      - 0.928
      - —
-     - 3.71e-04
+     - 4.78e-04
      - ok
    * - rowwise outliers
      - FastMCD
      - 0.200
      - 1.000
      - —
-     - 0.001
+     - 0.012
      - ok
    * - rowwise outliers
      - MRCD
      - 0.332
      - 1.000
      - —
-     - 0.006
+     - 0.008
      - ok
    * - rowwise outliers
      - RegularizedCauchy
@@ -251,7 +251,7 @@ Scatter and covariance
      - 0.938
      - 0.984
      - —
-     - 6.70e-04
+     - 7.42e-04
      - ok
    * - rowwise outliers
      - StudentTScatter
@@ -275,17 +275,17 @@ Nonlinear kernel outlier detection
      - Status
    * - KMRCD(RBF)
      - 0.929
-     - 0.120
+     - 0.267
      - nonlinear feature-space subset fit; gamma fixed for this scenario
      - ok
    * - KMRCD(linear)
      - 0.474
-     - 0.106
+     - 0.209
      - kernel formulation with linear geometry
      - ok
    * - MRCD
      - 0.477
-     - 0.006
+     - 0.007
      - linear robust subset baseline
      - ok
 
@@ -313,7 +313,7 @@ Principal subspaces
      - 0.499
      - —
      - —
-     - 0.626
+     - 0.598
    * - cellwise low-rank + missing
      - CellPCA
      - 0.021
@@ -331,7 +331,7 @@ Principal subspaces
      - 0.198
      - —
      - —
-     - 0.042
+     - 0.055
    * - cellwise low-rank + missing
      - Median-imputed PCA
      - 0.704
@@ -340,7 +340,7 @@ Principal subspaces
      - 0.572
      - —
      - —
-     - 2.53e-04
+     - 2.80e-04
    * - cellwise low-rank + missing
      - RobustPCA(Cauchy, imputed)
      - 0.084
@@ -349,7 +349,7 @@ Principal subspaces
      - 0.489
      - —
      - —
-     - 0.005
+     - 0.006
    * - rowwise low-rank outliers
      - DensityPowerRobustPCA
      - 0.266
@@ -358,7 +358,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.128
+     - 0.197
    * - rowwise low-rank outliers
      - Empirical PCA
      - 0.821
@@ -367,7 +367,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 2.45e-04
+     - 2.83e-04
    * - rowwise low-rank outliers
      - RobustPCA(Cauchy)
      - 0.029
@@ -376,7 +376,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.004
+     - 0.005
    * - rowwise low-rank outliers
      - RobustPCA(FastMCD)
      - 0.034
@@ -385,7 +385,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.002
+     - 0.016
    * - rowwise low-rank outliers
      - RobustPCA(MRCD)
      - 0.057
@@ -394,7 +394,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.007
+     - 0.014
    * - rowwise low-rank outliers
      - RobustPCA(StudentT)
      - 0.028
@@ -403,7 +403,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.004
+     - 0.006
    * - sparse cellwise low-rank + missing
      - CellPCA
      - 0.030
@@ -421,7 +421,7 @@ Principal subspaces
      - 0.285
      - 0.326
      - 0.000
-     - 3.98e-04
+     - 3.77e-04
    * - sparse cellwise low-rank + missing
      - SparseCellPCA
      - 0.026
@@ -430,7 +430,7 @@ Principal subspaces
      - 0.085
      - 1.000
      - 0.806
-     - 0.092
+     - 0.088
 
 Matrix-valued observations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -447,12 +447,12 @@ Matrix-valued observations
    * - All-sample matrix-normal MLE
      - 0.266
      - 0.993
-     - 0.024
+     - 0.022
      - non-robust separable baseline
    * - MMCD
      - 0.162
      - 1.000
-     - 0.043
+     - 0.042
      - rowwise contamination in matrix-valued observations
 
 Sparse conditional-dependence graphs
@@ -482,11 +482,32 @@ Sparse conditional-dependence graphs
      - 0.818
      - 0.400
      - 34
-     - 0.252
+     - 0.243
    * - Empirical graphical lasso
      - 0.199
      - 0.167
      - 0.364
      - 0.229
      - 24
-     - 9.68e-04
+     - 9.13e-04
+   * - Cauchy graphical lasso
+     - 0.156
+     - 0.333
+     - 0.545
+     - 0.414
+     - 18
+     - 0.003
+   * - Empirical graphical lasso
+     - 0.415
+     - 0.276
+     - 0.727
+     - 0.400
+     - 29
+     - 0.002
+   * - Spatial-sign graphical lasso
+     - 0.157
+     - 0.350
+     - 0.636
+     - 0.452
+     - 20
+     - 0.001

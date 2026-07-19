@@ -45,6 +45,7 @@ These may change significantly:
 * exact KL/Wiesel variants beyond current aliases/prototypes
 * ``MRCD`` search presets, initialization strategy, and diagnostic attribute names
 * ``KMRCD`` kernel defaults, initial-support search, and out-of-sample diagnostics
+* ``SpatialSignGraphicalLasso`` penalty selection, diagonal-penalty defaults, and shape-score diagnostics
 * ``MMCD`` initialization, numerical regularization, and contribution APIs
 * ``RobustPCA`` and ``RobustSubspaceMonitor`` calibration and monitoring APIs
 * benchmark script schemas

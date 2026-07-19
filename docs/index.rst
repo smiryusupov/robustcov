@@ -58,6 +58,7 @@ The main pieces are:
   and missing entries occur together;
 * ``CellPCA`` for low-rank tables with cellwise errors, abnormal rows, and missing entries;
 * ``RobustGraphicalLasso`` for sparse conditional-dependence graphs built from robust scatter estimates;
+* ``SGLASSO`` for scale-free sparse graphs under radial heavy tails in elliptical data;
 * regularized Cauchy, Student-t, and Tyler estimators for heavy tails and
   difficult covariance regimes;
 * robust-distance plots and reports for anomaly analysis;
@@ -95,6 +96,7 @@ The main pieces are:
    cellwise_pca
    sparse_cellwise_pca
    sparse_precision
+   spatial_sign_precision
    monitoring
    feature_geometry
    diagnostics

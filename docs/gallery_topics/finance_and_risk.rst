@@ -48,6 +48,11 @@ regimes.
        <h3>Sparse market network</h3>
        <p>Estimate conditional asset links from a cellwise-robust scatter matrix.</p>
      </a>
+     <a class="gallery-card" href="../gallery/spatial_sign_graphical_lasso.html">
+       <img src="../_static/gallery/spatial_sign_graphical_lasso/spatial_sign_network.png" alt="Spatial-sign sparse market network">
+       <h3>Radial heavy-tail network</h3>
+       <p>Estimate a scale-free conditional-association graph from multivariate spatial signs.</p>
+     </a>
    </div>
 
 How to use this topic
@@ -69,3 +74,4 @@ Detailed pages
 - :doc:`Portfolio stress <../gallery/portfolio_stress>`
 - :doc:`Cellwise market-data cleaning <../gallery/cellmcd_market_data>`
 - :doc:`Sparse market network <../gallery/robust_graphical_lasso_market_network>`
+- :doc:`Spatial-sign graph under radial heavy tails <../gallery/spatial_sign_graphical_lasso>`

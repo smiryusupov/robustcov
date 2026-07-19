@@ -8,6 +8,7 @@ plot_cellpca_process_spectra.py,ok
 plot_sparse_cellpca_spectra.py,ok
 plot_cellrcov_high_dimensional.py,ok
 plot_robust_graphical_lasso_market_network.py,ok
+plot_spatial_sign_graphical_lasso.py,ok
 plot_robust_pca_embedding_monitoring.py,ok
 plot_density_power_pca.py,ok
 plot_robust_subspace_monitoring.py,ok

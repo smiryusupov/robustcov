@@ -125,3 +125,11 @@ def test_pca_family_includes_density_power_pca():
     names = {row["method"] for row in rows}
     assert "DensityPowerRobustPCA" in names
     assert "DensityPowerRobustPCA, imputed" in names
+
+
+def test_graph_family_includes_spatial_sign_graphical_lasso():
+    rows = BENCH.run_graph_benchmarks(BENCH.PROFILES["quick"], repeats=1, seed=123)
+    heavy = [row for row in rows if row["scenario"] == "heavy-tailed elliptical graph"]
+    names = {row["method"] for row in heavy}
+    assert "Spatial-sign graphical lasso" in names
+    assert all(row["status"] == "ok" for row in heavy)

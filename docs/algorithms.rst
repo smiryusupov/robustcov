@@ -492,6 +492,38 @@ can be used for cellwise contamination and missing values.  See
 :doc:`sparse_precision` for partial correlations, EBIC selection, and the
 difference from robust CLIME and spatial-sign graphical-lasso methods.
 
+Spatial-sign graphical lasso
+--------------------------------
+
+``SpatialSignGraphicalLasso`` estimates a sparse precision for the
+trace-normalized elliptical shape rather than starting from an ordinary
+covariance estimate.  With spatial median :math:`\widehat\mu`, define
+
+.. math::
+
+   \widehat S
+   = \frac{1}{n}\sum_{i=1}^{n}
+     U(x_i-\widehat\mu)U(x_i-\widehat\mu)^T,
+   \qquad U(z)=\frac{z}{\lVert z\rVert_2}.
+
+The published SGLASSO objective is
+
+.. math::
+
+   \widehat V
+   = \arg\min_{V\succ0}
+     \left\{
+       \operatorname{tr}(p\widehat S V)-\log\det V
+       + \alpha\lVert V\rVert_1
+     \right\}.
+
+The factor :math:`p` arises because, under the high-dimensional elliptical
+assumptions of Lu and Feng, :math:`pS` approximates a trace-normalized covariance
+shape.  Consequently, ``precision_`` is defined up to a common scale; its zero
+pattern and partial correlations remain meaningful.  See
+:doc:`spatial_sign_precision` for diagonal penalization, EBIC selection, missing
+values, and the distinction from cellwise-robust graph estimation.
+
 Matrix Minimum Covariance Determinant
 -------------------------------------
 

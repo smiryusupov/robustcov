@@ -195,6 +195,7 @@ All detailed pages
    gallery/cellmcd_market_data
    gallery/cellrcov_high_dimensional
    gallery/robust_graphical_lasso_market_network
+   gallery/spatial_sign_graphical_lasso
    gallery/cellpca_process_spectra
    gallery/sparse_cellpca_spectra
    gallery/fraud_screening

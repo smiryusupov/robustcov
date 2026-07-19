@@ -38,6 +38,13 @@ Regularization and shrinkage
 * Y. Sun, P. Babu, and D. P. Palomar. 2014. Regularized Tyler's scatter estimator: existence, uniqueness, and algorithms. *IEEE Transactions on Signal Processing*.
 
 
+
+Sparse precision and graphical models
+-------------------------------------
+
+* Z. Lu and L. Feng. 2025. Robust sparse precision matrix estimation and its applications. arXiv:2503.03575.
+* J. Friedman, T. Hastie, and R. Tibshirani. 2008. Sparse inverse covariance estimation with the graphical lasso. *Biostatistics*.
+
 Matrix geometry and geodesic convexity
 --------------------------------------
 

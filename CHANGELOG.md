@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Added experimental `SpatialSignGraphicalLasso` / `SGLASSO` for sparse shape-precision graphs under heavy-tailed elliptical data.
 - Added experimental `DensityPowerRobustPCA`, a direct Gaussian density-power-divergence low-rank estimator with cell weights and robust PCA diagnostics.
 - Added deterministic multivariate `DetS` and `DetMM` estimators with Tukey-bisquare S-scale and fixed-scale MM refinement.
 - Added experimental ``SparseCellPCA`` for cellwise/casewise robust low-rank fitting with exact-zero elastic-net loadings.
