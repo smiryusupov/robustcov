@@ -22,11 +22,23 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'benchmarks.rst', 'bench
 html_theme = 'furo'
 html_title = 'RobustCov documentation'
 html_short_title = 'RobustCov'
+html_logo = '_static/brand/robustcov-mark.png'
+html_favicon = '_static/brand/robustcov-favicon.png'
 html_static_path = ['_static']
 autodoc_typehints = 'description'
 
 
 html_theme_options = {
+    "light_css_variables": {
+        "color-brand-primary": "#123f7a",
+        "color-brand-content": "#2f6fda",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#79a9ff",
+        "color-brand-content": "#8bb6ff",
+    },
+    "navigation_with_keys": True,
+    "top_of_page_buttons": ["view", "edit"],
     "source_repository": "https://github.com/smiryusupov/robustcov/",
     "source_branch": "main",
     "source_directory": "docs/",

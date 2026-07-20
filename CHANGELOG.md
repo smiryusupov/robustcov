@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Refined the documentation branding with a clean icon-only covariance mark, a centered vertical hero lockup, and balanced sidebar logo alignment.
+- Added the RobustCov visual identity to the documentation sidebar, favicon, README, and a reorganized product-focused landing page with three clear entry paths.
 - Replaced the estimator-era FAQ with a task-oriented practical FAQ covering contamination models, high-dimensional choices, PCA and decomposition variants, monitoring and conformal calibration, structured data, API maturity, and deployment behavior.
 
 ## 0.1.0a1 - 2026-07-20

@@ -17,6 +17,7 @@ PRIMARY_MODULES: dict[str, frozenset[str]] = {
             "test_external_dro_pca_examples.py",
             "test_external_snapshot_publisher.py",
             "test_faq_coverage.py",
+            "test_documentation_branding.py",
             "test_method_provenance.py",
             "test_sklearn_interoperability.py",
             "test_public_api_contract.py",
