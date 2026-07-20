@@ -184,6 +184,7 @@ def test_rejects_constant_feature():
 
 
 def test_plot_cellwise_residual_map(tmp_path):
+    pytest.importorskip("matplotlib")
     model = fitted_model()
     output = tmp_path / "cellmap.png"
     fig = rc.plot_cellwise_residual_map(model, output_path=output, show=False)
@@ -196,3 +197,107 @@ def test_unfitted_methods_raise():
     X = np.zeros((4, 2))
     with pytest.raises(RuntimeError):
         model.cellwise_diagnostics(X)
+
+
+def _rowwise_em_update(X, W, location, covariance, minimum_eigenvalue):
+    import robustcov.cellmcd as cellmcd
+
+    n, p = X.shape
+    conditional_means = np.empty((n, p), dtype=np.float64)
+    covariance_bias = np.zeros((p, p), dtype=np.float64)
+    for i in range(n):
+        observed = np.flatnonzero(W[i])
+        missing = np.flatnonzero(~W[i])
+        conditional_means[i, observed] = X[i, observed]
+        mean_missing, conditional_cov = cellmcd._conditional_parameters(
+            location, covariance, missing, observed, X[i, observed]
+        )
+        conditional_means[i, missing] = mean_missing
+        if missing.size:
+            covariance_bias[np.ix_(missing, missing)] += conditional_cov
+    new_location = conditional_means.mean(axis=0)
+    centered = conditional_means - new_location
+    new_covariance = (centered.T @ centered + covariance_bias) / n
+    new_covariance = cellmcd._truncate_covariance(
+        new_covariance, minimum_eigenvalue
+    )
+    return new_location, new_covariance, conditional_means
+
+
+def test_grouped_em_update_matches_rowwise_reference():
+    import robustcov.cellmcd as cellmcd
+
+    rng = np.random.default_rng(321)
+    X = rng.normal(size=(48, 7))
+    W = np.ones_like(X, dtype=bool)
+    patterns = np.array(
+        [
+            [1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 1, 1, 0, 1, 1],
+            [0, 1, 1, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+        ],
+        dtype=bool,
+    )
+    W[:] = patterns[np.arange(X.shape[0]) % patterns.shape[0]]
+    a = rng.normal(size=(X.shape[1], X.shape[1]))
+    covariance = a @ a.T + 0.5 * np.eye(X.shape[1])
+    location = rng.normal(size=X.shape[1])
+
+    expected = _rowwise_em_update(X, W, location, covariance, 1e-7)
+    actual = cellmcd._em_update(X, W, location, covariance, 1e-7)
+    for expected_item, actual_item in zip(expected, actual):
+        assert np.allclose(actual_item, expected_item, rtol=1e-12, atol=1e-12)
+
+
+def test_grouped_cellmcd_diagnostics_match_scalar_conditionals():
+    import robustcov.cellmcd as cellmcd
+
+    model = fitted_model(seed=13)
+    X = model.imputed_data_[:18].copy()
+    X[1, 2] = np.nan
+    X[4, 0] = np.nan
+    support = np.isfinite(X)
+    support[2::4, 1] = False
+    support[3::5, 3] = False
+
+    predictions, conditional_std, residuals = model._diagnostics_with_support(
+        X, support
+    )
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            observed = np.flatnonzero(
+                support[i] & (np.arange(X.shape[1]) != j)
+            )
+            mean, conditional = cellmcd._conditional_parameters(
+                model.location_,
+                model.covariance_,
+                np.array([j]),
+                observed,
+                X[i, observed],
+            )
+            expected_std = np.sqrt(
+                max(float(conditional[0, 0]), np.finfo(float).tiny)
+            )
+            assert predictions[i, j] == pytest.approx(mean[0], rel=1e-12, abs=1e-12)
+            assert conditional_std[i, j] == pytest.approx(
+                expected_std, rel=1e-12, abs=1e-12
+            )
+            if np.isfinite(X[i, j]):
+                expected_residual = (X[i, j] - mean[0]) / expected_std
+                assert residuals[i, j] == pytest.approx(
+                    expected_residual, rel=1e-12, abs=1e-12
+                )
+            else:
+                assert np.isnan(residuals[i, j])
+
+    expected_distances = np.asarray(
+        [
+            cellmcd._partial_distance(
+                row, mask, model.location_, model.covariance_
+            )
+            for row, mask in zip(X, support)
+        ]
+    )
+    actual_distances = model._partial_distances(X, support)
+    assert np.allclose(actual_distances, expected_distances, rtol=1e-12, atol=1e-12)

@@ -67,8 +67,11 @@ from :math:`R` and mapped back through
    \widehat\Theta = D^{-1}\widehat\Omega D^{-1}.
 
 This makes a single penalty more comparable across features with different
-units.  Setting ``standardize=False`` applies the penalty directly in the
-original units.
+units.  Edge thresholding is also performed in standardized coordinates, so
+changing feature units does not change the fitted graph support.  Exact
+constant features are assigned a scale-relative diagonal regularization while
+all-constant scatter matrices are rejected as undefined.  Setting
+``standardize=False`` applies the penalty directly in the original units.
 
 Partial correlations
 --------------------

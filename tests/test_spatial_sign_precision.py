@@ -223,6 +223,7 @@ def test_aliases_are_public():
 
 
 def test_plot_partial_correlation_network_accepts_spatial_sign_model(tmp_path):
+    pytest.importorskip("matplotlib")
     rng = np.random.default_rng(12)
     X = rng.standard_t(df=3.0, size=(140, 6))
     model = rc.SGLASSO(alpha=0.1).fit(X)

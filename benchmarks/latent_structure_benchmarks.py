@@ -1,0 +1,260 @@
+#!/usr/bin/env python3
+"""Benchmark robust ICA, SOBI, PCA, and static factor models.
+
+The benchmark uses task-specific synthetic ground truth and never combines the
+four families into one global rank.  Lower MDI/subspace/reconstruction errors
+are better; higher matched source/factor correlations are better.
+
+Examples
+--------
+Generate the documentation snapshot::
+
+    OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=2 \
+    python benchmarks/latent_structure_benchmarks.py \
+      --profile quick --repeats 1 \
+      --csv docs/_static/benchmarks/latent_structure_quick.csv \
+      --plot-dir docs/_static/benchmarks/latent_structure \
+      --rst docs/_generated/latent_structure_results.rst
+
+Run a more stable local comparison::
+
+    OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=4 \
+    python benchmarks/latent_structure_benchmarks.py \
+      --profile full --repeats 3 --families ica sobi pca factor \
+      --csv results/latent_structure.csv \
+      --plot-dir results/latent_structure_plots
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+from pathlib import Path
+from typing import Any, Iterable
+
+import numpy as np
+
+from compare_methods import (
+    CSV_FIELDS,
+    PROFILES,
+    _aggregate,
+    _format,
+    _rst_table,
+    run_factor_benchmarks,
+    run_ica_benchmarks,
+    run_pca_benchmarks,
+    run_sobi_benchmarks,
+    write_csv,
+)
+
+RUNNERS = {
+    "ica": run_ica_benchmarks,
+    "sobi": run_sobi_benchmarks,
+    "pca": run_pca_benchmarks,
+    "factor": run_factor_benchmarks,
+}
+
+
+def _metric_rows(
+    rows: list[dict[str, Any]],
+    *,
+    family: str,
+    scenario: str,
+    metric: str,
+) -> list[tuple[str, float]]:
+    selected = []
+    for row in _aggregate(rows):
+        if row.get("family") != family or row.get("scenario") != scenario:
+            continue
+        try:
+            value = float(row.get(metric, ""))
+        except (TypeError, ValueError):
+            continue
+        if np.isfinite(value):
+            selected.append((str(row["method"]), value))
+    return sorted(selected, key=lambda item: item[1])
+
+
+def _save_bar_chart(
+    items: list[tuple[str, float]],
+    path: Path,
+    *,
+    title: str,
+    xlabel: str,
+) -> None:
+    if not items:
+        return
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as exc:
+        raise RuntimeError(
+            "plot generation requires matplotlib; install robustcov[plot]"
+        ) from exc
+    labels = [name for name, _ in items]
+    values = [value for _, value in items]
+    height = max(3.2, 0.48 * len(items) + 1.4)
+    fig, ax = plt.subplots(figsize=(9.2, height))
+    positions = np.arange(len(items))
+    ax.barh(positions, values)
+    ax.set_yticks(positions, labels)
+    ax.invert_yaxis()
+    ax.set_xlabel(xlabel)
+    ax.set_title(title)
+    ax.grid(axis="x", alpha=0.25)
+    for position, value in zip(positions, values, strict=True):
+        ax.text(value, position, f" {value:.3f}", va="center", fontsize=9)
+    fig.tight_layout()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=160, bbox_inches="tight")
+    plt.close(fig)
+
+
+def write_plots(plot_dir: Path, rows: list[dict[str, Any]]) -> list[Path]:
+    specifications = [
+        (
+            "ica",
+            "impulsive row contamination",
+            "minimum_distance_index",
+            "ica_mdi.png",
+            "ICA recovery under impulsive contamination",
+            "Minimum-distance index (lower is better)",
+        ),
+        (
+            "sobi",
+            "impulsive temporal contamination",
+            "minimum_distance_index",
+            "sobi_mdi.png",
+            "SOBI recovery under impulsive contamination",
+            "Minimum-distance index (lower is better)",
+        ),
+        (
+            "pca",
+            "rowwise low-rank outliers",
+            "subspace_error",
+            "robust_pca_subspace.png",
+            "Robust PCA subspace recovery",
+            "Projection error (lower is better)",
+        ),
+        (
+            "factor model",
+            "factor model + row contamination",
+            "factor_subspace_error",
+            "factor_subspace.png",
+            "Factor-loading recovery under row contamination",
+            "Loading-subspace error (lower is better)",
+        ),
+    ]
+    outputs = []
+    for family, scenario, metric, filename, title, xlabel in specifications:
+        items = _metric_rows(
+            rows, family=family, scenario=scenario, metric=metric
+        )
+        output = plot_dir / filename
+        _save_bar_chart(items, output, title=title, xlabel=xlabel)
+        if output.exists():
+            outputs.append(output)
+    return outputs
+
+
+def write_rst(path: Path, rows: list[dict[str, Any]], profile: str, repeats: int) -> None:
+    aggregated = _aggregate(rows)
+    lines = [
+        ".. Generated by benchmarks/latent_structure_benchmarks.py.",
+        ".. Do not edit benchmark values by hand.",
+        "",
+        "Latent-structure benchmark snapshot",
+        "-----------------------------------",
+        "",
+        f"Profile: ``{profile}``; complete fits per method: {repeats}.",
+        "Each family has its own ground-truth metric. Lower MDI and subspace errors are better; higher matched correlations are better.",
+        "",
+        ".. latent-structure-body-start",
+        "",
+    ]
+    sections = [
+        (
+            "ICA",
+            "ica",
+            ["Scenario", "Method", "MDI", "Amari", "Source corr.", "Seconds"],
+            lambda row: [
+                str(row["scenario"]), str(row["method"]),
+                _format(row["minimum_distance_index"]), _format(row["amari_index"]),
+                _format(row["source_correlation"]), _format(row["seconds"]),
+            ],
+        ),
+        (
+            "SOBI",
+            "sobi",
+            ["Scenario", "Method", "MDI", "Source corr.", "Off-diagonal energy", "Seconds"],
+            lambda row: [
+                str(row["scenario"]), str(row["method"]),
+                _format(row["minimum_distance_index"]), _format(row["source_correlation"]),
+                _format(row["joint_diagonalization_error"]), _format(row["seconds"]),
+            ],
+        ),
+        (
+            "Robust PCA",
+            "pca",
+            ["Scenario", "Method", "Subspace error", "Row AUROC", "Cell AUROC", "Seconds"],
+            lambda row: [
+                str(row["scenario"]), str(row["method"]), _format(row["subspace_error"]),
+                _format(row["row_outlier_auc"]), _format(row["cell_outlier_auc"]),
+                _format(row["seconds"]),
+            ],
+        ),
+        (
+            "Robust factor models",
+            "factor model",
+            ["Scenario", "Method", "Subspace error", "Score corr.", "Common error", "Count error", "Seconds"],
+            lambda row: [
+                str(row["scenario"]), str(row["method"]), _format(row["factor_subspace_error"]),
+                _format(row["factor_score_correlation"]), _format(row["common_component_error"]),
+                _format(row["factor_count_error"], digits=0), _format(row["seconds"]),
+            ],
+        ),
+    ]
+    for title, family, headers, formatter in sections:
+        family_rows = [row for row in aggregated if row["family"] == family]
+        if not family_rows:
+            continue
+        lines.extend([title, "~" * len(title), ""])
+        lines.append(_rst_table(headers, [formatter(row) for row in family_rows]))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def print_rows(rows: Iterable[dict[str, Any]]) -> None:
+    writer = csv.DictWriter(__import__("sys").stdout, fieldnames=CSV_FIELDS, lineterminator="\n")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow({field: row.get(field, "") for field in CSV_FIELDS})
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=sorted(PROFILES), default="quick")
+    parser.add_argument("--families", nargs="+", choices=sorted(RUNNERS), default=list(RUNNERS))
+    parser.add_argument("--repeats", type=int, default=1)
+    parser.add_argument("--seed", type=int, default=20260718)
+    parser.add_argument("--csv", type=Path)
+    parser.add_argument("--plot-dir", type=Path)
+    parser.add_argument("--rst", type=Path)
+    args = parser.parse_args()
+    if args.repeats < 1:
+        raise ValueError("repeats must be at least one")
+    profile = PROFILES[args.profile]
+    rows: list[dict[str, Any]] = []
+    for family in args.families:
+        rows.extend(RUNNERS[family](profile, args.repeats, args.seed))
+    print_rows(rows)
+    if args.csv:
+        write_csv(args.csv, rows)
+    if args.plot_dir:
+        outputs = write_plots(args.plot_dir, rows)
+        for output in outputs:
+            print(f"wrote {output}")
+    if args.rst:
+        write_rst(args.rst, rows, args.profile, args.repeats)
+
+
+if __name__ == "__main__":
+    main()

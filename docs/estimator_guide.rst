@@ -44,6 +44,10 @@ reproducible cross-method benchmarks.
      - ``CellRCov``
      - Combines a cellwise-robust low-rank covariance with a regularized residual covariance.
      - Requires a defensible rank and benefits from genuine low-dimensional structure.
+   * - Matrix-valued low-rank data contain bad cells, abnormal samples, and missing entries
+     - ``RobustMultilinearPCA``
+     - Preserves row and column modes while applying cellwise and casewise robust weights.
+     - Requires fixed mode ranks; the package initialization is not reference ROMPCA parity.
    * - Complete low-rank data contain large rowwise or cellwise reconstruction errors
      - ``DensityPowerRobustPCA``
      - Fits scores and loadings directly with a tunable density-power loss.
@@ -101,6 +105,7 @@ Stable prototype APIs:
 
 Experimental APIs:
 
+* ``RobustMultilinearPCA`` while its package-native HOSVD initialization and fixed residual scales are cross-validated against ROMPCA
 * ``DensityPowerRobustPCA`` while its package-native alternating-regression updates are compared with the reference rSVDdpd implementation
 * ``SparseCellPCA`` while its alternating coordinate-descent fit is validated against SCRAMBLE and other sparse robust PCA implementations
 * ``KMRCD`` while its package-specific initial-support search is compared with the reference implementation

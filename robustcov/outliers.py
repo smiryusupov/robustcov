@@ -9,25 +9,33 @@ import numpy as np
 from scipy.stats import chi2
 
 from .covariance import FastMCD, RegularizedTyler
+from ._estimator import EstimatorMixin
 from .m_estimators import RegularizedCauchy
 from ._utils import check_array
 
 
-class RobustOutlierDetector:
+class RobustOutlierDetector(EstimatorMixin):
     """Small sklearn-style outlier detector using robust Mahalanobis distances."""
 
-    def __init__(self, estimator=None, threshold="chi2", alpha=0.975):
-        self.estimator = FastMCD(random_state=0) if estimator is None else estimator
+    def __init__(self, estimator=None, threshold="chi2", alpha=0.975, contamination=None):
+        self.estimator = estimator
         self.threshold = threshold
         self.alpha = alpha
+        self.contamination = contamination
 
     def fit(self, X, y=None):
-        allow_nan = getattr(self.estimator, "missing_values", "raise") == "median"
+        base_estimator = FastMCD(random_state=0) if self.estimator is None else self.estimator
+        allow_nan = getattr(base_estimator, "missing_values", "raise") == "median"
         X = check_array(X, allow_nan=allow_nan)
-        self.estimator_ = self.estimator.fit(X)
+        self.estimator_ = copy.deepcopy(base_estimator).fit(X)
         self.n_features_in_ = X.shape[1]
         d = self.estimator_.distances_
-        if self.threshold == "chi2":
+        if self.contamination is not None:
+            contamination = float(self.contamination)
+            if not (0.0 <= contamination < 0.5):
+                raise ValueError("contamination must be in [0, 0.5)")
+            self.threshold_ = float(np.quantile(d, 1.0 - contamination))
+        elif self.threshold == "chi2":
             self.threshold_ = float(chi2.ppf(self.alpha, self.n_features_in_))
         elif self.threshold in {"empirical", "tail_calibrated"}:
             self.threshold_ = float(np.quantile(d, self.alpha))
@@ -39,15 +47,23 @@ class RobustOutlierDetector:
         self.labels_ = np.where(d <= self.threshold_, 1, -1)
         return self
 
+    def score_samples(self, X):
+        """Return negative robust squared distances; larger values are more normal."""
+        return -np.asarray(self.estimator_.mahalanobis(X), dtype=float)
+
+    def decision_function(self, X):
+        """Return signed inlier margins; positive values indicate inliers."""
+        d = np.asarray(self.estimator_.mahalanobis(X), dtype=float)
+        return self.threshold_ - d
+
     def predict(self, X):
-        d = self.estimator_.mahalanobis(X)
-        return np.where(d <= self.threshold_, 1, -1)
+        return np.where(self.decision_function(X) >= 0.0, 1, -1)
 
     def fit_predict(self, X, y=None):
-        return self.fit(X).labels_
+        return self.fit(X, y=y).labels_
 
 
-class AutoRobustAnomalyDetector:
+class AutoRobustAnomalyDetector(EstimatorMixin):
     """Simple ensemble detector built from robust covariance estimators.
 
     Each estimator contributes a robust squared-distance score. Scores are normalized

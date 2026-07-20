@@ -151,13 +151,24 @@ static Mat covariance_from_indices(const Mat& X, const std::vector<int>& idx, co
     }
 #endif
     double denom = static_cast<double>(std::max(1, h - 1));
+    double average_variance = 0.0;
     for (int j = 0; j < X.p; ++j) {
         for (int k = 0; k <= j; ++k) {
             C(j, k) /= denom;
             C(k, j) = C(j, k);
         }
-        C(j, j) += ridge;
+        average_variance += C(j, j);
     }
+    average_variance /= static_cast<double>(std::max(1, X.p));
+    // Treat ridge as relative to the data scale.  A fixed absolute ridge makes
+    // covariance estimates depend on the choice of measurement units and can
+    // dominate otherwise valid small-valued data.  Keep the historical absolute
+    // fallback only for an exactly degenerate subset.
+    double effective_ridge = ridge;
+    if (std::isfinite(average_variance) && average_variance > std::numeric_limits<double>::min()) {
+        effective_ridge = ridge * average_variance;
+    }
+    for (int j = 0; j < X.p; ++j) C(j, j) += effective_ridge;
     return C;
 }
 
@@ -188,7 +199,11 @@ static bool cholesky_lower(const Mat& A, Mat& L) {
 static Mat inverse_spd(Mat A) {
     int p = A.n;
     Mat L;
-    double ridge = 1e-10;
+    double matrix_scale = 0.0;
+    for (int j = 0; j < p; ++j) matrix_scale += std::abs(A(j, j));
+    matrix_scale /= static_cast<double>(std::max(1, p));
+    if (!std::isfinite(matrix_scale) || matrix_scale <= std::numeric_limits<double>::min()) matrix_scale = 1.0;
+    double ridge = 1e-10 * matrix_scale;
     for (int tries = 0; tries < 8; ++tries) {
         if (cholesky_lower(A, L)) break;
         for (int j = 0; j < p; ++j) A(j, j) += ridge;
@@ -220,7 +235,11 @@ static Mat inverse_spd(Mat A) {
 
 static double logdet_spd(Mat A) {
     Mat L;
-    double ridge = 1e-10;
+    double matrix_scale = 0.0;
+    for (int j = 0; j < A.n; ++j) matrix_scale += std::abs(A(j, j));
+    matrix_scale /= static_cast<double>(std::max(1, A.n));
+    if (!std::isfinite(matrix_scale) || matrix_scale <= std::numeric_limits<double>::min()) matrix_scale = 1.0;
+    double ridge = 1e-10 * matrix_scale;
     for (int tries = 0; tries < 8; ++tries) {
         if (cholesky_lower(A, L)) {
             double v = 0.0;
@@ -292,7 +311,7 @@ static py::dict fit_tyler_cpp(py::array_t<double, py::array::c_style | py::array
                 double d2 = 0.0;
                 for (int j = 0; j < p; ++j) for (int k = 0; k < p; ++k)
                     d2 += (X(i, j) - loc[j]) * P(j, k) * (X(i, k) - loc[k]);
-                d2 = std::max(d2, 1e-14);
+                if (!std::isfinite(d2) || d2 <= std::numeric_limits<double>::min()) continue;
                 double w = static_cast<double>(p) / d2;
                 for (int j = 0; j < p; ++j) {
                     double xj = X(i, j) - loc[j];
@@ -306,7 +325,7 @@ static py::dict fit_tyler_cpp(py::array_t<double, py::array::c_style | py::array
             double d2 = 0.0;
             for (int j = 0; j < p; ++j) for (int k = 0; k < p; ++k)
                 d2 += (X(i, j) - loc[j]) * P(j, k) * (X(i, k) - loc[k]);
-            d2 = std::max(d2, 1e-14);
+            if (!std::isfinite(d2) || d2 <= std::numeric_limits<double>::min()) continue;
             double w = static_cast<double>(p) / d2;
             for (int j = 0; j < p; ++j) {
                 double xj = X(i, j) - loc[j];
@@ -659,13 +678,375 @@ int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
     return out;
 }
 
+
+
+static std::vector<double> solve_spd_vector(Mat A, const std::vector<double>& rhs) {
+    if (A.n != A.p || static_cast<int>(rhs.size()) != A.n) {
+        throw std::invalid_argument("SPD solve dimension mismatch");
+    }
+    Mat L;
+    double ridge = 1e-12;
+    for (int tries = 0; tries < 8; ++tries) {
+        if (cholesky_lower(A, L)) break;
+        for (int j = 0; j < A.n; ++j) A(j, j) += ridge;
+        ridge *= 10.0;
+    }
+    if (!cholesky_lower(A, L)) throw std::runtime_error("weighted normal equations are not positive definite");
+    std::vector<double> y(A.n, 0.0), x(A.n, 0.0);
+    for (int i = 0; i < A.n; ++i) {
+        double value = rhs[static_cast<size_t>(i)];
+        for (int k = 0; k < i; ++k) value -= L(i, k) * y[static_cast<size_t>(k)];
+        y[static_cast<size_t>(i)] = value / L(i, i);
+    }
+    for (int i = A.n - 1; i >= 0; --i) {
+        double value = y[static_cast<size_t>(i)];
+        for (int k = i + 1; k < A.n; ++k) value -= L(k, i) * x[static_cast<size_t>(k)];
+        x[static_cast<size_t>(i)] = value / L(i, i);
+    }
+    return x;
+}
+
+static py::array_t<double> mahalanobis2_batch_cpp(
+    py::array_t<double, py::array::c_style | py::array::forcecast> X_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> location_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> precision_arr) {
+    auto xb = X_arr.request();
+    auto lb = location_arr.request();
+    auto pb = precision_arr.request();
+    if (xb.ndim != 2 || lb.ndim != 1 || pb.ndim != 2) {
+        throw std::invalid_argument("X must be 2D, location must be 1D, and precision must be 2D");
+    }
+    const int n = static_cast<int>(xb.shape[0]);
+    const int p = static_cast<int>(xb.shape[1]);
+    if (n < 1 || p < 1 || lb.shape[0] != p || pb.shape[0] != p || pb.shape[1] != p) {
+        throw std::invalid_argument("Mahalanobis dimensions do not match");
+    }
+    const double* X = static_cast<const double*>(xb.ptr);
+    const double* location = static_cast<const double*>(lb.ptr);
+    const double* precision = static_cast<const double*>(pb.ptr);
+    py::array_t<double> out(n);
+    double* distances = static_cast<double*>(out.request().ptr);
+    {
+        py::gil_scoped_release release;
+        const int nt = effective_threads_cpp(n, 256);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) num_threads(nt) if(nt > 1)
+#endif
+        for (int i = 0; i < n; ++i) {
+            const double* row = X + static_cast<size_t>(i) * p;
+            double distance = 0.0;
+            // Pair off-diagonal terms so the result is the full quadratic form
+            // even when precision is only numerically symmetric.
+            for (int j = 0; j < p; ++j) {
+                const double xj = row[j] - location[j];
+                distance += precision[static_cast<size_t>(j) * p + j] * xj * xj;
+                for (int k = 0; k < j; ++k) {
+                    const double xk = row[k] - location[k];
+                    const double pair = precision[static_cast<size_t>(j) * p + k]
+                                      + precision[static_cast<size_t>(k) * p + j];
+                    distance += pair * xj * xk;
+                }
+            }
+            distances[i] = std::max(0.0, distance);
+        }
+    }
+    return out;
+}
+
+static py::array_t<double> matrix_mahalanobis2_batch_cpp(
+    py::array_t<double, py::array::c_style | py::array::forcecast> X_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> location_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> row_precision_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> column_precision_arr) {
+    auto xb = X_arr.request();
+    auto mb = location_arr.request();
+    auto rb = row_precision_arr.request();
+    auto cb = column_precision_arr.request();
+    if (xb.ndim != 3 || mb.ndim != 2 || rb.ndim != 2 || cb.ndim != 2) {
+        throw std::invalid_argument("X must be 3D and matrix arguments must be 2D");
+    }
+    const int n = static_cast<int>(xb.shape[0]);
+    const int r = static_cast<int>(xb.shape[1]);
+    const int c = static_cast<int>(xb.shape[2]);
+    if (mb.shape[0] != r || mb.shape[1] != c || rb.shape[0] != r || rb.shape[1] != r || cb.shape[0] != c || cb.shape[1] != c) {
+        throw std::invalid_argument("matrix Mahalanobis dimensions do not match");
+    }
+    const double* X = static_cast<const double*>(xb.ptr);
+    const double* M = static_cast<const double*>(mb.ptr);
+    const double* RP = static_cast<const double*>(rb.ptr);
+    const double* CP = static_cast<const double*>(cb.ptr);
+    py::array_t<double> out(n);
+    double* result = static_cast<double*>(out.request().ptr);
+    {
+        py::gil_scoped_release release;
+        int nt = effective_threads_cpp(n, 32);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) num_threads(nt) if(nt > 1)
+#endif
+        for (int i = 0; i < n; ++i) {
+            std::vector<double> left(static_cast<size_t>(r) * c, 0.0);
+            for (int a = 0; a < r; ++a) {
+                for (int b = 0; b < c; ++b) {
+                    double value = 0.0;
+                    for (int k = 0; k < r; ++k) {
+                        const double residual = X[(static_cast<size_t>(i) * r + k) * c + b] - M[static_cast<size_t>(k) * c + b];
+                        value += RP[static_cast<size_t>(a) * r + k] * residual;
+                    }
+                    left[static_cast<size_t>(a) * c + b] = value;
+                }
+            }
+            double distance = 0.0;
+            for (int a = 0; a < r; ++a) {
+                for (int b = 0; b < c; ++b) {
+                    double transformed = 0.0;
+                    for (int k = 0; k < c; ++k) transformed += left[static_cast<size_t>(a) * c + k] * CP[static_cast<size_t>(k) * c + b];
+                    const double residual = X[(static_cast<size_t>(i) * r + a) * c + b] - M[static_cast<size_t>(a) * c + b];
+                    distance += residual * transformed;
+                }
+            }
+            result[i] = std::max(0.0, distance);
+        }
+    }
+    return out;
+}
+
+static py::array_t<double> weighted_tucker_scores_2d_cpp(
+    py::array_t<double, py::array::c_style | py::array::forcecast> X_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> weights_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> center_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> row_components_arr,
+    py::array_t<double, py::array::c_style | py::array::forcecast> column_components_arr,
+    double ridge) {
+    auto xb = X_arr.request();
+    auto wb = weights_arr.request();
+    auto mb = center_arr.request();
+    auto ub = row_components_arr.request();
+    auto vb = column_components_arr.request();
+    if (xb.ndim != 3 || wb.ndim != 3 || mb.ndim != 2 || ub.ndim != 2 || vb.ndim != 2) {
+        throw std::invalid_argument("weighted Tucker inputs have invalid dimensions");
+    }
+    const int n = static_cast<int>(xb.shape[0]);
+    const int r = static_cast<int>(xb.shape[1]);
+    const int c = static_cast<int>(xb.shape[2]);
+    const int q1 = static_cast<int>(ub.shape[1]);
+    const int q2 = static_cast<int>(vb.shape[1]);
+    const int q = q1 * q2;
+    if (wb.shape[0] != n || wb.shape[1] != r || wb.shape[2] != c || mb.shape[0] != r || mb.shape[1] != c || ub.shape[0] != r || vb.shape[0] != c) {
+        throw std::invalid_argument("weighted Tucker dimensions do not match");
+    }
+    if (!(ridge > 0.0) || !std::isfinite(ridge)) throw std::invalid_argument("ridge must be positive and finite");
+    const double* X = static_cast<const double*>(xb.ptr);
+    const double* W = static_cast<const double*>(wb.ptr);
+    const double* M = static_cast<const double*>(mb.ptr);
+    const double* U = static_cast<const double*>(ub.ptr);
+    const double* V = static_cast<const double*>(vb.ptr);
+    py::array_t<double> out({n, q1, q2});
+    double* scores = static_cast<double*>(out.request().ptr);
+    {
+        py::gil_scoped_release release;
+        int nt = effective_threads_cpp(n, 8);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) num_threads(nt) if(nt > 1)
+#endif
+        for (int i = 0; i < n; ++i) {
+            Mat gram(q, q, 0.0);
+            std::vector<double> rhs(static_cast<size_t>(q), 0.0);
+            std::vector<double> design(static_cast<size_t>(q), 0.0);
+            for (int a = 0; a < r; ++a) {
+                for (int b = 0; b < c; ++b) {
+                    const size_t offset = (static_cast<size_t>(i) * r + a) * c + b;
+                    const double w = W[offset];
+                    if (!(w > 0.0) || !std::isfinite(w)) continue;
+                    const double y = X[offset] - M[static_cast<size_t>(a) * c + b];
+                    for (int u = 0; u < q1; ++u) {
+                        for (int v = 0; v < q2; ++v) {
+                            const int idx = u * q2 + v;
+                            design[static_cast<size_t>(idx)] = U[static_cast<size_t>(a) * q1 + u] * V[static_cast<size_t>(b) * q2 + v];
+                        }
+                    }
+                    for (int j = 0; j < q; ++j) {
+                        rhs[static_cast<size_t>(j)] += w * design[static_cast<size_t>(j)] * y;
+                        for (int k = 0; k <= j; ++k) gram(j, k) += w * design[static_cast<size_t>(j)] * design[static_cast<size_t>(k)];
+                    }
+                }
+            }
+            for (int j = 0; j < q; ++j) {
+                gram(j, j) += ridge;
+                for (int k = 0; k < j; ++k) gram(k, j) = gram(j, k);
+            }
+            std::vector<double> solution = solve_spd_vector(std::move(gram), rhs);
+            for (int u = 0; u < q1; ++u) for (int v = 0; v < q2; ++v) {
+                scores[(static_cast<size_t>(i) * q1 + u) * q2 + v] = solution[static_cast<size_t>(u * q2 + v)];
+            }
+        }
+    }
+    return out;
+}
+
+
+static py::tuple joint_diagonalize_symmetric_cpp(
+    py::array_t<double, py::array::c_style | py::array::forcecast> matrices_arr,
+    int max_sweeps,
+    double tol) {
+    auto buffer = matrices_arr.request();
+    if (buffer.ndim != 3 || buffer.shape[1] != buffer.shape[2]) {
+        throw std::invalid_argument("matrices must have shape (n_matrices, p, p)");
+    }
+    const int n_matrices = static_cast<int>(buffer.shape[0]);
+    const int p = static_cast<int>(buffer.shape[1]);
+    if (n_matrices < 1 || p < 1) throw std::invalid_argument("matrices must be non-empty");
+    if (max_sweeps < 1) throw std::invalid_argument("max_sweeps must be positive");
+    if (!(tol > 0.0) || !std::isfinite(tol)) throw std::invalid_argument("tol must be positive and finite");
+
+    const double* input = static_cast<const double*>(buffer.ptr);
+    const size_t matrix_size = static_cast<size_t>(p) * p;
+    std::vector<double> arrays(static_cast<size_t>(n_matrices) * matrix_size, 0.0);
+    for (int k = 0; k < n_matrices; ++k) {
+        for (int i = 0; i < p; ++i) {
+            for (int j = 0; j < p; ++j) {
+                const double left = input[static_cast<size_t>(k) * matrix_size + static_cast<size_t>(i) * p + j];
+                const double right = input[static_cast<size_t>(k) * matrix_size + static_cast<size_t>(j) * p + i];
+                if (!std::isfinite(left) || !std::isfinite(right)) {
+                    throw std::invalid_argument("matrices contain NaN or infinity");
+                }
+                arrays[static_cast<size_t>(k) * matrix_size + static_cast<size_t>(i) * p + j] = 0.5 * (left + right);
+            }
+        }
+    }
+    std::vector<double> rotation(matrix_size, 0.0);
+    for (int i = 0; i < p; ++i) rotation[static_cast<size_t>(i) * p + i] = 1.0;
+
+    auto off_diagonal_energy = [&]() {
+        double energy = 0.0;
+        for (int k = 0; k < n_matrices; ++k) {
+            const size_t base = static_cast<size_t>(k) * matrix_size;
+            for (int i = 0; i < p; ++i) {
+                for (int j = 0; j < p; ++j) {
+                    if (i != j) {
+                        const double value = arrays[base + static_cast<size_t>(i) * p + j];
+                        energy += value * value;
+                    }
+                }
+            }
+        }
+        return energy;
+    };
+
+    const double initial_energy = off_diagonal_energy();
+    bool converged = false;
+    int sweeps = 0;
+    {
+        py::gil_scoped_release release;
+        for (int sweep = 1; sweep <= max_sweeps; ++sweep) {
+            double largest_sine = 0.0;
+            for (int left = 0; left < p - 1; ++left) {
+                for (int right = left + 1; right < p; ++right) {
+                    double gram11 = 0.0, gram12 = 0.0, gram22 = 0.0;
+                    for (int k = 0; k < n_matrices; ++k) {
+                        const size_t base = static_cast<size_t>(k) * matrix_size;
+                        const double difference = arrays[base + static_cast<size_t>(left) * p + left]
+                                                - arrays[base + static_cast<size_t>(right) * p + right];
+                        const double cross = 2.0 * arrays[base + static_cast<size_t>(left) * p + right];
+                        gram11 += difference * difference;
+                        gram12 += difference * cross;
+                        gram22 += cross * cross;
+                    }
+                    const double phi = 0.5 * std::atan2(2.0 * gram12, gram11 - gram22);
+                    double cosine_twice = std::cos(phi);
+                    double sine_twice = std::sin(phi);
+                    if (cosine_twice < 0.0) {
+                        cosine_twice = -cosine_twice;
+                        sine_twice = -sine_twice;
+                    }
+                    const double angle = 0.5 * std::atan2(sine_twice, cosine_twice);
+                    const double cosine = std::cos(angle);
+                    const double sine = std::sin(angle);
+                    if (std::abs(sine) <= tol) continue;
+
+                    for (int k = 0; k < n_matrices; ++k) {
+                        const size_t base = static_cast<size_t>(k) * matrix_size;
+                        for (int row = 0; row < p; ++row) {
+                            const size_t row_base = base + static_cast<size_t>(row) * p;
+                            const double value_left = arrays[row_base + left];
+                            const double value_right = arrays[row_base + right];
+                            arrays[row_base + left] = cosine * value_left + sine * value_right;
+                            arrays[row_base + right] = -sine * value_left + cosine * value_right;
+                        }
+                        for (int column = 0; column < p; ++column) {
+                            const size_t left_index = base + static_cast<size_t>(left) * p + column;
+                            const size_t right_index = base + static_cast<size_t>(right) * p + column;
+                            const double value_left = arrays[left_index];
+                            const double value_right = arrays[right_index];
+                            arrays[left_index] = cosine * value_left + sine * value_right;
+                            arrays[right_index] = -sine * value_left + cosine * value_right;
+                        }
+                    }
+                    for (int row = 0; row < p; ++row) {
+                        const size_t row_base = static_cast<size_t>(row) * p;
+                        const double value_left = rotation[row_base + left];
+                        const double value_right = rotation[row_base + right];
+                        rotation[row_base + left] = cosine * value_left + sine * value_right;
+                        rotation[row_base + right] = -sine * value_left + cosine * value_right;
+                    }
+                    largest_sine = std::max(largest_sine, std::abs(sine));
+                }
+            }
+            sweeps = sweep;
+            if (largest_sine <= tol) {
+                converged = true;
+                break;
+            }
+        }
+    }
+
+    // Remove tiny asymmetry introduced by sequential in-place rotations.
+    for (int k = 0; k < n_matrices; ++k) {
+        const size_t base = static_cast<size_t>(k) * matrix_size;
+        for (int i = 0; i < p; ++i) {
+            for (int j = 0; j < i; ++j) {
+                const double value = 0.5 * (
+                    arrays[base + static_cast<size_t>(i) * p + j]
+                    + arrays[base + static_cast<size_t>(j) * p + i]
+                );
+                arrays[base + static_cast<size_t>(i) * p + j] = value;
+                arrays[base + static_cast<size_t>(j) * p + i] = value;
+            }
+        }
+    }
+    const double final_energy = off_diagonal_energy();
+
+    py::array_t<double> rotation_out({p, p});
+    std::copy(rotation.begin(), rotation.end(), static_cast<double*>(rotation_out.request().ptr));
+    py::array_t<double> matrices_out({n_matrices, p, p});
+    std::copy(arrays.begin(), arrays.end(), static_cast<double*>(matrices_out.request().ptr));
+    py::dict info;
+    info["converged"] = converged;
+    info["n_sweeps"] = sweeps;
+    info["initial_off_diagonal_energy"] = initial_energy;
+    info["off_diagonal_energy"] = final_energy;
+    return py::make_tuple(rotation_out, matrices_out, info);
+}
+
 PYBIND11_MODULE(_robustcov_cpp, m) {
     m.doc() = "C++ kernels for robustcov MVP";
+    // Increment this whenever Python and native semantics must change together.
+    // The Python loader rejects missing or mismatched revisions so stale editable
+    // builds cannot silently run newer wrappers against an older binary.
+    m.attr("__robustcov_native_api__") = 2;
     m.def("has_openmp", &has_openmp_cpp);
     m.def("get_num_threads", &get_max_threads_cpp);
     m.def("set_num_threads", &set_num_threads_cpp, py::arg("n_threads"));
     m.def("fit_tyler", &fit_tyler_cpp, py::arg("X"), py::arg("max_iter")=500,
           py::arg("tol")=1e-7, py::arg("regularization")=0.0, py::arg("assume_centered")=false);
+    m.def("mahalanobis2_batch", &mahalanobis2_batch_cpp,
+          py::arg("X"), py::arg("location"), py::arg("precision"));
+    m.def("matrix_mahalanobis2_batch", &matrix_mahalanobis2_batch_cpp,
+          py::arg("X"), py::arg("location"), py::arg("row_precision"), py::arg("column_precision"));
+    m.def("joint_diagonalize_symmetric", &joint_diagonalize_symmetric_cpp,
+          py::arg("matrices"), py::arg("max_sweeps")=100, py::arg("tol")=1e-10);
+    m.def("weighted_tucker_scores_2d", &weighted_tucker_scores_2d_cpp,
+          py::arg("X"), py::arg("weights"), py::arg("center"),
+          py::arg("row_components"), py::arg("column_components"), py::arg("ridge")=1e-8);
     m.def("fit_fast_mcd", &fit_fast_mcd_cpp, py::arg("X"), py::arg("support_fraction")=-1.0,
           py::arg("n_init")=100, py::arg("max_iter")=50, py::arg("tol")=1e-6,
           py::arg("reweight")=true, py::arg("random_state")=0,

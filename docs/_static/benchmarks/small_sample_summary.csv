@@ -1,10 +1,17 @@
-method,appearances,failures,win_rate,mean_rank,median_error,mean_error,median_seconds
-robustcov Cauchy,27,0,0.7407,1.4074,0.5994,0.7625,0.013307
-robustcov StudentT(df=3),27,0,0.0000,3.1852,0.6675,0.8793,0.015101
-robustcov HellTyler(exp),27,0,0.1111,3.2963,0.8503,0.9889,0.042900
-robustcov RegTyler,27,0,0.0370,3.5185,0.8021,12.0413,0.005107
-robustcov KLTyler,27,0,0.0370,4.5185,0.8021,12.0413,0.005073
-sklearn MinCovDet,27,0,0.1111,6.2963,2.1739,15.6922,0.024392
-sklearn LedoitWolf,27,0,0.0000,6.5556,2.5696,262.0354,0.000420
-sklearn OAS,27,0,0.0000,7.5926,5.3643,1629.2743,0.000325
-sklearn Empirical,27,0,0.0000,8.6296,6.9285,1681.1440,0.000449
+method,appearances,eligible,successes,failures,not_applicable,success_rate,win_rate,mean_rank,median_error,mean_error,median_seconds
+robustcov AutoRobustScatter,8,8,8,0,0,1.0000,0.8750,1.6250,0.5907,0.6659,0.095810
+robustcov RegularizedCauchy,8,8,8,0,0,1.0000,0.3750,1.8750,0.5950,0.6808,0.015231
+robustcov StudentT(df=3),8,8,8,0,0,1.0000,0.0000,4.3750,0.6921,0.7980,0.020214
+robustcov HellingerTyler (experimental),8,8,8,0,0,1.0000,0.0000,5.2500,0.8765,0.8910,0.077038
+robustcov FastMCD,4,4,4,0,4,1.0000,0.2500,5.5000,0.6619,0.7276,0.018465
+robustcov RegularizedTyler,8,8,8,0,0,1.0000,0.0000,5.6250,2.0802,92.4572,0.008038
+robustcov KLRegularizedTyler,8,8,8,0,0,1.0000,0.0000,6.6250,2.0802,92.4572,0.007931
+sklearn MinCovDet,4,4,4,0,4,1.0000,0.0000,6.7500,0.8233,1.1903,0.033214
+robustcov MRCD,8,8,8,0,0,1.0000,0.0000,7.3750,1.1743,1.4014,0.027054
+robustcov WieselTyler,8,8,8,0,0,1.0000,0.0000,7.6250,2.0802,92.4572,0.008018
+robustcov DetS,2,2,2,0,6,1.0000,0.0000,10.0000,1.7749,1.7749,0.154699
+robustcov TylerShape,6,6,6,0,2,1.0000,0.0000,10.5000,4.0349,679.0417,0.003681
+robustcov DetMM,2,2,2,0,6,1.0000,0.0000,11.0000,1.9137,1.9137,0.436258
+sklearn LedoitWolf,8,8,8,0,0,1.0000,0.0000,11.1250,12.2731,5180.6405,0.000963
+sklearn OAS,8,8,8,0,0,1.0000,0.0000,12.2500,35.8706,27555.1045,0.000727
+sklearn Empirical,8,8,8,0,0,1.0000,0.0000,13.2500,39.2676,28662.5294,0.001043

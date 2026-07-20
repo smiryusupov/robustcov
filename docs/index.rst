@@ -17,9 +17,9 @@ Where to start
 
    <div class="gallery-grid">
      <a class="gallery-card" href="use_case_gallery.html">
-       <div class="gallery-card-placeholder">Use-case<br>gallery</div>
-       <h3>Browse applications</h3>
-       <p>Examples for finance, fraud, sensors, biomedical data, embeddings, and preprocessing.</p>
+       <div class="gallery-card-placeholder">Methods<br>and domains</div>
+       <h3>Browse runnable examples</h3>
+       <p>Start with ICA/SOBI, PCA/factors, robust estimators, or monitoring; then filter by application domain.</p>
      </a>
      <a class="gallery-card" href="benchmark_gallery.html">
        <img src="_static/benchmarks/small_sample_rank.png" alt="Benchmark ranking plot">
@@ -53,6 +53,9 @@ The main pieces are:
   close to or greater than the sample size;
 * ``KMRCD`` for nonlinear or kernel-defined inlier structure;
 * ``MMCD`` for robust row/column covariance estimation on matrix-valued observations;
+* ``RobustMultilinearPCA`` for low-rank matrix observations with bad cells, abnormal samples, and missing entries;
+* ``TwoScatterICA`` and ``RobustSOBI`` for robust blind source separation;
+* ``RobustFactorModel`` for Kendall- and Huber-based latent factor estimation;
 * ``CellMCD`` for isolated corrupted or missing entries in otherwise useful rows;
 * ``CellRCov`` for full high-dimensional covariance recovery when bad cells, abnormal rows,
   and missing entries occur together;
@@ -66,6 +69,8 @@ The main pieces are:
   diagnostics;
 * ``DensityPowerRobustPCA`` for a direct robust low-rank fit using density-power
   alternating regressions;
+* experimental ``DistributionallyRobustPCA`` for weighted-Wasserstein protection
+  against a stated train-to-deployment covariance-shift geometry;
 * ``FeatureGeometry`` for robust distances and kernels on learned
   representations;
 * ``RobustSubspaceMonitor`` for comparing rolling batches with a fixed
@@ -87,11 +92,14 @@ The main pieces are:
    s_estimators
    kernel_mrcd
    matrix_covariance
+   robust_multilinear_pca
+   source_separation_factor_models
    cellwise_covariance
    cellwise_regularized_covariance
    geometry
    robust_pca
    density_power_pca
+   distributionally_robust_pca
    subspace_stability
    cellwise_pca
    sparse_cellwise_pca
@@ -101,6 +109,7 @@ The main pieces are:
    feature_geometry
    diagnostics
    openmp
+   performance_validation
    faq
 
 .. toctree::
@@ -109,6 +118,8 @@ The main pieces are:
 
    api
    api_stability
+   methods_and_references
+   project_contributions
    robust_statistics_background
    external_results_gallery
    references
@@ -130,3 +141,4 @@ tested, but public APIs may still change before a stable release.  See
    kaggle_examples
    external_demo_workflow
    release_readiness
+   _generated/monte_carlo_summary

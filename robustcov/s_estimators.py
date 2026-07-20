@@ -32,8 +32,17 @@ def _symmetrize_spd(matrix: np.ndarray, ridge: float) -> np.ndarray:
     matrix = np.asarray(matrix, dtype=np.float64)
     matrix = 0.5 * (matrix + matrix.T)
     values, vectors = np.linalg.eigh(matrix)
-    scale = max(float(np.median(np.abs(values))), float(np.trace(matrix) / matrix.shape[0]), 1.0)
-    floor = max(float(ridge) * scale, np.sqrt(_EPS) * scale)
+    scale = max(
+        float(np.median(np.abs(values))),
+        abs(float(np.trace(matrix) / matrix.shape[0])),
+    )
+    if not np.isfinite(scale) or scale <= np.finfo(float).tiny:
+        scale = 1.0
+    floor = max(
+        float(ridge) * scale,
+        np.sqrt(_EPS) * scale,
+        np.finfo(float).tiny,
+    )
     values = np.maximum(values, floor)
     return vectors @ np.diag(values) @ vectors.T
 
@@ -186,7 +195,20 @@ def _rank_correlation(Z: np.ndarray, *, normal_scores: bool) -> np.ndarray:
             transformed[:, j] = norm.ppf((ranks - 0.5) / n)
         else:
             transformed[:, j] = ranks
-    return np.corrcoef(transformed, rowvar=False)
+    # Constant columns have undefined rank correlation.  Exclude them from
+    # corrcoef and treat them as uncorrelated in this deterministic start; the
+    # later SPD floor supplies their regularization without emitting warnings.
+    spread = np.ptp(transformed, axis=0)
+    active = np.isfinite(spread) & (spread > np.sqrt(_EPS))
+    correlation = np.eye(p, dtype=np.float64)
+    if np.count_nonzero(active) >= 2:
+        active_correlation = np.asarray(
+            np.corrcoef(transformed[:, active], rowvar=False), dtype=np.float64
+        )
+        correlation[np.ix_(active, active)] = active_correlation
+    correlation = np.where(np.isfinite(correlation), correlation, 0.0)
+    np.fill_diagonal(correlation, 1.0)
+    return correlation
 
 
 def _gk_covariance(Z: np.ndarray) -> np.ndarray:

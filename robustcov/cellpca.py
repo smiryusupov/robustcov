@@ -20,6 +20,8 @@ from typing import Any
 import numpy as np
 from scipy.stats import chi2
 
+from ._estimator import EstimatorMixin
+
 
 _EPS = np.finfo(np.float64).eps
 
@@ -127,19 +129,33 @@ def _weighted_scores(
     loadings: np.ndarray,
     ridge: float,
 ) -> np.ndarray:
-    n, _ = X.shape
+    """Solve all weighted score normal equations in one batched operation."""
+    n = X.shape[0]
     q = loadings.shape[1]
-    scores = np.zeros((n, q), dtype=np.float64)
-    identity = np.eye(q)
     safe = np.where(observed, X, center)
     centered = safe - center
-    for i in range(n):
-        w = weights[i]
-        if not np.any(w > 0.0):
-            continue
-        gram = loadings.T @ (w[:, None] * loadings) + ridge * identity
-        rhs = loadings.T @ (w * centered[i])
-        scores[i] = np.linalg.solve(gram, rhs)
+    active = np.any(weights > 0.0, axis=1)
+    scores = np.zeros((n, q), dtype=np.float64)
+    if not np.any(active):
+        return scores
+
+    active_weights = weights[active]
+    grams = np.einsum(
+        "pq,np,pr->nqr",
+        loadings,
+        active_weights,
+        loadings,
+        optimize=True,
+    )
+    grams += ridge * np.eye(q)[None, :, :]
+    rhs = np.einsum(
+        "pq,np,np->nq",
+        loadings,
+        active_weights,
+        centered[active],
+        optimize=True,
+    )
+    scores[active] = np.linalg.solve(grams, rhs[..., None])[..., 0]
     return scores
 
 
@@ -172,19 +188,31 @@ def _weighted_loadings(
     previous: np.ndarray,
     ridge: float,
 ) -> np.ndarray:
-    _, p = X.shape
+    """Solve all feature-loading normal equations in one batched operation."""
+    p = X.shape[1]
     q = scores.shape[1]
-    identity = np.eye(q)
     safe = np.where(observed, X, center)
     centered = safe - center
+    active = np.any(weights > 0.0, axis=0)
     loadings = previous.copy()
-    for j in range(p):
-        w = weights[:, j]
-        if not np.any(w > 0.0):
-            continue
-        gram = scores.T @ (w[:, None] * scores) + ridge * identity
-        rhs = scores.T @ (w * centered[:, j])
-        loadings[j] = np.linalg.solve(gram, rhs)
+    if np.any(active):
+        active_weights = weights[:, active]
+        grams = np.einsum(
+            "nq,np,nr->pqr",
+            scores,
+            active_weights,
+            scores,
+            optimize=True,
+        )
+        grams += ridge * np.eye(q)[None, :, :]
+        rhs = np.einsum(
+            "nq,np,np->pq",
+            scores,
+            active_weights,
+            centered[:, active],
+            optimize=True,
+        )
+        loadings[active] = np.linalg.solve(grams, rhs[..., None])[..., 0]
     qmat, rmat = np.linalg.qr(loadings, mode="reduced")
     scores[:] = scores @ rmat.T
     return qmat
@@ -212,7 +240,7 @@ def _case_deviation(
 
 
 @dataclass
-class CellwiseRobustPCA:
+class CellwiseRobustPCA(EstimatorMixin):
     """PCA with cellwise and casewise iteratively reweighted least squares.
 
     Parameters

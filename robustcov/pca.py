@@ -11,6 +11,8 @@ from typing import Any
 
 import numpy as np
 
+from ._estimator import EstimatorMixin
+
 
 def _as_2d_finite_array(X: np.ndarray, *, name: str = "X") -> np.ndarray:
     X = np.asarray(X, dtype=float)
@@ -50,7 +52,7 @@ def _deterministic_eigenvector_signs(eigenvectors: np.ndarray) -> np.ndarray:
 
 
 @dataclass
-class RobustPCA:
+class RobustPCA(EstimatorMixin):
     """Principal component analysis driven by a robust scatter estimator.
 
     ``RobustPCA`` fits an existing ``robustcov`` estimator (or any compatible
@@ -143,8 +145,8 @@ class RobustPCA:
         eigenvectors = eigenvectors[:, order]
         eigenvectors = _deterministic_eigenvector_signs(eigenvectors)
 
-        scale = max(float(raw_eigenvalues[0]), 1.0)
-        eigenvalue_floor = self.ridge * scale
+        scale = max(float(raw_eigenvalues[0]), np.finfo(np.float64).tiny)
+        eigenvalue_floor = max(self.ridge * scale, np.finfo(np.float64).tiny)
         all_eigenvalues = np.maximum(raw_eigenvalues, eigenvalue_floor)
         regularized_covariance = (eigenvectors * all_eigenvalues) @ eigenvectors.T
         regularized_covariance = _symmetrize(regularized_covariance)

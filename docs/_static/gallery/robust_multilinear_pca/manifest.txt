@@ -1,0 +1,5 @@
+mode_subspaces.png
+residual_map.png
+outlier_map.png
+reconstruction.png
+metrics.csv

@@ -1,0 +1,5 @@
+method,target_risk,selected_gamma,exact_worst_case_risk
+Empirical PCA,23.60682001767568,,
+RobustPCA (Cauchy),23.631176159807005,,
+DRO-PCA identity control,23.60682001767568,0.0,33.86428949230654
+DRO-PCA residual geometry,18.420396963147244,0.75,38.85080738943323

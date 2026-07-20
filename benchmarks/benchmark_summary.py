@@ -41,21 +41,27 @@ def summarize(rows, method_col, error_col, time_col, scenario_cols):
         groups[_scenario_key(row, scenario_cols)].append(row)
 
     method_stats = defaultdict(lambda: {
-        'errors': [], 'times': [], 'ranks': [], 'wins': 0, 'appearances': 0, 'failures': 0,
+        'errors': [], 'times': [], 'ranks': [], 'wins': 0,
+        'eligible': 0, 'successes': 0, 'failures': 0, 'not_applicable': 0,
     })
 
     for _, items in groups.items():
         scored = []
         for row in items:
             method = row.get(method_col, '')
+            status = row.get('status', '').strip().lower()
+            st = method_stats[method]
+            if status == 'not_applicable':
+                st['not_applicable'] += 1
+                continue
+            st['eligible'] += 1
             err = _to_float(row.get(error_col, ''))
             sec = _to_float(row.get(time_col, '')) if time_col else np.nan
-            st = method_stats[method]
-            st['appearances'] += 1
             if np.isfinite(sec):
                 st['times'].append(sec)
-            if np.isfinite(err):
+            if np.isfinite(err) and status != 'failed':
                 st['errors'].append(err)
+                st['successes'] += 1
                 scored.append((err, method))
             else:
                 st['failures'] += 1
@@ -72,18 +78,26 @@ def summarize(rows, method_col, error_col, time_col, scenario_cols):
         errors = np.asarray(st['errors'], dtype=float)
         times = np.asarray(st['times'], dtype=float)
         ranks = np.asarray(st['ranks'], dtype=float)
-        appearances = max(1, st['appearances'])
+        eligible = max(1, st['eligible'])
         out.append({
             'method': method,
-            'appearances': st['appearances'],
+            # appearances is retained for backward-compatible report consumers.
+            'appearances': st['eligible'],
+            'eligible': st['eligible'],
+            'successes': st['successes'],
             'failures': st['failures'],
-            'win_rate': f"{st['wins'] / appearances:.4f}",
+            'not_applicable': st['not_applicable'],
+            'success_rate': f"{st['successes'] / eligible:.4f}",
+            'win_rate': f"{st['wins'] / eligible:.4f}",
             'mean_rank': f"{float(np.mean(ranks)):.4f}" if ranks.size else 'nan',
             'median_error': f"{float(np.median(errors)):.4f}" if errors.size else 'nan',
             'mean_error': f"{float(np.mean(errors)):.4f}" if errors.size else 'nan',
             'median_seconds': f"{float(np.median(times)):.6f}" if times.size else '',
         })
-    out.sort(key=lambda r: (float(r['mean_rank']) if r['mean_rank'] != 'nan' else 1e9, float(r['median_error']) if r['median_error'] != 'nan' else 1e9))
+    out.sort(key=lambda r: (
+        float(r['mean_rank']) if r['mean_rank'] != 'nan' else 1e9,
+        float(r['median_error']) if r['median_error'] != 'nan' else 1e9,
+    ))
     return out
 
 
@@ -157,7 +171,7 @@ if __name__ == '__main__':
     with open(args.input, newline='') as f:
         rows = list(csv.DictReader(f))
     summary = summarize(rows, args.method_col, args.error_col, args.time_col, args.scenario_cols)
-    fieldnames = ['method', 'appearances', 'failures', 'win_rate', 'mean_rank', 'median_error', 'mean_error', 'median_seconds']
+    fieldnames = ['method', 'appearances', 'eligible', 'successes', 'failures', 'not_applicable', 'success_rate', 'win_rate', 'mean_rank', 'median_error', 'mean_error', 'median_seconds']
     writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(summary)

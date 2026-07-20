@@ -252,6 +252,7 @@ def test_monitor_rejects_bad_batches_and_unfitted_calls():
 
 
 def test_plot_subspace_monitor_history(tmp_path):
+    pytest.importorskip("matplotlib")
     X, _ = make_reference(seed=10)
     monitor = make_monitor(history_size=10).fit(X)
     monitor.update(X[:80])

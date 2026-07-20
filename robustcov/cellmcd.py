@@ -26,17 +26,17 @@ _EPS = np.finfo(np.float64).eps
 
 
 def _mad_scale(X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return marginal centers and scales without absolute unit floors."""
     center = np.nanmedian(X, axis=0)
-    absolute = np.abs(X - center)
-    scale = 1.482602218505602 * np.nanmedian(absolute, axis=0)
-    fallback = np.nanstd(X, axis=0, ddof=1)
-    valid = scale[np.isfinite(scale) & (scale > 0.0)]
-    reference = float(np.median(valid)) if valid.size else 1.0
-    floor = max(np.sqrt(_EPS) * max(reference, 1.0), np.finfo(float).tiny)
-    scale = np.where(np.isfinite(scale) & (scale > floor), scale, fallback)
-    scale = np.where(np.isfinite(scale) & (scale > floor), scale, np.nan)
     if not np.isfinite(center).all():
         raise ValueError("every feature must contain at least one finite value")
+
+    absolute = np.abs(X - center)
+    mad = 1.482602218505602 * np.nanmedian(absolute, axis=0)
+    fallback = np.nanstd(X, axis=0, ddof=1)
+    tiny = np.finfo(np.float64).tiny
+    scale = np.where(np.isfinite(mad) & (mad > tiny), mad, fallback)
+    scale = np.where(np.isfinite(scale) & (scale > tiny), scale, np.nan)
     if not np.isfinite(scale).all():
         bad = np.flatnonzero(~np.isfinite(scale))
         raise ValueError(
@@ -79,11 +79,12 @@ def _conditional_parameters(
         return location[target].copy(), covariance[np.ix_(target, target)].copy()
     cov_oo = covariance[np.ix_(observed, observed)]
     cov_to = covariance[np.ix_(target, observed)]
-    solve = np.linalg.solve(cov_oo, observed_values - location[observed])
-    mean = location[target] + cov_to @ solve
-    conditional = covariance[np.ix_(target, target)] - cov_to @ np.linalg.solve(
-        cov_oo, covariance[np.ix_(observed, target)]
+    rhs = np.column_stack(
+        (observed_values - location[observed], covariance[np.ix_(observed, target)])
     )
+    solved = np.linalg.solve(cov_oo, rhs)
+    mean = location[target] + cov_to @ solved[:, 0]
+    conditional = covariance[np.ix_(target, target)] - cov_to @ solved[:, 1:]
     conditional = 0.5 * (conditional + conditional.T)
     return mean, conditional
 
@@ -135,20 +136,35 @@ def _em_update(
     covariance: np.ndarray,
     minimum_eigenvalue: float,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Perform one Gaussian EM update, grouping identical cell masks."""
     n, p = X.shape
     conditional_means = np.empty((n, p), dtype=np.float64)
     covariance_bias = np.zeros((p, p), dtype=np.float64)
 
-    for i in range(n):
-        observed = np.flatnonzero(W[i])
-        missing = np.flatnonzero(~W[i])
-        conditional_means[i, observed] = X[i, observed]
-        mean_missing, conditional_cov = _conditional_parameters(
-            location, covariance, missing, observed, X[i, observed]
-        )
-        conditional_means[i, missing] = mean_missing
-        if missing.size:
-            covariance_bias[np.ix_(missing, missing)] += conditional_cov
+    patterns, inverse = np.unique(W, axis=0, return_inverse=True)
+    for pattern_index, pattern in enumerate(patterns):
+        rows = np.flatnonzero(inverse == pattern_index)
+        observed = np.flatnonzero(pattern)
+        missing = np.flatnonzero(~pattern)
+        if observed.size:
+            conditional_means[np.ix_(rows, observed)] = X[np.ix_(rows, observed)]
+        if not missing.size:
+            continue
+        if observed.size:
+            cov_oo = covariance[np.ix_(observed, observed)]
+            cov_om = covariance[np.ix_(observed, missing)]
+            regression = np.linalg.solve(cov_oo, cov_om)
+            centered_observed = X[np.ix_(rows, observed)] - location[observed]
+            conditional_means[np.ix_(rows, missing)] = (
+                location[missing] + centered_observed @ regression
+            )
+            conditional_cov = covariance[np.ix_(missing, missing)] - (
+                covariance[np.ix_(missing, observed)] @ regression
+            )
+        else:
+            conditional_means[np.ix_(rows, missing)] = location[missing]
+            conditional_cov = covariance[np.ix_(missing, missing)]
+        covariance_bias[np.ix_(missing, missing)] += rows.size * conditional_cov
 
     new_location = conditional_means.mean(axis=0)
     centered = conditional_means - new_location
@@ -377,14 +393,14 @@ class CellwiseMinimumCovarianceDeterminant(BaseRobustCovariance):
                 if observed.size:
                     cov_oo = covariance[np.ix_(observed, observed)]
                     cov_jo = covariance[np.ix_(target, observed)]
-                    beta = np.linalg.solve(cov_oo, covariance[np.ix_(observed, target)])
+                    beta = np.linalg.solve(
+                        cov_oo, covariance[np.ix_(observed, target)]
+                    )
                     conditional_variance = float(
                         (covariance[j, j] - cov_jo @ beta).item()
                     )
                     centered = Z[np.ix_(rows, observed)] - location[observed]
-                    prediction = location[j] + centered @ np.linalg.solve(
-                        cov_oo, covariance[np.ix_(observed, target)]
-                    ).reshape(-1)
+                    prediction = location[j] + centered @ beta.reshape(-1)
                 else:
                     conditional_variance = float(covariance[j, j])
                     prediction = np.full(rows.size, location[j], dtype=float)
@@ -411,21 +427,35 @@ class CellwiseMinimumCovarianceDeterminant(BaseRobustCovariance):
         predictions = np.empty((n, p), dtype=float)
         conditional_std = np.empty((n, p), dtype=float)
         residuals = np.full((n, p), np.nan, dtype=float)
-        for i in range(n):
+        feature_indices = np.arange(p)
+        patterns, inverse = np.unique(support, axis=0, return_inverse=True)
+        for pattern_index, pattern in enumerate(patterns):
+            rows = np.flatnonzero(inverse == pattern_index)
             for j in range(p):
-                observed = np.flatnonzero(support[i] & (np.arange(p) != j))
-                mean, conditional = _conditional_parameters(
-                    self.location_,
-                    self.covariance_,
-                    np.array([j], dtype=int),
-                    observed,
-                    X[i, observed],
-                )
-                variance = max(float(conditional[0, 0]), np.finfo(float).tiny)
-                predictions[i, j] = float(mean[0])
-                conditional_std[i, j] = np.sqrt(variance)
-                if np.isfinite(X[i, j]):
-                    residuals[i, j] = (X[i, j] - mean[0]) / np.sqrt(variance)
+                observed = feature_indices[pattern & (feature_indices != j)]
+                if observed.size:
+                    cov_oo = self.covariance_[np.ix_(observed, observed)]
+                    beta = np.linalg.solve(
+                        cov_oo, self.covariance_[np.ix_(observed, np.array([j]))]
+                    ).reshape(-1)
+                    variance = float(
+                        self.covariance_[j, j]
+                        - self.covariance_[j, observed] @ beta
+                    )
+                    prediction = self.location_[j] + (
+                        X[np.ix_(rows, observed)] - self.location_[observed]
+                    ) @ beta
+                else:
+                    variance = float(self.covariance_[j, j])
+                    prediction = np.full(rows.size, self.location_[j], dtype=float)
+                variance = max(variance, np.finfo(float).tiny)
+                std = np.sqrt(variance)
+                predictions[rows, j] = prediction
+                conditional_std[rows, j] = std
+                finite = np.isfinite(X[rows, j])
+                residuals[rows[finite], j] = (
+                    X[rows[finite], j] - prediction[finite]
+                ) / std
         return predictions, conditional_std, residuals
 
     def cellwise_diagnostics(self, X, *, max_passes: int = 2):
@@ -488,13 +518,20 @@ class CellwiseMinimumCovarianceDeterminant(BaseRobustCovariance):
         return X
 
     def _partial_distances(self, X: np.ndarray, support: np.ndarray) -> np.ndarray:
-        return np.asarray(
-            [
-                _partial_distance(row, mask, self.location_, self.covariance_)
-                for row, mask in zip(np.asarray(X, dtype=float), support)
-            ],
-            dtype=float,
-        )
+        X = np.asarray(X, dtype=np.float64)
+        distances = np.zeros(X.shape[0], dtype=np.float64)
+        patterns, inverse = np.unique(support, axis=0, return_inverse=True)
+        for pattern_index, pattern in enumerate(patterns):
+            rows = np.flatnonzero(inverse == pattern_index)
+            observed = np.flatnonzero(pattern)
+            if not observed.size:
+                continue
+            centered = X[np.ix_(rows, observed)] - self.location_[observed]
+            solved = np.linalg.solve(
+                self.covariance_[np.ix_(observed, observed)], centered.T
+            ).T
+            distances[rows] = np.sum(centered * solved, axis=1)
+        return distances
 
     def mahalanobis(self, X):
         diagnostics = self.cellwise_diagnostics(X)

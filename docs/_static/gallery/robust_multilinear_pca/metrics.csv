@@ -1,0 +1,12 @@
+metric,value
+row_error_baseline,0.9942110672571202
+row_error_robust,0.03734785201749497
+column_error_baseline,1.1362502087297666
+column_error_robust,0.05828312341499554
+clean_cell_mae_baseline,0.3434322046166409
+clean_cell_mae_robust,0.06131071459117316
+cell_outlier_auc,0.9805859108870417
+case_outlier_auc,1.0
+iterations,72
+converged,True
+backend,cpp

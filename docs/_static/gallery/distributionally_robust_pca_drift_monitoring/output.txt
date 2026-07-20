@@ -1,0 +1,11 @@
+method,regime,threshold,mean_window_risk,alert_rate
+Empirical PCA,nominal,12.817440,11.286902,0.000
+Empirical PCA,geometry_aligned,12.817440,21.589290,1.000
+Empirical PCA,off_geometry,12.817440,25.195271,1.000
+DRO-PCA,nominal,20.373066,17.609462,0.000
+DRO-PCA,geometry_aligned,20.373066,15.186996,0.000
+DRO-PCA,off_geometry,20.373066,27.772071,1.000
+dro_exact_worst_case_risk,37.564513
+monitoring_threshold,empirically_calibrated_window_quantile
+worst_case_risk_role,model_diagnostic_not_alert_threshold
+saved,results/use_cases/distributionally_robust_pca_drift_monitoring

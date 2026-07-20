@@ -6,6 +6,10 @@ This page gives the mathematical and practical description of the estimators use
 ``robustcov``. The package focuses on robust covariance/scatter estimation and robust-distance
 diagnostics, not on fitting a full probability model with density, sampler, AIC, or BIC.
 
+For a method-by-method distinction between published methodology, package
+adaptations, and robustcov-specific compositions, see
+:doc:`methods_and_references` and :doc:`project_contributions`.
+
 Notation
 --------
 
@@ -791,3 +795,30 @@ References
 See :doc:`references` for the full bibliography. Key background includes Rousseeuw and Van Driessen
 for FastMCD, Tyler for shape estimation, Wiesel for regularized robust covariance, and standard
 Student-t/Cauchy M-estimation literature.
+
+
+Robust multilinear PCA
+----------------------
+
+For matrix observations :math:`X_i\in\mathbb{R}^{r	imes c}`,
+``RobustMultilinearPCA`` fits
+
+.. math::
+
+   X_i = M + U G_i V^\mathsf{T} + E_i,
+
+with orthonormal mode loadings :math:`U` and :math:`V`.  Its IRLS weights have
+both a cellwise and a casewise factor,
+
+.. math::
+
+   w_{iab}=\delta_{iab}w^{\mathrm{cell}}_{iab}w^{\mathrm{case}}_i,
+
+so missing entries have zero weight, isolated large residuals are downweighted
+without discarding the complete matrix, and broadly abnormal matrices receive
+an additional case weight.  Alternating weighted least squares updates the core
+scores, center, row loadings, and column loadings.
+
+The package uses a robust clipped-HOSVD initialization and fixed MAD residual
+scales.  It follows the ROMPCA modeling structure but does not claim exact
+reference-software parity.

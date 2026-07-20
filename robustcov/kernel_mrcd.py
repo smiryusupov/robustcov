@@ -18,6 +18,7 @@ import numpy as np
 from scipy.spatial.distance import cdist, pdist
 from scipy.stats import norm
 
+from ._estimator import EstimatorMixin
 from ._utils import check_array, median_impute
 from .covariance import ConvergenceWarning
 from .mrcd import _robust_standardize
@@ -45,7 +46,7 @@ def _rbf_gamma_from_median(X: np.ndarray) -> tuple[float, float]:
     distances = pdist(X, metric="sqeuclidean")
     positive = distances[np.isfinite(distances) & (distances > 0)]
     sigma2 = float(np.median(positive)) if positive.size else 1.0
-    sigma2 = max(sigma2, np.sqrt(_EPS))
+    sigma2 = max(sigma2, np.finfo(np.float64).tiny)
     return 1.0 / (2.0 * sigma2), sigma2
 
 
@@ -81,7 +82,7 @@ def _validate_psd_kernel(K: np.ndarray) -> tuple[np.ndarray, float]:
         raise ValueError("kernel matrix contains NaN or infinity")
     K = 0.5 * (K + K.T)
     values, vectors = np.linalg.eigh(K)
-    scale = max(float(np.max(np.abs(values))), 1.0)
+    scale = max(float(np.max(np.abs(values))), np.finfo(np.float64).tiny)
     if values[0] < -1e-8 * scale:
         raise ValueError("kernel matrix is not positive semidefinite")
     clipped = np.maximum(values, 0.0)
@@ -271,7 +272,7 @@ def _univariate_mcd_location_scale(values: np.ndarray, h: int) -> tuple[float, f
     return location, max(scale, np.sqrt(_EPS))
 
 
-class KernelMinimumRegularizedCovarianceDeterminant:
+class KernelMinimumRegularizedCovarianceDeterminant(EstimatorMixin):
     """Robust kernel-space subset estimator for nonlinear outlier detection.
 
     Parameters
@@ -382,7 +383,9 @@ class KernelMinimumRegularizedCovarianceDeterminant:
                     gamma, sigma2 = _rbf_gamma_from_median(U)
                 elif self.gamma == "scale":
                     variance = float(np.var(U))
-                    gamma = 1.0 / max(self.n_features_in_ * variance, np.sqrt(_EPS))
+                    gamma = 1.0 / max(
+                        self.n_features_in_ * variance, np.finfo(np.float64).tiny
+                    )
                     sigma2 = 1.0 / (2.0 * gamma)
                 else:
                     raise ValueError("gamma must be 'median', 'scale', or a positive float")

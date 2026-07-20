@@ -32,6 +32,22 @@ jobs:
       - name: Check sdist
         run: |
           python -m twine check dist/*
+          python -m pip install -e .
+          python scripts/release_check.py dist/*
+
+      - name: Smoke-test sdist installation
+        run: |
+          python scripts/package_smoke_test.py --expect-native yes dist/*.tar.gz
+
+      - name: Build and smoke-test native-free wheel
+        run: |
+          python -m build --wheel \
+            -Ccmake.define.ROBUSTCOV_BUILD_NATIVE=OFF \
+            --outdir native-free-wheel
+          python scripts/package_smoke_test.py \
+            --expect-native no \
+            native-free-wheel/*.whl
+          python scripts/release_check.py native-free-wheel/*.whl
 
       - name: Upload sdist artifact
         uses: actions/upload-artifact@v4
@@ -75,7 +91,6 @@ jobs:
           CIBW_BUILD: "cp312-* cp313-* cp314-*"
           CIBW_SKIP: "*-musllinux_* *-win32"
           CIBW_ARCHS: ${{ matrix.archs }}
-          CIBW_TEST_COMMAND: "python -c \"import robustcov; print('robustcov import ok')\""
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
           python -m cibuildwheel --output-dir wheelhouse
@@ -92,6 +107,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -103,11 +121,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Check metadata
+      - name: Check metadata and archive contents
         run: |
           python -m pip install --upgrade pip
           python -m pip install twine
+          python -m pip install -e .
           python -m twine check dist/*
+          python scripts/release_check.py dist/*
 
   publish:
     name: Publish to PyPI

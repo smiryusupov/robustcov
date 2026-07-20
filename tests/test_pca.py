@@ -230,6 +230,7 @@ def test_robust_pca_estimator_output_validation_and_unfitted_calls():
 
 
 def test_plot_robust_pca_outlier_map(tmp_path):
+    pytest.importorskip("matplotlib")
     rng = np.random.default_rng(106)
     X = rng.normal(size=(80, 3))
     pca = rc.RobustPCA(

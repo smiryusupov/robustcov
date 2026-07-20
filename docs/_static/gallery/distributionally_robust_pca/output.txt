@@ -1,0 +1,10 @@
+method,target_risk,selected_gamma
+Empirical PCA,23.606820,
+RobustPCA (Cauchy),23.631176,
+DRO-PCA identity control,23.606820,0.0
+DRO-PCA residual geometry,18.420397,0.75
+ambiguity_radius,2.500000
+selected_path_gamma,0.75
+exact_worst_case_risk,38.850807
+surrogate_risk_bound,46.256314
+saved,results/use_cases/distributionally_robust_pca

@@ -1,45 +1,76 @@
 Use-case gallery
 ================
 
-The use-case gallery is organized by problem theme.  This is usually the best way to enter the documentation: choose the topic that looks like your application, then open a card with plots, captured output, and interpretation.
+The gallery is organized in two complementary ways:
 
-Start here
-----------
+* **Browse by method** when you already know whether you need ICA, PCA, a
+  robust covariance estimator, or an anomaly-monitoring workflow.
+* **Browse by application domain** when you want examples that resemble your
+  data, such as finance, sensors, fraud, biomedical features, or embeddings.
 
-If you are new to the package, start with one of these examples:
+Every detailed page shows the exact script to run.  The source is also embedded
+at the bottom of the page, so the examples are visible in the documentation
+rather than hidden in the repository.
+
+Browse by method
+----------------
 
 .. raw:: html
 
    <div class="gallery-grid">
-     <a class="gallery-card" href="gallery_topics/fraud_security_and_networks.html">
-       <img src="_static/gallery/fraud_screening/distance_profile.png" alt="Fraud robust-distance profile">
-       <h3>Fraud and security</h3>
-       <p>Suspicious tabular records, network traffic anomalies, and robust distance ranking.</p>
+     <a class="gallery-card" href="gallery_methods/ica_source_separation.html">
+       <img src="_static/gallery/sobi_source_separation/source_recovery.png" alt="ICA and SOBI source recovery">
+       <h3>ICA and source separation</h3>
+       <p>Independent components, temporally correlated sources, robust whitening, and BSS recovery metrics.</p>
      </a>
-     <a class="gallery-card" href="gallery_topics/finance_and_risk.html">
-       <img src="_static/gallery/finance_risk/covariance.png" alt="Finance covariance heatmap">
-       <h3>Finance and risk</h3>
-       <p>Heavy-tailed covariance, portfolio stress, and market-risk style examples.</p>
+     <a class="gallery-card" href="gallery_methods/pca_factor_models.html">
+       <img src="_static/gallery/robust_factor_model/loading_recovery.png" alt="PCA and robust factor models">
+       <h3>PCA and factor models</h3>
+       <p>Robust PCA, cellwise PCA, multilinear PCA, factor scores, loadings, and low-rank reconstruction.</p>
      </a>
-     <a class="gallery-card" href="gallery_topics/real_ml_datasets.html">
-       <img src="_static/gallery/digits_one_class/baseline_f1.png" alt="Real ML baseline comparison">
-       <h3>Real ML datasets</h3>
-       <p>Breast cancer, digits, and wine examples with sklearn baseline comparisons.</p>
+     <a class="gallery-card" href="gallery_methods/robust_estimators.html">
+       <div class="gallery-card-placeholder">Covariance<br>precision</div>
+       <h3>Robust estimators</h3>
+       <p>Covariance, scatter, precision, cellwise estimation, sparse graphs, and SPD geometry.</p>
      </a>
-     <a class="gallery-card" href="geometry.html">
-       <img src="_static/examples/spd_geometry_drift_monitoring.png" alt="SPD geometry covariance drift monitoring">
-       <h3>Scatter geometry</h3>
-       <p>Compare covariance and scatter matrices with affine-invariant and log-Euclidean geometry.</p>
-     </a>
-     <a class="gallery-card" href="gallery/gp_robust_input_metric.html">
-       <div class="gallery-card-placeholder">Kernels<br>GP metrics</div>
-       <h3>Similarity and kernels</h3>
-       <p>Use robust scatter estimates as input metrics for kernels, GP workflows, and similarity methods.</p>
+     <a class="gallery-card" href="gallery_methods/anomaly_monitoring.html">
+       <div class="gallery-card-placeholder">Anomaly<br>monitoring</div>
+       <h3>Anomaly detection and monitoring</h3>
+       <p>Robust distances, one-class screening, sensor monitoring, embedding drift, and ML preprocessing.</p>
      </a>
    </div>
 
-Browse by topic
----------------
+New latent-structure examples
+-----------------------------
+
+The ICA, SOBI, factor-model, and distribution-shift PCA additions have separate runnable examples:
+
+.. code-block:: bash
+
+   python examples/ica_two_scatter.py
+   python examples/sobi_source_separation.py
+   python examples/robust_factor_model.py
+   python examples/distributionally_robust_pca.py
+   python examples/distributionally_robust_pca_drift_monitoring.py
+
+The scripts save figures under ``results/use_cases/<example-name>``.  The
+checked-in gallery images are regenerated with:
+
+.. code-block:: bash
+
+   python docs/generate_gallery_assets.py --only ica_two_scatter sobi_source_separation robust_factor_model distributionally_robust_pca distributionally_robust_pca_drift_monitoring
+
+Open the corresponding pages for explanation, captured output, plots, and
+embedded source code:
+
+* :doc:`Robust two-scatter ICA <gallery/ica_two_scatter>`
+* :doc:`Robust SOBI <gallery/sobi_source_separation>`
+* :doc:`Robust static factor model <gallery/robust_factor_model>`
+* :doc:`Distributionally robust PCA <gallery/distributionally_robust_pca>`
+* :doc:`DRO-PCA data-drift monitoring <gallery/distributionally_robust_pca_drift_monitoring>`
+
+Browse by application domain
+----------------------------
 
 .. raw:: html
 
@@ -47,128 +78,127 @@ Browse by topic
      <a class="gallery-card" href="gallery_topics/finance_and_risk.html">
        <div class="gallery-card-placeholder">Finance<br>risk</div>
        <h3>Finance and risk</h3>
-       <p>Portfolio covariance, stress monitoring, and heavy-tailed returns.</p>
+       <p>Portfolio covariance, stress monitoring, yield-curve factors, and heavy-tailed returns.</p>
      </a>
      <a class="gallery-card" href="gallery_topics/fraud_security_and_networks.html">
        <div class="gallery-card-placeholder">Fraud<br>security</div>
        <h3>Fraud, security, and networks</h3>
-       <p>Fraud-like screening and network-flow anomaly examples.</p>
+       <p>Fraud-like screening, suspicious records, and network-flow anomaly examples.</p>
      </a>
      <a class="gallery-card" href="gallery_topics/sensors_industrial_quality.html">
        <div class="gallery-card-placeholder">Sensors<br>quality</div>
        <h3>Sensors and quality control</h3>
-       <p>Sensor anomaly, predictive maintenance, and process monitoring.</p>
+       <p>Sensor anomalies, predictive maintenance, process spectra, and multichannel windows.</p>
      </a>
      <a class="gallery-card" href="gallery_topics/biomedical_images_embeddings.html">
        <div class="gallery-card-placeholder">Signals<br>embeddings</div>
        <h3>Biomedical, image, and embedding data</h3>
-       <p>Feature-vector anomaly detection for signals, images, and embeddings.</p>
+       <p>Feature-vector anomalies, representation drift, retrieval filtering, and multimodal screening.</p>
      </a>
      <a class="gallery-card" href="gallery_topics/real_ml_datasets.html">
        <div class="gallery-card-placeholder">Real ML<br>datasets</div>
        <h3>Real ML datasets</h3>
-       <p>Reproducible built-in datasets with baseline metrics and plots.</p>
+       <p>Breast cancer, digits, and wine examples with baseline metrics.</p>
      </a>
      <a class="gallery-card" href="gallery_topics/ml_preprocessing.html">
        <div class="gallery-card-placeholder">ML<br>preprocess</div>
        <h3>Robust ML preprocessing</h3>
-       <p>Use robust distances before downstream classification.</p>
-     </a>
-          <a class="gallery-card" href="geometry.html">
-       <div class="gallery-card-placeholder">SPD<br>geometry</div>
-       <h3>Scatter geometry</h3>
-       <p>SPD matrix distances, geodesics, covariance drift, and robust shape comparison.</p>
-     </a>
-     <a class="gallery-card" href="gallery/gp_robust_input_metric.html">
-       <div class="gallery-card-placeholder">Kernels<br>similarity</div>
-       <h3>Similarity, kernels, and GP metrics</h3>
-       <p>Robust input metrics for kernel methods, Gaussian-process workflows, and embedding retrieval.</p>
+       <p>Clean, filter, or reweight contaminated observations before downstream models.</p>
      </a>
    </div>
 
-Which topic should I open?
---------------------------
+Choose a method family
+----------------------
 
-.. list-table:: Topic guide
+.. list-table:: Method guide
    :header-rows: 1
 
-   * - Problem you have
-     - Open this topic
+   * - Goal
+     - Open this group
      - Good first estimator
-   * - Fraud, suspicious transactions, unusual records
-     - Fraud, security, and networks
-     - ``FastMCD`` or ``AutoRobustAnomalyDetector``
-   * - Portfolio, returns, covariance, stress periods
-     - Finance and risk
-     - ``RegularizedCauchy``
-   * - Isolated bad ticks or missing values in a multivariate table
-     - Finance and risk
-     - ``CellMCD``
-   * - Sparse conditional-dependence network under heavy tails or contamination
-     - Finance and risk
-     - ``RobustGraphicalLasso`` with ``CellMCD`` or ``RegularizedCauchy``
-   * - Yield curves or cross-asset factor decomposition
-     - Finance and risk
-     - ``RobustPCA`` with ``FastMCD`` or ``RegularizedCauchy``
-   * - Check whether fitted PCA factors are stable under resampling
-     - Finance and risk
-     - ``SubspaceStability`` around a fitted ``RobustPCA`` model
-   * - Sensors, process drift, industrial faults
-     - Sensors and quality control
-     - ``RobustSubspaceMonitor`` with ``RegularizedCauchy``
-   * - Low-rank process tables with bad cells, abnormal rows, or missing entries
-     - Sensors and quality control
-     - ``CellPCA``
-   * - Sensor-by-time, image-patch, or other matrix-valued observations
-     - Sensors and quality control
-     - ``MMCD``
-   * - Signal/image/embedding feature vectors
-     - Biomedical, image, and embedding data
-     - ``AutoRobustScatter`` or ``RegularizedCauchy``
-   * - Production embedding drift or out-of-subspace traffic
-     - Biomedical, image, and embedding data
-     - ``RobustPCA`` with ``RegularizedCauchy``
-   * - Reproducible ML benchmark examples
-     - Real ML datasets
-     - ``RobustOutlierDetector`` with baseline comparison
-   * - Rowwise outliers when the feature count is close to or larger than the sample size
-     - Robust ML preprocessing
-     - ``MRCD``
-   * - Clean training data before a classifier
-     - Robust ML preprocessing
-     - robust-distance filtering
-   * - Compare covariance/scatter matrices or monitor covariance drift
-     - Scatter geometry
-     - ``robustcov.geometry`` with fitted scatter estimates
-   * - Build robust similarity, kernel, or GP input metrics
-     - Similarity, kernels, and GP metrics
-     - robust input metric from ``RegularizedCauchy`` or ``FastMCD``
+   * - Recover statistically independent latent signals
+     - :doc:`ICA and source separation <gallery_methods/ica_source_separation>`
+     - ``TwoScatterICA``
+   * - Recover temporally correlated latent time series
+     - :doc:`ICA and source separation <gallery_methods/ica_source_separation>`
+     - ``RobustSOBI``
+   * - Estimate low-rank principal components with robust diagnostics
+     - :doc:`PCA and factor models <gallery_methods/pca_factor_models>`
+     - ``RobustPCA``
+   * - Decompose data into common factors and idiosyncratic residuals
+     - :doc:`PCA and factor models <gallery_methods/pca_factor_models>`
+     - ``RobustFactorModel``
+   * - Protect a principal subspace against a stated train-to-deployment shift
+     - :doc:`PCA and factor models <gallery_methods/pca_factor_models>`
+     - experimental ``DistributionallyRobustPCA``
+   * - Estimate robust covariance or scatter
+     - :doc:`Robust estimators <gallery_methods/robust_estimators>`
+     - ``FastMCD`` or ``RegularizedCauchy``
+   * - Handle isolated corrupted cells and missing entries
+     - :doc:`Robust estimators <gallery_methods/robust_estimators>`
+     - ``CellMCD`` or ``CellRCov``
+   * - Estimate a sparse conditional-dependence graph
+     - :doc:`Robust estimators <gallery_methods/robust_estimators>`
+     - ``RobustGraphicalLasso`` or ``SGLASSO``
+   * - Rank anomalous rows or screen a one-class population
+     - :doc:`Anomaly detection and monitoring <gallery_methods/anomaly_monitoring>`
+     - ``RobustOutlierDetector``
+   * - Monitor subspace or embedding drift
+     - :doc:`Anomaly detection and monitoring <gallery_methods/anomaly_monitoring>`
+     - ``RobustSubspaceMonitor`` or ``FeatureGeometry``
+   * - Tolerate a stated covariance shift and alert on changes outside it
+     - :doc:`Anomaly detection and monitoring <gallery_methods/anomaly_monitoring>`
+     - experimental ``DistributionallyRobustPCA`` plus calibrated windows
 
-Run the gallery
----------------
+Run examples by group
+---------------------
+
+Run the compact default set:
 
 .. code-block:: bash
 
    python examples/run_use_case_gallery.py
 
-Run every gallery script:
+Run a method family:
 
 .. code-block:: bash
 
+   python examples/run_use_case_gallery.py --group ica
+   python examples/run_use_case_gallery.py --group pca
+   python examples/run_use_case_gallery.py --group robust
+   python examples/run_use_case_gallery.py --group monitoring
+
+List the scripts in each group or run everything:
+
+.. code-block:: bash
+
+   python examples/run_use_case_gallery.py --list
    python examples/run_use_case_gallery.py --all
 
 Regenerate documentation assets
 -------------------------------
 
-The gallery pages embed captured outputs and plots.  Refresh them after changing examples:
+The gallery pages embed captured outputs and plots.  Refresh them after changing
+examples:
 
 .. code-block:: bash
 
    python docs/generate_gallery_assets.py
-   sphinx-build -b html docs docs/_build/html
+   sphinx-build -W --keep-going -b html docs docs/_build/html
 
-Topic pages
------------
+Method-family pages
+-------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   gallery_methods/ica_source_separation
+   gallery_methods/pca_factor_models
+   gallery_methods/robust_estimators
+   gallery_methods/anomaly_monitoring
+
+Application-domain pages
+------------------------
 
 .. toctree::
    :maxdepth: 2
@@ -186,6 +216,11 @@ All detailed pages
 .. toctree::
    :maxdepth: 1
 
+   gallery/ica_two_scatter
+   gallery/sobi_source_separation
+   gallery/robust_factor_model
+   gallery/distributionally_robust_pca
+   gallery/distributionally_robust_pca_drift_monitoring
    gallery/robust_pca_yield_curve
    gallery/robust_pca_subspace_stability
    gallery/robust_pca_dependent_stability
@@ -201,6 +236,7 @@ All detailed pages
    gallery/fraud_screening
    gallery/network_traffic
    gallery/mmcd_sensor_windows
+   gallery/robust_multilinear_pca
    gallery/sensor_anomaly
    gallery/maintenance_monitoring
    gallery/quality_control

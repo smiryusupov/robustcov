@@ -1,28 +1,26 @@
 Quickstart
 ==========
 
-Robust covariance under contamination
--------------------------------------
+Robust covariance and outlier detection
+---------------------------------------
 
-This example creates a dataset with a contaminated tail and fits ``FastMCD``.
-When outliers pull empirical covariance away from the central data cloud,
-``FastMCD`` estimates a more stable covariance structure and gives robust
-Mahalanobis distances for anomaly screening.
+This example creates heavy-tailed data with a contaminated subset, fits
+``FastMCD``, and flags the largest 7.5% of robust distances.  Pass an unfitted
+estimator to ``RobustOutlierDetector``; the detector clones and fits it without
+mutating the original object.
+
+.. literalinclude:: _snippets/quickstart_outlier_detection.py
+   :language: python
+   :linenos:
+
+The fitted scatter estimator is available as ``det.estimator_`` and can be used
+with the diagnostic plotting helpers:
 
 .. code-block:: python
 
-   import numpy as np
-   import robustcov as rc
-
-   rng = np.random.default_rng(0)
-   X = rng.normal(size=(500, 5))
-   X[:40] += 8.0
-
-   est = rc.FastMCD(quality="balanced", random_state=0).fit(X)
-   print(est.location_)
-   print(est.radial_kurtosis_)
-
-   rc.plot_robust_distance_panel(est, output_path="distance_panel.png", show=False)
+   rc.plot_robust_distance_panel(
+       det.estimator_, output_path="distance_panel.png", show=False
+   )
 
 Small-sample heavy-tail scatter
 -------------------------------

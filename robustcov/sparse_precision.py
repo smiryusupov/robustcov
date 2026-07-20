@@ -16,6 +16,8 @@ from typing import Any, Sequence
 
 import numpy as np
 
+from ._estimator import EstimatorMixin
+
 
 _EPS = np.finfo(float).eps
 
@@ -77,10 +79,14 @@ def _resolve_scatter_estimator(estimator: Any | str | None) -> Any:
 
 
 def _regularize_spd(matrix: np.ndarray, relative_floor: float) -> tuple[np.ndarray, float]:
+    """Return an SPD matrix using a scale-relative eigenvalue floor."""
     matrix = _symmetrize(np.asarray(matrix, dtype=float))
     values, vectors = np.linalg.eigh(matrix)
-    scale = max(float(np.max(np.abs(values))), 1.0)
-    floor = relative_floor * scale
+    scale = max(float(np.max(np.abs(values))), np.finfo(float).tiny)
+    negative_tolerance = 1000.0 * _EPS * scale
+    if float(np.min(values)) < -negative_tolerance:
+        raise ValueError("scatter matrix must be positive semidefinite")
+    floor = max(relative_floor * scale, np.finfo(float).tiny)
     values = np.maximum(values, floor)
     regularized = (vectors * values) @ vectors.T
     return _symmetrize(regularized), float(floor)
@@ -228,7 +234,10 @@ def _solve_graphical_lasso_admm(
             if rho != old_rho:
                 u *= old_rho / rho
 
-    floor = max(1e-12, 100.0 * _EPS * np.linalg.norm(z, ord=2))
+    floor = max(
+        np.finfo(float).tiny,
+        100.0 * _EPS * max(np.linalg.norm(z, ord=2), np.finfo(float).tiny),
+    )
     precision = _sparse_spd_projection(z, floor)
     info = {
         "converged": converged,
@@ -242,14 +251,14 @@ def _solve_graphical_lasso_admm(
 
 
 def _partial_correlations(precision: np.ndarray) -> np.ndarray:
-    diagonal = np.sqrt(np.maximum(np.diag(precision), _EPS))
+    diagonal = np.sqrt(np.maximum(np.diag(precision), np.finfo(float).tiny))
     partial = -precision / np.outer(diagonal, diagonal)
     np.fill_diagonal(partial, 1.0)
     return _symmetrize(partial)
 
 
 @dataclass
-class RobustGraphicalLasso:
+class RobustGraphicalLasso(EstimatorMixin):
     r"""Sparse precision estimation from a robust scatter matrix.
 
     The estimator first fits ``scatter_estimator`` and then solves
@@ -298,7 +307,9 @@ class RobustGraphicalLasso:
         precision estimation.
     edge_tolerance : float, default=1e-8
         Precision entries with absolute value at most this threshold are not
-        counted as graph edges.
+        counted as graph edges. When ``standardize=True``, the threshold is
+        applied to the standardized precision so graph support is invariant to
+        feature measurement units.
 
     Notes
     -----
@@ -342,7 +353,43 @@ class RobustGraphicalLasso:
             )
         if not np.all(np.isfinite(raw_scatter)):
             raise ValueError("scatter_estimator covariance_ must contain only finite values")
-        scatter, floor = _regularize_spd(raw_scatter, self.scatter_floor)
+        if self.standardize:
+            raw_diagonal = np.diag(raw_scatter)
+            if np.any(raw_diagonal < 0.0):
+                raise ValueError(
+                    "scatter_estimator covariance_ must have a non-negative diagonal"
+                )
+            positive = raw_diagonal > 0.0
+            if not np.any(positive):
+                raise ValueError(
+                    "scatter_estimator covariance_ has no positive feature variance"
+                )
+            variance_scale = max(
+                float(np.max(raw_diagonal[positive])), np.finfo(float).tiny
+            )
+            constant_variance = max(
+                self.scatter_floor * variance_scale, np.finfo(float).tiny
+            )
+            adjusted_diagonal = np.where(
+                positive, raw_diagonal, constant_variance
+            )
+            scales = np.sqrt(adjusted_diagonal)
+            raw_working_scatter = raw_scatter / np.outer(scales, scales)
+            constant_features = ~positive
+            if np.any(constant_features):
+                raw_working_scatter = raw_working_scatter.copy()
+                raw_working_scatter[constant_features, :] = 0.0
+                raw_working_scatter[:, constant_features] = 0.0
+                raw_working_scatter[constant_features, constant_features] = 1.0
+            working_scatter, floor = _regularize_spd(
+                raw_working_scatter, self.scatter_floor
+            )
+            scatter = _symmetrize(working_scatter * np.outer(scales, scales))
+        else:
+            scales = np.ones(p)
+            scatter, floor = _regularize_spd(raw_scatter, self.scatter_floor)
+            raw_working_scatter = raw_scatter
+            working_scatter = scatter
 
         if hasattr(estimator, "location_"):
             location = np.asarray(estimator.location_, dtype=float)
@@ -350,14 +397,6 @@ class RobustGraphicalLasso:
             location = np.nanmean(X, axis=0)
         if location.shape != (p,) or not np.all(np.isfinite(location)):
             raise ValueError("scatter_estimator location_ must be a finite vector of length p")
-
-        if self.standardize:
-            scales = np.sqrt(np.maximum(np.diag(scatter), floor))
-            working_scatter = scatter / np.outer(scales, scales)
-            working_scatter, _ = _regularize_spd(working_scatter, self.scatter_floor)
-        else:
-            scales = np.ones(p)
-            working_scatter = scatter
 
         if self.alpha == "ebic":
             alphas = self._alpha_grid(working_scatter)
@@ -406,15 +445,20 @@ class RobustGraphicalLasso:
         precision = _symmetrize(precision)
         covariance = _symmetrize(np.linalg.inv(precision))
         partial = _partial_correlations(precision)
-        adjacency = np.abs(precision) > self.edge_tolerance
+        adjacency_basis = precision_working if self.standardize else precision
+        adjacency = np.abs(adjacency_basis) > self.edge_tolerance
         np.fill_diagonal(adjacency, False)
 
         self.scatter_estimator_ = estimator
         self.location_ = location
         self.raw_scatter_ = _symmetrize(raw_scatter)
         self.scatter_ = scatter
+        self.raw_working_scatter_ = _symmetrize(raw_working_scatter)
         self.working_scatter_ = working_scatter
         self.scale_ = scales
+        self.constant_features_ = (
+            constant_features.copy() if self.standardize else np.zeros(p, dtype=bool)
+        )
         self.scatter_floor_ = floor
         self.alpha_ = alpha_selected
         self.precision_ = precision
@@ -462,9 +506,13 @@ class RobustGraphicalLasso:
     def _alpha_grid(self, scatter: np.ndarray) -> np.ndarray:
         off = scatter - np.diag(np.diag(scatter))
         alpha_max = float(np.max(np.abs(off)))
-        if alpha_max <= 100.0 * _EPS:
-            alpha_max = 1e-3
-        alpha_min = max(alpha_max * self.alpha_min_ratio, 1e-8)
+        scatter_scale = max(float(np.max(np.abs(scatter))), np.finfo(float).tiny)
+        if alpha_max <= 100.0 * _EPS * scatter_scale:
+            alpha_max = 1e-3 * scatter_scale
+        alpha_min = max(
+            alpha_max * self.alpha_min_ratio,
+            np.finfo(float).tiny,
+        )
         return np.geomspace(alpha_max, alpha_min, self.n_alphas)
 
     def _count_edges(self, precision: np.ndarray) -> int:
@@ -538,6 +586,30 @@ class RobustGraphicalLasso:
 SparseRobustPrecision = RobustGraphicalLasso
 
 
+def _stable_vector_norm(vector: np.ndarray) -> float:
+    vector = np.asarray(vector, dtype=float)
+    scale = float(np.max(np.abs(vector), initial=0.0))
+    if scale == 0.0:
+        return 0.0
+    return float(scale * np.sqrt(np.sum((vector / scale) ** 2)))
+
+
+def _stable_row_norms(matrix: np.ndarray) -> np.ndarray:
+    matrix = np.asarray(matrix, dtype=float)
+    scales = np.max(np.abs(matrix), axis=1)
+    norms = np.zeros(matrix.shape[0], dtype=float)
+    nonzero = scales > 0.0
+    normalized = matrix[nonzero] / scales[nonzero, None]
+    norms[nonzero] = scales[nonzero] * np.sqrt(np.sum(normalized * normalized, axis=1))
+    return norms
+
+
+def _spatial_data_scale(X: np.ndarray, location: np.ndarray) -> float:
+    centered = np.asarray(X, dtype=float) - np.asarray(location, dtype=float)
+    radii = _stable_row_norms(centered)
+    return max(float(np.max(radii, initial=0.0)), np.finfo(float).tiny)
+
+
 def _spatial_median(
     X: np.ndarray,
     *,
@@ -545,37 +617,37 @@ def _spatial_median(
     max_iter: int = 300,
     zero_tolerance: float = 1e-12,
 ) -> tuple[np.ndarray, int, bool]:
-    """Return the multivariate spatial median using a safeguarded Weiszfeld step."""
+    """Return the spatial median using scale-relative stopping tolerances."""
     X = np.asarray(X, dtype=float)
     current = np.median(X, axis=0)
+    data_scale = _spatial_data_scale(X, current)
+    zero_floor = max(zero_tolerance * data_scale, np.finfo(float).tiny)
+    step_tolerance = tol * data_scale
     converged = False
     iteration = 0
     for iteration in range(1, max_iter + 1):
         differences = X - current
-        distances = np.linalg.norm(differences, axis=1)
-        coincident = distances <= zero_tolerance
+        distances = _stable_row_norms(differences)
+        coincident = distances <= zero_floor
         if np.any(coincident):
-            # A data point is a valid spatial-median candidate.  The modified
-            # Weiszfeld condition avoids division by zero and accepts it only
-            # when the subgradient contains zero.
             candidate = np.mean(X[coincident], axis=0)
             remaining = X[~coincident] - candidate
-            norms = np.linalg.norm(remaining, axis=1)
+            norms = _stable_row_norms(remaining)
             if remaining.size == 0:
                 current = candidate
                 converged = True
                 break
             subgradient = np.sum(
-                remaining / np.maximum(norms[:, None], zero_tolerance), axis=0
+                remaining / np.maximum(norms[:, None], zero_floor), axis=0
             )
-            if np.linalg.norm(subgradient) <= int(np.count_nonzero(coincident)):
+            if _stable_vector_norm(subgradient) <= int(np.count_nonzero(coincident)):
                 current = candidate
                 converged = True
                 break
-            distances = np.maximum(np.linalg.norm(X - current, axis=1), zero_tolerance)
-        weights = 1.0 / np.maximum(distances, zero_tolerance)
+            distances = np.maximum(_stable_row_norms(X - current), zero_floor)
+        weights = 1.0 / np.maximum(distances, zero_floor)
         updated = np.sum(weights[:, None] * X, axis=0) / np.sum(weights)
-        if np.linalg.norm(updated - current) <= tol * max(1.0, np.linalg.norm(current)):
+        if _stable_vector_norm(updated - current) <= step_tolerance:
             current = updated
             converged = True
             break
@@ -590,8 +662,10 @@ def _spatial_sign_covariance(
     zero_tolerance: float = 1e-12,
 ) -> tuple[np.ndarray, np.ndarray, int]:
     centered = np.asarray(X, dtype=float) - np.asarray(location, dtype=float)
-    radii = np.linalg.norm(centered, axis=1)
-    nonzero = radii > zero_tolerance
+    radii = _stable_row_norms(centered)
+    data_scale = max(float(np.max(radii, initial=0.0)), np.finfo(float).tiny)
+    zero_floor = max(zero_tolerance * data_scale, np.finfo(float).tiny)
+    nonzero = radii > zero_floor
     signs = np.zeros_like(centered)
     signs[nonzero] = centered[nonzero] / radii[nonzero, None]
     covariance = signs.T @ signs / X.shape[0]
@@ -599,7 +673,7 @@ def _spatial_sign_covariance(
 
 
 @dataclass
-class SpatialSignGraphicalLasso:
+class SpatialSignGraphicalLasso(EstimatorMixin):
     r"""Sparse shape-precision estimation from spatial signs.
 
     The estimator calculates the sample spatial-sign covariance matrix
@@ -645,7 +719,9 @@ class SpatialSignGraphicalLasso:
     spatial_median_max_iter : int, default=300
         Maximum safeguarded Weiszfeld iterations.
     zero_tolerance : float, default=1e-12
-        Radius below which a centered observation has the zero spatial sign.
+        Relative radius below which a centered observation has the zero spatial
+        sign. The effective absolute threshold is stored in
+        ``effective_zero_tolerance_``.
 
     Notes
     -----
@@ -692,8 +768,13 @@ class SpatialSignGraphicalLasso:
             location,
             zero_tolerance=self.zero_tolerance,
         )
+        if zero_count == n:
+            raise ValueError(
+                "all observations coincide; spatial-sign precision is undefined"
+            )
         raw_working = p * sign_covariance
         working_scatter, floor = _regularize_spd(raw_working, self.scatter_floor)
+        spatial_scale = _spatial_data_scale(X_fit, location)
 
         if self.alpha == "ebic":
             alphas = self._alpha_grid(working_scatter)
@@ -752,6 +833,10 @@ class SpatialSignGraphicalLasso:
         self.spatial_sign_covariance_ = sign_covariance
         self.sign_vectors_ = sign_vectors
         self.zero_sign_count_ = zero_count
+        self.spatial_scale_ = spatial_scale
+        self.effective_zero_tolerance_ = max(
+            self.zero_tolerance * spatial_scale, np.finfo(float).tiny
+        )
         self.raw_working_scatter_ = raw_working
         self.working_scatter_ = working_scatter
         self.scatter_floor_ = floor
@@ -828,9 +913,13 @@ class SpatialSignGraphicalLasso:
     def _alpha_grid(self, scatter: np.ndarray) -> np.ndarray:
         off = scatter - np.diag(np.diag(scatter))
         alpha_max = float(np.max(np.abs(off)))
-        if alpha_max <= 100.0 * _EPS:
-            alpha_max = 1e-3
-        alpha_min = max(alpha_max * self.alpha_min_ratio, 1e-8)
+        scatter_scale = max(float(np.max(np.abs(scatter))), np.finfo(float).tiny)
+        if alpha_max <= 100.0 * _EPS * scatter_scale:
+            alpha_max = 1e-3 * scatter_scale
+        alpha_min = max(
+            alpha_max * self.alpha_min_ratio,
+            np.finfo(float).tiny,
+        )
         return np.geomspace(alpha_max, alpha_min, self.n_alphas)
 
     def _count_edges(self, precision: np.ndarray) -> int:

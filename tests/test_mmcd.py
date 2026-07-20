@@ -198,6 +198,7 @@ def test_unfitted_methods_raise():
 
 
 def test_matrix_contribution_plot(tmp_path):
+    pytest.importorskip("matplotlib")
     import matplotlib.pyplot as plt
 
     X = np.random.default_rng(13).normal(size=(50, 3, 4))
@@ -228,3 +229,67 @@ def test_support_fraction_one_matches_sample_mean():
     ).fit(X)
     np.testing.assert_allclose(est.location_, X.mean(axis=0), atol=1e-12)
     assert est.raw_support_.all()
+
+
+def test_mmcd_auto_backend_reaches_workload_dispatch(monkeypatch):
+    import robustcov.mmcd as module
+
+    calls = []
+    original = module.matrix_mahalanobis2_batch
+
+    def recording_dispatch(*args, backend="auto", **kwargs):
+        calls.append(backend)
+        return original(*args, backend=backend, **kwargs)
+
+    monkeypatch.setattr(module, "matrix_mahalanobis2_batch", recording_dispatch)
+    X = np.random.default_rng(15).normal(size=(45, 3, 4))
+    est = _fit_fast(
+        n_init=6,
+        n_best=2,
+        max_iter=5,
+        flip_flop_max_iter=10,
+        backend="auto",
+    ).fit(X)
+    assert est.backend_ == "auto"
+    assert calls
+    assert set(calls) == {"auto"}
+
+
+def test_vectorized_flip_flop_matches_legacy_sample_loops(monkeypatch):
+    import robustcov.mmcd as module
+
+    rng = np.random.default_rng(16)
+    X = rng.normal(size=(35, 4, 5))
+    optimized = module._flip_flop_mle(X, ridge=1e-8, max_iter=12, tol=1e-9)
+
+    class LegacyNumpyProxy:
+        def __getattr__(self, name):
+            return getattr(np, name)
+
+        def einsum(self, subscripts, *operands, **kwargs):
+            if subscripts == "nrc,cd,nsd->rs":
+                residuals, precision, _ = operands
+                output = np.zeros(
+                    (residuals.shape[1], residuals.shape[1]), dtype=np.float64
+                )
+                for residual in residuals:
+                    output += residual @ precision @ residual.T
+                return output
+            if subscripts == "nrc,rs,nsd->cd":
+                residuals, precision, _ = operands
+                output = np.zeros(
+                    (residuals.shape[2], residuals.shape[2]), dtype=np.float64
+                )
+                for residual in residuals:
+                    output += residual.T @ precision @ residual
+                return output
+            return np.einsum(subscripts, *operands, **kwargs)
+
+    monkeypatch.setattr(module, "np", LegacyNumpyProxy())
+    legacy = module._flip_flop_mle(X, ridge=1e-8, max_iter=12, tol=1e-9)
+
+    for actual, expected in zip(optimized[:3], legacy[:3]):
+        np.testing.assert_allclose(actual, expected, rtol=1e-11, atol=1e-11)
+    assert optimized[3] == legacy[3]
+    assert optimized[4] == legacy[4]
+    assert optimized[5] == pytest.approx(legacy[5], rel=1e-12, abs=1e-12)

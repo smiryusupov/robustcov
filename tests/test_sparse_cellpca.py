@@ -6,6 +6,7 @@ import pytest
 from sklearn.metrics import roc_auc_score
 
 import robustcov as rc
+import robustcov.sparse_cellpca as sparse_cellpca
 
 
 def _sparse_low_rank(seed=0, n=100, p=36, rank=3, noise=0.10):
@@ -251,6 +252,7 @@ def test_unfitted_and_shape_errors():
 
 
 def test_plot_sparse_loadings(tmp_path):
+    pytest.importorskip("matplotlib")
     _, X, _ = _sparse_low_rank(12, n=70, p=24)
     model = rc.SparseCellPCA(
         n_components=3,
@@ -272,9 +274,88 @@ def test_plot_sparse_loadings(tmp_path):
 
 
 def test_plot_validation():
+    pytest.importorskip("matplotlib")
     _, X, _ = _sparse_low_rank(13, n=60, p=18)
     model = rc.SparseCellPCA(n_components=3, alpha=0.04, max_iter=20).fit(X)
     with pytest.raises(ValueError, match="feature_names"):
         rc.plot_sparse_cellpca_loadings(model, feature_names=["too", "short"], show=False)
     with pytest.raises(ValueError, match="invalid component"):
         rc.plot_sparse_cellpca_loadings(model, components=[9], show=False)
+
+
+
+def test_batched_elastic_net_loadings_match_featurewise_reference():
+    rng = np.random.default_rng(123)
+    n, p, q = 45, 11, 4
+    X = rng.normal(size=(n, p))
+    observed = rng.random((n, p)) > 0.12
+    weights = observed * rng.uniform(0.0, 1.0, size=(n, p))
+    weights[:, -1] = 0.0
+    weights[0, -1] = 1.0  # fewer than two active cells: retain previous
+    center = rng.normal(size=p)
+    scores = rng.normal(size=(n, q))
+    previous = rng.normal(scale=0.2, size=(p, q))
+    alpha = np.linspace(0.02, 0.08, q)
+
+    def reference():
+        safe = np.where(observed, X, center)
+        centered = safe - center
+        loadings = previous.copy()
+        l1 = alpha * 0.7
+        l2 = alpha * 0.3
+        for j in range(p):
+            w = weights[:, j]
+            active = w > 0.0
+            if np.count_nonzero(active) < 2:
+                continue
+            design = scores[active]
+            response = centered[active, j]
+            active_weights = w[active]
+            weight_sum = max(
+                float(np.sum(active_weights)), np.sqrt(sparse_cellpca._EPS)
+            )
+            beta = loadings[j].copy()
+            residual = response - design @ beta
+            for _ in range(35):
+                old = beta.copy()
+                for k in range(q):
+                    column = design[:, k]
+                    residual += column * beta[k]
+                    curvature = (
+                        float(
+                            np.dot(active_weights, column * column)
+                            / weight_sum
+                        )
+                        + float(l2[k])
+                        + 1e-8
+                    )
+                    correlation = float(
+                        np.dot(active_weights, column * residual) / weight_sum
+                    )
+                    beta[k] = sparse_cellpca._soft_threshold(
+                        correlation, float(l1[k])
+                    ) / max(curvature, np.sqrt(sparse_cellpca._EPS))
+                    residual -= column * beta[k]
+                if np.linalg.norm(beta - old) <= 1e-9 * max(
+                    np.linalg.norm(old), 1.0
+                ):
+                    break
+            loadings[j] = beta
+        return loadings
+
+    actual = sparse_cellpca._weighted_elastic_net_loadings(
+        X,
+        observed,
+        weights,
+        center,
+        scores,
+        previous,
+        alpha,
+        0.7,
+        1e-8,
+        35,
+        1e-9,
+    )
+
+    np.testing.assert_allclose(actual, reference(), rtol=1e-11, atol=1e-12)
+    np.testing.assert_array_equal(actual[-1], previous[-1])

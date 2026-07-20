@@ -1,6 +1,13 @@
 API reference
 =============
 
+Method provenance
+-----------------
+
+.. automodule:: robustcov.provenance
+   :members:
+   :undoc-members:
+
 Covariance estimators
 ---------------------
 
@@ -148,10 +155,46 @@ Geometry utilities
    :undoc-members:
    :show-inheritance:
 
+Blind source separation
+-----------------------
+
+.. automodule:: robustcov.ica
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: robustcov.sobi
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: robustcov.joint_diagonalization
+   :members:
+   :undoc-members:
+
+Robust factor models
+--------------------
+
+.. automodule:: robustcov.factor_models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Robust principal component analysis
 -----------------------------------
 
 .. autoclass:: robustcov.RobustPCA
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Experimental distributionally robust PCA
+-----------------------------------------
+
+The distributionally robust estimator is intentionally available only from
+``robustcov.experimental`` while its geometry and radius defaults are validated.
+
+.. autoclass:: robustcov.experimental.DistributionallyRobustPCA
    :members:
    :undoc-members:
    :show-inheritance:
@@ -168,6 +211,14 @@ Bootstrap PCA stability
 -----------------------
 
 .. automodule:: robustcov.stability
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Robust multilinear PCA
+----------------------
+
+.. automodule:: robustcov.multilinear_pca
    :members:
    :undoc-members:
    :show-inheritance:

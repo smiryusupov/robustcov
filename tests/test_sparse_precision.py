@@ -190,6 +190,7 @@ def test_cellmcd_scatter_allows_missing_training_entries():
 
 
 def test_plot_partial_correlation_network_writes_file(tmp_path):
+    pytest.importorskip("matplotlib")
     covariance = np.array([[1.0, 0.4, 0.0], [0.4, 1.0, 0.2], [0.0, 0.2, 1.0]])
     X = np.zeros((10, 3))
     model = rc.RobustGraphicalLasso(

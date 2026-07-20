@@ -24,6 +24,7 @@ observations for a stable empirical covariance matrix.
 - `MRCD` for high-breakdown covariance estimation when `p` is close to or greater than `n`
 - `KMRCD` for nonlinear robust outlier detection in a kernel feature space
 - `MMCD` for robust row/column covariance estimation when each observation is a matrix
+- `RobustMultilinearPCA` for low-rank matrix observations with cellwise errors, abnormal samples, and missing entries
 - `CellMCD` for covariance estimation with isolated corrupted or missing cells
 - `CellRCov` for high-dimensional covariance with bad cells, abnormal rows, and missing entries
 - `CellPCA` for low-rank structure with cellwise errors, abnormal rows, and missing entries
@@ -33,6 +34,7 @@ observations for a stable empirical covariance matrix.
 - Regularized Cauchy, Student-t, and Tyler scatter estimators
 - Mahalanobis anomaly scores, QQ plots, distance profiles, and diagnostic reports
 - `RobustPCA` with score-distance and orthogonal-distance diagnostics
+- experimental `DistributionallyRobustPCA` for a genuine weighted-Wasserstein worst-case reconstruction objective under structured distribution shift
 - `SubspaceStability` for IID, block, stationary, and cluster bootstrap diagnostics
 - `RobustSubspaceMonitor` for comparison with a fixed reference period
 - `FeatureGeometry` for robust distances, whitening, and kernels on embeddings
@@ -51,6 +53,22 @@ python -m pip install robustcov
 ```
 
 Supported release wheels are built for CPython 3.12, 3.13, and 3.14 on Ubuntu, Windows, and macOS by GitHub Actions. The package uses a C++/pybind11 backend built with `scikit-build-core`.
+
+Dependency lower bounds are selected per Python version so Python 3.12 users are
+not forced onto the versions needed only for Python 3.14. The exact oldest tested
+sets are recorded in `requirements/minimum.txt` and exercised by CI.
+
+Plotting is optional and is not installed with the numerical core:
+
+```bash
+python -m pip install "robustcov[plot]"
+```
+
+The package can be imported without the compiled extension. NumPy-backed estimators continue to work, while native-only estimators such as `FastMCD` and `TylerShape` raise an actionable error when fitted. Check the active installation with `robustcov.native_available()`. A native-free development wheel can be built explicitly with:
+
+```bash
+python -m build --wheel -Ccmake.define.ROBUSTCOV_BUILD_NATIVE=OFF
+```
 
 Inside a conda environment, install the PyPI wheels with pip:
 
@@ -93,7 +111,10 @@ print(est.location_)
 print(est.covariance_)
 print(est.radial_kurtosis_)
 
-det = rc.RobustOutlierDetector(estimator=est, contamination=0.075).fit(X)
+det = rc.RobustOutlierDetector(
+    estimator=rc.FastMCD(quality="balanced", random_state=42),
+    contamination=0.075,
+).fit(X)
 print(det.labels_)
 ```
 
@@ -312,6 +333,33 @@ Use ``resampling="iid"`` for independent rows, a block or stationary bootstrap
 for ordered weakly dependent observations, and ``resampling="cluster"`` for
 repeated measurements grouped by subject, site, or account.
 
+## Experimental distributionally robust PCA
+
+`DistributionallyRobustPCA` is available only from `robustcov.experimental`.
+It evaluates a weighted-Wasserstein worst-case reconstruction risk over a
+deterministic adaptive candidate path. Identity transport geometry is retained
+as a required ordinary-PCA control; anisotropic geometry is what expresses the
+assumed train-to-deployment shift.
+
+```python
+from robustcov.experimental import DistributionallyRobustPCA
+
+dro_pca = DistributionallyRobustPCA(
+    n_components=2,
+    radius=2.5,
+    transport_geometry="residual",
+    formulation="exact",
+).fit(X_train)
+
+print(dro_pca.exact_worst_case_risk_)
+print(dro_pca.selected_gamma_)
+```
+
+The current exact formulation ranks a finite deterministic path using the exact
+scalar-dual ambiguity-set risk; it does not claim a global solution of the
+non-convex Grassmann problem. See `docs/distributionally_robust_pca.rst` and the
+held-out shift benchmark before using it in scientific comparisons.
+
 ## Rolling subspace monitoring
 
 `RobustSubspaceMonitor` compares incoming batches with a fixed reference fit. A
@@ -348,6 +396,7 @@ it is detected.
 | `MRCD` | Rowwise contamination with `p` close to or greater than `n` | Regularized high-breakdown subset covariance with automatic condition control |
 | `KMRCD` | Non-elliptical inlier structure or implicit kernel data | MRCD subset search in a positive-semidefinite kernel feature space |
 | `MMCD` | Matrix-valued observations with contaminated rows/samples | Robust mean matrix and Kronecker row/column covariance factors |
+| `RobustMultilinearPCA` | Matrix-valued low-rank data with bad cells, abnormal samples, and missing entries | Robust Tucker-2 fit with cellwise and casewise redescending weights |
 | `CellMCD` | Tables with isolated corrupted or missing cells and `n > p` | Observed-likelihood covariance fit with cell-level flags and conditional predictions |
 | `CellRCov` | High-dimensional tables with bad cells, abnormal rows, and missing entries | Robust low-rank covariance plus a diagonally regularized residual covariance |
 | `CellPCA` | Low-rank tables with cell errors, abnormal rows, and missing entries | Cellwise and casewise redescending weights in a weighted low-rank fit |
@@ -359,6 +408,7 @@ it is detected.
 | `ClusterRobustOutlierDetector` | Multimodal data | Cluster-then-local-robust-scatter diagnostic |
 | `RobustPCA` | Robust dimensionality reduction and subspace diagnostics | Eigendecomposition of a robust location and scatter estimate |
 | `DensityPowerRobustPCA` | Direct robust low-rank fitting with cell residual weights | Gaussian density-power-divergence alternating regressions |
+| experimental `DistributionallyRobustPCA` | Principal subspaces under stated train-to-target distribution shift | Exact weighted-Wasserstein risk over a deterministic adaptive candidate path |
 
 `KLRegularizedTyler` and `WieselTyler` are currently documented as aliases/prototype variants around the regularized Tyler implementation. `HellingerRegularizedTyler` is experimental.
 
@@ -471,6 +521,7 @@ If OpenMP is available at build time, the C++ backend can parallelize distance e
 ```python
 import robustcov as rc
 
+print(rc.native_available())
 print(rc.has_openmp())
 rc.set_num_threads(4)
 
@@ -499,7 +550,7 @@ python -m sphinx -b html docs docs/_build/html
 
 Main documentation entry points:
 
-- **Use-case gallery**: practical application pages organized by topic
+- **Use-case gallery**: runnable examples organized first by method family (ICA/SOBI, PCA/factors, robust estimators, anomaly monitoring) and second by application domain
 - **Benchmark gallery**: benchmark plots, tables, and interpretation
 - **Algorithms**: mathematical descriptions and references
 - **Robust statistics background**: influence functions, Gateaux derivatives, breakdown point, geodesic convexity, and small-sample issues
@@ -520,7 +571,27 @@ python benchmarks/compare_methods.py \
 ```
 
 The script compares methods only where their fitted quantities and ground-truth
-metrics are compatible. Use `--profile full --families scatter --repeats 3` (and repeat for the other families) for slower, more stable local timing runs.
+metrics are compatible. It now covers scatter, kernel outlier detection, robust
+PCA, matrix/tensor methods, sparse precision, ICA, SOBI, and robust factor
+models. Use `--profile full --families scatter --repeats 3` (and repeat for the
+other families) for slower, more stable local timing runs.
+
+Run the focused latent-structure benchmark and generate its plots:
+
+```bash
+OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=2 \
+python benchmarks/latent_structure_benchmarks.py \
+  --profile quick \
+  --families ica sobi pca factor \
+  --csv results/latent_structure.csv \
+  --plot-dir results/latent_structure_plots
+```
+
+Audit benchmark ownership across the public estimator surface:
+
+```bash
+python benchmarks/benchmark_inventory.py --strict
+```
 
 Generate the older benchmark report:
 
@@ -536,6 +607,7 @@ results/report/benchmark_report.html
 results/report/benchmark_report.md
 results/report/*.csv
 results/report/*.png
+results/report/latent_structure/*.png
 ```
 
 The benchmark pages report both successful and weak cases. Covariance-based
@@ -544,21 +616,33 @@ location, scale, correlation, or a low-dimensional subspace.
 
 ## Examples
 
-Run the reproducible use-case gallery:
+The example gallery is grouped by method family. List the available groups:
+
+```bash
+python examples/run_use_case_gallery.py --list
+```
+
+Run one family:
+
+```bash
+python examples/run_use_case_gallery.py --group ica
+python examples/run_use_case_gallery.py --group pca
+python examples/run_use_case_gallery.py --group robust
+python examples/run_use_case_gallery.py --group monitoring
+```
+
+The new source-separation and factor-model examples are explicit scripts:
+
+```bash
+python examples/ica_two_scatter.py
+python examples/sobi_source_separation.py
+python examples/robust_factor_model.py
+```
+
+Run every registered gallery example with:
 
 ```bash
 python examples/run_use_case_gallery.py --all
-```
-
-Selected examples:
-
-```bash
-python examples/use_case_finance_risk.py
-python examples/use_case_multimodal_anomaly.py
-python examples/use_case_sensor_anomaly.py
-python examples/use_case_breast_cancer_screening.py
-python examples/use_case_digits_one_class_baselines.py
-python examples/use_case_ml_preprocessing.py
 ```
 
 Refresh generated gallery assets after editing examples:
@@ -626,18 +710,40 @@ This is a pre-1.0 alpha package. Public APIs may change. The goal of the early r
 
 Apache-2.0. See `LICENSE`.
 
-## Citation
+## Methods, attribution, and citation
 
-If you use `robustcov` in research or applied work, please cite the package using the metadata in `CITATION.cff`.
+`robustcov` distinguishes published algorithms, literature-based adaptations,
+package-specific compositions, and software utilities. Each canonical estimator
+records its primary references, the package's implementation contribution, and
+material differences from the cited method.
 
+```python
+import robustcov as rc
 
-## Citation and contributing
+info = rc.get_method_provenance(rc.RobustSOBI)
+print(info.status)
+print(info.references)
+print(info.robustcov_contribution)
+```
 
-If you use `robustcov` in research, please cite the software using the metadata
-in [`CITATION.cff`](CITATION.cff). A JOSS paper draft is being prepared in the
-`paper/` directory.
+The full registry is documented in
+[`docs/methods_and_references.rst`](docs/methods_and_references.rst), and the
+project's restrained claims policy is in
+[`docs/project_contributions.rst`](docs/project_contributions.rst). No current
+public estimator is claimed as an original statistical method.
+
+When using `robustcov`, cite both:
+
+1. the software release using [`CITATION.cff`](CITATION.cff); and
+2. the primary methodological references for the estimators used.
+
+The machine-readable method bibliography is available in
+[`docs/references.bib`](docs/references.bib). A JOSS paper draft is maintained in
+the `paper/` directory.
+
+## Contributing
 
 Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for
-development setup and checks before opening a pull request. Release notes are
-tracked in [`CHANGELOG.md`](CHANGELOG.md).
-
+development setup and checks before opening a pull request. New public
+estimators must add both benchmark ownership and method-provenance metadata.
+Release notes are tracked in [`CHANGELOG.md`](CHANGELOG.md).

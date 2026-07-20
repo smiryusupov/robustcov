@@ -7,6 +7,10 @@ The implementation is intentionally pragmatic and experimental; these references
 mathematical context rather than a claim that every estimator is a line-by-line reproduction of a
 specific paper.
 
+The canonical estimator-to-reference mapping, including implementation differences
+and package-specific contributions, is maintained in :doc:`methods_and_references`.
+A machine-readable BibTeX catalog is available at ``docs/references.bib``.
+
 Robust covariance and MCD
 -------------------------
 
@@ -64,6 +68,7 @@ Robust anomaly diagnostics
 
 * P. J. Rousseeuw and A. M. Leroy. 1987. *Robust Regression and Outlier Detection*. Wiley.
 * M. Hubert, P. J. Rousseeuw, and K. Vanden Branden. 2005. ROBPCA: a new approach to robust principal component analysis. *Technometrics*.
+* M. Hirari, F. Centofanti, M. Hubert, and S. Van Aelst. 2026. Casewise and cellwise robust multilinear principal component analysis. *Journal of Computational and Graphical Statistics*.
 * S. Roy, A. Basu, and A. Ghosh. 2024. Robust principal component analysis using density power divergence. *Journal of Machine Learning Research*, 25(324), 1–40.
 * F. Centofanti, M. Hubert, and P. J. Rousseeuw. 2026. Robust principal components by casewise and cellwise weighting. *Technometrics*.
 * P. Pfeiffer, L. Vana-Gür, and P. Filzmoser. 2025. Cellwise robust and sparse principal component analysis. *Advances in Data Analysis and Classification*.
@@ -81,3 +86,15 @@ Robust clustering and mixtures
 * A. García-Escudero, A. Gordaliza, C. Matrán, and A. Mayo-Iscar. 2008. A general trimming approach to robust cluster analysis. *The Annals of Statistics*.
 * G. J. McLachlan and D. Peel. 2000. *Finite Mixture Models*. Wiley.
 * G. J. McLachlan and D. Peel. 1998/2000. Robust cluster analysis via mixtures of multivariate t-distributions. Related robust mixture-model literature.
+
+
+Independent components, SOBI, and factor models
+------------------------------------------------
+
+* J.-F. Cardoso and A. Souloumiac. 1996. Jacobi angles for simultaneous diagonalization. *SIAM Journal on Matrix Analysis and Applications*.
+* A. Belouchrani, K. Abed-Meraim, J.-F. Cardoso, and E. Moulines. 1997. A blind source separation technique using second-order statistics. *IEEE Transactions on Signal Processing*.
+* H. Oja, S. Sirkiä, and J. Eriksson. 2006. Scatter matrices and independent component analysis. *Austrian Journal of Statistics*.
+* S. Taskinen, A. Kankainen, and H. Oja. 2007. Independent component analysis based on symmetrised scatter matrices. *Computational Statistics & Data Analysis*.
+* K. Nordhausen. 2014. On robustifying some second order blind source separation methods for nonstationary time series. *Statistical Papers*.
+* J. Fan, H. Liu, and W. Wang. 2018. Large covariance estimation through elliptical factor models. *The Annals of Statistics*.
+* L. Yu, Y. He, and X. Zhang. 2019. Robust factor number specification for large-dimensional elliptical factor models. *Journal of Multivariate Analysis*.

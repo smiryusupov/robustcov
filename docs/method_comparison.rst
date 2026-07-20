@@ -17,8 +17,9 @@ Start with four questions.
    tails, or missing entries?
 #. **What is the dimensional regime?** Is :math:`n` comfortably larger than
    :math:`p`, or is :math:`p` close to or greater than :math:`n`?
-#. **What output is needed?** A covariance matrix, a principal subspace, a sparse
-   graph, an anomaly score, or a change alarm?
+#. **What output is needed?** A covariance matrix, a principal subspace,
+   independent sources, temporally separated sources, factors, a sparse graph,
+   an anomaly score, or a change alarm?
 
 The following table gives a starting point.  It is deliberately more specific
 than a ranking table.
@@ -75,10 +76,26 @@ than a ranking table.
      - ``MMCD``
      - Vector methods only when Kronecker structure is not scientifically meaningful
      - Flattening can discard row/column structure and create a much larger covariance.
+   * - Matrix observations have low-rank row/column structure plus bad cells, abnormal samples, or missing entries
+     - ``RobustMultilinearPCA``
+     - ``MMCD`` for covariance factors; flattened ``CellPCA`` as a structural baseline
+     - Fixed mode ranks are required and the package initialization is not reference ROMPCA parity.
    * - Robust dimensionality reduction under rowwise contamination or heavy tails
      - ``RobustPCA`` with a matching scatter estimator
      - ``CellPCA`` for cellwise errors
      - ``RobustPCA`` is scatter PCA, not low-rank-plus-sparse decomposition.
+   * - Latent signals are statistically independent but observations are instantaneous mixtures
+     - ``TwoScatterICA``
+     - Symmetrized two-scatter ICA when source skewness is problematic; FastICA as a baseline
+     - Identifiability requires non-Gaussian sources and sufficiently distinct scatter signatures.
+   * - Latent time series have distinct autocorrelation signatures
+     - ``SOBI`` on clean data; ``RobustSOBI`` under impulsive contamination
+     - FastICA as a non-temporal baseline
+     - Similar source autocorrelations or poorly chosen lags can make separation ill-conditioned.
+   * - A static low-rank factor model is required under heavy tails or row contamination
+     - ``RobustFactorModel(method='kendall')``
+     - Huber refinement when cellwise residual loss is appropriate; ``n_factors='auto'`` for exploratory selection
+     - Factor-number selection needs separated eigenvalue ratios and is not guaranteed in weak-factor regimes.
    * - A sparse conditional-dependence graph is required
      - ``RobustGraphicalLasso``
      - Choose ``CellMCD`` or a heavy-tail scatter estimator underneath it
@@ -184,6 +201,13 @@ with another estimator rather than handled directly.
      - Limited
      - Structured
      - matrices
+   * - ``RobustMultilinearPCA``
+     - row/column low-rank subspaces and cell/case weights
+     - Yes
+     - Yes
+     - Yes
+     - Structured
+     - matrices
    * - ``RobustPCA``
      - principal subspace
      - Depends on scatter
@@ -191,6 +215,13 @@ with another estimator rather than handled directly.
      - No
      - Depends on scatter
      - vectors
+   * - experimental ``DistributionallyRobustPCA``
+     - shift-protected principal subspace
+     - Not its primary model
+     - No
+     - No
+     - Yes, through regularized geometry
+     - vectors plus an SPD transport geometry
    * - ``DensityPowerRobustPCA``
      - direct low-rank subspace and residual weights
      - DPD residual downweighting
@@ -226,6 +257,27 @@ with another estimator rather than handled directly.
      - Limited through median imputation
      - Yes
      - complete elliptical vectors
+   * - ``TwoScatterICA``
+     - independent components and mixing/unmixing matrices
+     - Robust whitening and bounded radial scatter
+     - No
+     - No
+     - No
+     - Full-rank vector mixtures
+   * - ``SOBI`` / ``RobustSOBI``
+     - temporally separated sources
+     - RobustSOBI handles impulsive rows
+     - No
+     - No
+     - No
+     - Ordered multichannel time series
+   * - ``RobustFactorModel``
+     - loadings, factors, common/idiosyncratic components
+     - Kendall or Huber robustness
+     - Huber residual downweighting only
+     - No
+     - Limited
+     - static vector panels
 
 Methods that are not direct competitors
 ---------------------------------------
@@ -248,8 +300,9 @@ Benchmark design
 ----------------
 
 The comparison script uses synthetic data because the true covariance,
-principal subspace, matrix-normal covariance, and graph are then known.  It
-contains four benchmark families:
+principal subspace, source mixing matrix, factor loading space,
+matrix-normal covariance, and graph are then known.  It contains nine
+benchmark families:
 
 ``scatter``
    Rowwise outliers, diffuse heavy tails, :math:`p>n`, low-dimensional cellwise
@@ -275,12 +328,34 @@ contains four benchmark families:
    with an all-sample matrix-normal maximum-likelihood fit using Kronecker
    covariance error and matrix-distance AUROC.
 
+``multilinear pca``
+   Matrix-valued observations follow a known low-rank row/column structure with
+   contaminated cells and abnormal samples.  Robust multilinear PCA is compared
+   with a non-robust multilinear baseline using row/column subspace error,
+   clean-cell reconstruction error, and anomaly AUROC.
+
 ``sparse precision``
    Two known sparse graphs are used.  One contains radial heavy tails under an
    elliptical model and includes ``SGLASSO``.  The other contains bad cells and
    missing values and compares empirical, Cauchy, and CellMCD scatter inputs.
    Fixed penalties isolate the covariance/shape input; EBIC path selection is
    evaluated separately in the gallery examples.
+
+``ica``
+   Independent non-Gaussian sources are mixed through a known full-rank matrix.
+   Clean and impulsively contaminated fits are evaluated with the
+   minimum-distance index, Amari index, matched source correlation, and runtime.
+
+``sobi``
+   Autoregressive sources with distinct temporal signatures are mixed through a
+   known matrix.  Classical and robust SOBI are compared on clean and impulsive
+   sequences with permutation/scale-aware recovery metrics.
+
+``factor model``
+   Heavy-tailed factors generate a known loading subspace and common component.
+   Classical PCA factors are compared with Kendall, Huber-refined, and automatic
+   robust factor models using subspace, factor-score, reconstruction, covariance,
+   factor-count, and runtime metrics.
 
 The quick profile is small enough for documentation and continuous integration.
 The full profile increases sample sizes, dimensions, and subset starts.  Run
@@ -326,6 +401,13 @@ universal ordering.
   Dense PCA methods necessarily score poorly on exact support because they do
   not set coefficients to zero.
 * MMCD improves Kronecker covariance recovery in the matrix-valued example.
+* The ICA and SOBI rows must be interpreted with permutation/sign/scale-aware
+  metrics.  In the committed source-separation scenarios, robust whitening and
+  lag weighting protect recovery against impulsive rows, while the clean-data
+  baseline can remain faster.
+* The factor benchmark separates loading-subspace recovery from implied
+  covariance recovery.  A method can recover factors well without matching the
+  entire covariance if the idiosyncratic variance model is misspecified.
 * In the radial heavy-tail graph, spatial-sign and Cauchy-scatter graphical
   lasso substantially reduce partial-correlation error relative to empirical
   covariance.  Spatial signs target shape rather than absolute covariance scale.
@@ -358,7 +440,8 @@ For a more stable local timing comparison:
        --repeats 3 \
        --csv results/scatter_method_comparison.csv
 
-Repeat the command with ``kernel``, ``pca``, ``matrix``, or ``graph``.  Running the families
+Repeat the command with ``kernel``, ``pca``, ``matrix``, ``graph``, ``ica``,
+``sobi``, or ``factor``.  Running the families
 separately gives progress at natural checkpoints and avoids losing an entire
 long run if one method is interrupted.
 

@@ -1,7 +1,13 @@
 script,status
+ica_two_scatter.py,ok
+sobi_source_separation.py,ok
+robust_factor_model.py,ok
+distributionally_robust_pca.py,ok
+distributionally_robust_pca_drift_monitoring.py,ok
 plot_mrcd_high_dimensional_outliers.py,ok
 plot_kmrcd_nonlinear_manifold.py,ok
 plot_dets_detmm_tradeoff.py,ok
+plot_robust_multilinear_pca.py,ok
 plot_mmcd_sensor_windows.py,ok
 plot_cellmcd_market_data.py,ok
 plot_cellpca_process_spectra.py,ok

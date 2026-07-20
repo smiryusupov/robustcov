@@ -1,7 +1,8 @@
-"""Small-sample heavy-tail benchmark.
+"""Small-sample heavy-tail covariance/scatter benchmark.
 
-This benchmark stresses regimes where p is close to n or p > n. It compares
-classical/shrinkage covariance with robust regularized scatter estimators.
+The benchmark uses the shared covariance catalog so modern robustcov estimators,
+classical shrinkage baselines, and applicability constraints remain synchronized
+with the speed benchmark and documentation.
 
 Run:
     python benchmarks/small_sample_heavy_tail.py --csv results/small_sample.csv
@@ -15,7 +16,11 @@ import time
 from pathlib import Path
 
 import numpy as np
-import robustcov as rc
+
+try:
+    from benchmarks.covariance_catalog import covariance_methods
+except ModuleNotFoundError:  # direct script execution
+    from covariance_catalog import covariance_methods
 
 
 def rel_fro(cov, truth):
@@ -24,118 +29,174 @@ def rel_fro(cov, truth):
 
 def make_data(n, p, df, seed):
     rng = np.random.default_rng(seed)
-    Sigma = 0.7 ** np.abs(np.subtract.outer(np.arange(p), np.arange(p)))
-    Z = rng.multivariate_normal(np.zeros(p), Sigma, size=n)
+    scatter = 0.7 ** np.abs(np.subtract.outer(np.arange(p), np.arange(p)))
+    z = rng.multivariate_normal(np.zeros(p), scatter, size=n)
     if np.isinf(df):
-        X = Z
+        X = z
     else:
-        # multivariate t via Gaussian divided by sqrt(chi2/df)
-        g = rng.chisquare(df, size=n) / df
-        X = Z / np.sqrt(g)[:, None]
-    return X, Sigma
-
-
-def sklearn_methods():
-    out = {}
-    try:
-        from sklearn.covariance import EmpiricalCovariance, LedoitWolf, OAS, MinCovDet
-        out["sklearn Empirical"] = lambda: EmpiricalCovariance()
-        out["sklearn LedoitWolf"] = lambda: LedoitWolf()
-        out["sklearn OAS"] = lambda: OAS()
-        out["sklearn MinCovDet"] = lambda: MinCovDet(random_state=0)
-    except Exception:
-        pass
-    return out
+        # Elliptical multivariate t.  For df <= 2 the covariance is undefined,
+        # so the benchmark deliberately evaluates recovery of the generating
+        # scatter matrix rather than claiming covariance recovery.
+        radial = rng.chisquare(df, size=n) / df
+        X = z / np.sqrt(radial)[:, None]
+    return X, scatter
 
 
 def _summarize_numeric(values):
     vals = []
-    for v in values:
+    for value in values:
         try:
-            if v != "":
-                vals.append(float(v))
+            if value != "":
+                vals.append(float(value))
         except Exception:
             pass
     return f"{float(np.median(vals)):.0f}" if vals else ""
 
 
 def _summarize_converged(values):
-    vals = [v for v in values if isinstance(v, (bool, np.bool_))]
+    vals = [value for value in values if isinstance(value, (bool, np.bool_))]
     if not vals:
         return ""
     return f"{sum(vals)}/{len(vals)}"
 
 
-def robustcov_methods():
-    return {
-        "robustcov RegTyler": lambda: rc.RegularizedTyler(alpha=0.10, scale_correction="radial_median", max_iter=300),
-        "robustcov KLTyler": lambda: rc.KLRegularizedTyler(alpha=0.10, scale_correction="radial_median", max_iter=300),
-        "robustcov StudentT(df=3)": lambda: rc.StudentTScatter(df=3, alpha=0.05, max_iter=500, damping=0.7, tol=1e-5, warn_on_nonconvergence=False),
-        "robustcov Cauchy": lambda: rc.RegularizedCauchy(alpha=0.10, max_iter=500, damping=0.7, tol=1e-5, warn_on_nonconvergence=False),
-        "robustcov HellTyler(exp)": lambda: rc.HellingerRegularizedTyler(alpha=0.10, scale_correction="radial_median", max_iter=150),
-    }
+PROFILES = {
+    "quick": {"n": [40, 80], "p": [20, 60], "df": [1.0, 3.0]},
+    "full": {"n": [30, 60, 120], "p": [20, 40, 80], "df": [1.0, 2.0, 3.0]},
+}
 
 
-if __name__ == "__main__":
+def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n-list", nargs="+", type=int, default=[30, 60, 120])
-    parser.add_argument("--p-list", nargs="+", type=int, default=[20, 40, 80])
-    parser.add_argument("--df-list", nargs="+", type=float, default=[1.0, 2.0, 3.0])
+    parser.add_argument("--profile", choices=sorted(PROFILES), default="quick")
+    parser.add_argument("--n-list", nargs="+", type=int, default=None)
+    parser.add_argument("--p-list", nargs="+", type=int, default=None)
+    parser.add_argument("--df-list", nargs="+", type=float, default=None)
     parser.add_argument("--repeat", type=int, default=2)
     parser.add_argument("--csv", type=str, default="")
+    parser.add_argument(
+        "--methods",
+        nargs="+",
+        default=None,
+        help="Optional exact method-name filter. By default all relevant catalog methods run.",
+    )
+    parser.add_argument("--exclude-experimental", action="store_true")
+    parser.add_argument("--exclude-selector", action="store_true")
     args = parser.parse_args()
 
+    methods = covariance_methods(
+        purpose="accuracy",
+        include_experimental=not args.exclude_experimental,
+        include_selector=not args.exclude_selector,
+        include_sklearn=True,
+    )
+    if args.methods:
+        requested = set(args.methods)
+        methods = [method for method in methods if method.name in requested]
+        missing = sorted(requested - {method.name for method in methods})
+        if missing:
+            parser.error(f"unknown or unavailable methods: {', '.join(missing)}")
+
+    profile = PROFILES[args.profile]
+    n_values = args.n_list if args.n_list is not None else profile["n"]
+    p_values = args.p_list if args.p_list is not None else profile["p"]
+    df_values = args.df_list if args.df_list is not None else profile["df"]
+
     rows = []
-    for n in args.n_list:
-        for p in args.p_list:
-            for df in args.df_list:
-                X, Sigma = make_data(n, p, df, seed=13 + n + p + int(10 * df))
-                methods = {}
-                methods.update(robustcov_methods())
-                methods.update(sklearn_methods())
-                for name, factory in methods.items():
-                    times, errors, conds, converged_values, n_iters, failures = [], [], [], [], [], 0
-                    for _ in range(args.repeat):
-                        try:
-                            est = factory()
-                            t0 = time.perf_counter()
-                            est.fit(X)
-                            dt = time.perf_counter() - t0
-                            cov = np.asarray(est.covariance_, dtype=float)
-                            err = rel_fro(cov, Sigma)
-                            cond = float(np.linalg.cond(cov))
-                            if not np.isfinite(err) or not np.isfinite(cond):
-                                raise FloatingPointError("non-finite result")
-                            times.append(dt)
-                            errors.append(err)
-                            conds.append(cond)
-                            conv = getattr(est, "converged_", "")
-                            converged_values.append(conv)
-                            n_iters.append(getattr(est, "n_iter_", ""))
-                        except Exception:
-                            failures += 1
-                    rows.append({
+    for n in n_values:
+        for p in p_values:
+            for df in df_values:
+                X, scatter = make_data(n, p, df, seed=13 + n + p + int(10 * df))
+                for method in methods:
+                    applicable, reason = method.applicable(n, p)
+                    common = {
                         "n": n,
                         "p": p,
                         "df": df,
                         "p_over_n": f"{p / n:.3f}",
-                        "method": name,
-                        "median_seconds": f"{float(np.median(times)):.6f}" if times else "FAILED",
-                        "rel_fro_error": f"{float(np.median(errors)):.4f}" if errors else "FAILED",
-                        "condition_number": f"{float(np.median(conds)):.4g}" if conds else "FAILED",
-                        "converged": _summarize_converged(converged_values),
-                        "n_iter": _summarize_numeric(n_iters),
-                        "failures": failures,
-                    })
+                        "family": method.family,
+                        "method": method.name,
+                        "experimental": method.experimental,
+                        "note": method.note,
+                    }
+                    if not applicable:
+                        rows.append(
+                            {
+                                **common,
+                                "status": "not_applicable",
+                                "reason": reason,
+                                "median_seconds": "",
+                                "rel_fro_error": "",
+                                "condition_number": "",
+                                "converged": "",
+                                "n_iter": "",
+                                "selected_estimator": "",
+                                "failures": 0,
+                            }
+                        )
+                        continue
 
-    fieldnames = ["n", "p", "df", "p_over_n", "method", "median_seconds", "rel_fro_error", "condition_number", "converged", "n_iter", "failures"]
+                    times, errors, conds = [], [], []
+                    converged_values, n_iters = [], []
+                    selected_names: list[str] = []
+                    failures = 0
+                    failure_reason = ""
+                    for _ in range(args.repeat):
+                        try:
+                            est = method.factory()
+                            t0 = time.perf_counter()
+                            est.fit(X)
+                            elapsed = time.perf_counter() - t0
+                            cov = np.asarray(est.covariance_, dtype=float)
+                            err = rel_fro(cov, scatter)
+                            cond = float(np.linalg.cond(cov))
+                            if not np.isfinite(err) or not np.isfinite(cond):
+                                raise FloatingPointError("non-finite result")
+                            times.append(elapsed)
+                            errors.append(err)
+                            conds.append(cond)
+                            converged_values.append(getattr(est, "converged_", ""))
+                            n_iters.append(getattr(est, "n_iter_", ""))
+                            selected_names.append(getattr(est, "best_estimator_name_", ""))
+                        except Exception as exc:
+                            failures += 1
+                            failure_reason = f"{type(exc).__name__}: {exc}"
+
+                    status = "ok" if times else "failed"
+                    selected = sorted({name for name in selected_names if name})
+                    rows.append(
+                        {
+                            **common,
+                            "status": status,
+                            "reason": failure_reason,
+                            "median_seconds": f"{float(np.median(times)):.6f}" if times else "",
+                            "rel_fro_error": f"{float(np.median(errors)):.4f}" if errors else "",
+                            "condition_number": f"{float(np.median(conds)):.4g}" if conds else "",
+                            "converged": _summarize_converged(converged_values),
+                            "n_iter": _summarize_numeric(n_iters),
+                            "selected_estimator": "; ".join(selected),
+                            "failures": failures,
+                        }
+                    )
+
+    fieldnames = [
+        "n", "p", "df", "p_over_n", "family", "method", "experimental",
+        "status", "reason", "median_seconds", "rel_fro_error",
+        "condition_number", "converged", "n_iter", "selected_estimator",
+        "failures", "note",
+    ]
     writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(rows)
     if args.csv:
         out = Path(args.csv)
         out.parent.mkdir(parents=True, exist_ok=True)
-        with out.open("w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(rows)
+        with out.open("w", newline="") as handle:
+            file_writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            file_writer.writeheader()
+            file_writer.writerows(rows)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

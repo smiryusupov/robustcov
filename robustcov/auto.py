@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ._estimator import EstimatorMixin
 from .m_estimators import RegularizedCauchy, StudentTScatter
 from .covariance import RegularizedTyler
 from .diagnostics import diagnostic_report
@@ -45,7 +46,7 @@ class ScatterCandidateResult:
     estimator: object
 
 
-class AutoRobustScatter:
+class AutoRobustScatter(EstimatorMixin):
     """Lightweight unsupervised selector for robust scatter estimators.
 
     ``selection='diagnostic'`` fits each candidate once and scores finite covariance,
@@ -68,23 +69,29 @@ class AutoRobustScatter:
         random_state=0,
         stability_weight=2.0,
     ):
-        if criterion is not None:
-            selection = criterion
-        if selection not in {"diagnostic", "stability"}:
-            raise ValueError("selection must be 'diagnostic' or 'stability'")
         self.candidates = candidates
+        self.criterion = criterion
         self.selection = selection
-        self.criterion = selection
-        self.max_condition = float(max_condition)
-        self.prefer_converged = bool(prefer_converged)
-        self.n_splits = int(n_splits)
-        self.subsample_fraction = float(subsample_fraction)
-        self.random_state = int(random_state)
-        self.stability_weight = float(stability_weight)
-        if self.n_splits < 1:
+        self.max_condition = max_condition
+        self.prefer_converged = prefer_converged
+        self.n_splits = n_splits
+        self.subsample_fraction = subsample_fraction
+        self.random_state = random_state
+        self.stability_weight = stability_weight
+
+    def _validate_parameters(self) -> None:
+        effective_selection = self.criterion if self.criterion is not None else self.selection
+        if effective_selection not in {"diagnostic", "stability"}:
+            raise ValueError("selection must be 'diagnostic' or 'stability'")
+        if int(self.n_splits) < 1:
             raise ValueError("n_splits must be >= 1")
-        if not (0.2 <= self.subsample_fraction <= 1.0):
+        if not (0.2 <= float(self.subsample_fraction) <= 1.0):
             raise ValueError("subsample_fraction must be in [0.2, 1.0]")
+        if float(self.max_condition) <= 0.0:
+            raise ValueError("max_condition must be positive")
+        if float(self.stability_weight) < 0.0:
+            raise ValueError("stability_weight must be non-negative")
+        self.selection_ = effective_selection
 
     def _default_candidates(self, n, p):
         alpha_hi = 0.20 if p >= n else 0.10
@@ -145,6 +152,7 @@ class AutoRobustScatter:
         return float(np.median(distances) + failures)
 
     def fit(self, X, y=None):
+        self._validate_parameters()
         X = check_array(X, allow_nan=False)
         n, p = X.shape
         self.n_samples_in_, self.n_features_in_ = n, p
@@ -155,7 +163,7 @@ class AutoRobustScatter:
             try:
                 est = self._clone_candidate(cand).fit(X)
                 diag_score, cond, rk, finite, converged = self._diagnostic_score(est)
-                stability = self._stability_score(cand, X, est) if self.selection == "stability" else 0.0
+                stability = self._stability_score(cand, X, est) if self.selection_ == "stability" else 0.0
                 score = diag_score + self.stability_weight * stability
                 results.append(ScatterCandidateResult(
                     name=name,
@@ -209,7 +217,7 @@ class AutoRobustScatter:
         return diagnostic_report(self.estimator_)
 
     def summary(self) -> str:
-        lines = [f"AutoRobustScatter selected: {self.best_estimator_name_} ({self.selection})", "candidates:"]
+        lines = [f"AutoRobustScatter selected: {self.best_estimator_name_} ({self.selection_})", "candidates:"]
         for r in self.candidate_results_:
             lines.append(
                 f"  - {r.name}: score={r.score:.3f}, diagnostic={r.diagnostic_score:.3f}, "

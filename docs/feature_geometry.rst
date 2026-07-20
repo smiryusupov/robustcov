@@ -26,7 +26,11 @@ Global feature geometry
 
 The fitted scatter matrix defines which directions count as large or small.
 Using a robust estimator limits the influence of contaminated reference vectors
-on that geometry.
+on that geometry.  Singular fitted scatters are regularized with a relative
+eigenvalue floor; ``raw_covariance_`` keeps the estimator output and
+``covariance_`` stores the positive-definite matrix used by the geometry.
+Completely constant feature matrices are rejected because they define no
+meaningful metric.
 
 The class provides:
 

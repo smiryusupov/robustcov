@@ -52,51 +52,69 @@ def _weighted_elastic_net_loadings(
     max_iter: int,
     tol: float,
 ) -> np.ndarray:
-    """Solve one weighted elastic-net regression per feature.
+    """Solve all weighted elastic-net feature regressions in one batch.
 
-    The penalty is component specific: ``alpha[k]`` controls the loading of
-    component ``k`` in every feature regression.  Coordinate descent gives
-    exact zeros while keeping the weighted low-rank update inexpensive when the
-    retained rank is small.
+    Every feature regression is independent but shares the same score design.
+    Coordinate sweeps are batched over features while retaining each feature's
+    weights and its original convergence stopping rule.
     """
 
-    _, p = X.shape
-    q = scores.shape[1]
     safe = np.where(observed, X, center)
     centered = safe - center
-    loadings = previous.copy()
-    l1 = alpha * l1_ratio
-    l2 = alpha * (1.0 - l1_ratio)
+    weights = np.asarray(weights, dtype=np.float64)
+    beta = np.asarray(previous, dtype=np.float64).copy()
+    q = scores.shape[1]
+    l1 = np.asarray(alpha, dtype=np.float64) * float(l1_ratio)
+    l2 = np.asarray(alpha, dtype=np.float64) * (1.0 - float(l1_ratio))
 
-    for j in range(p):
-        w = np.asarray(weights[:, j], dtype=float)
-        active = w > 0.0
-        if int(np.count_nonzero(active)) < 2:
-            continue
+    valid = np.count_nonzero(weights > 0.0, axis=0) >= 2
+    if not np.any(valid):
+        return beta
 
-        T = scores[active]
-        y = centered[active, j]
-        w_active = w[active]
-        weight_sum = max(float(np.sum(w_active)), np.sqrt(_EPS))
-        beta = loadings[j].copy()
-        residual = y - T @ beta
+    weight_sums = np.maximum(weights.sum(axis=0), np.sqrt(_EPS))
+    weighted_columns = tuple(
+        weights * scores[:, k, None] for k in range(q)
+    )
+    curvatures = np.empty((beta.shape[0], q), dtype=np.float64)
+    for k, weighted_column in enumerate(weighted_columns):
+        curvatures[:, k] = (
+            scores[:, k] @ weighted_column / weight_sums
+            + float(l2[k])
+            + float(ridge)
+        )
 
-        for _ in range(max_iter):
-            old = beta.copy()
-            for k in range(q):
-                column = T[:, k]
-                residual += column * beta[k]
-                curvature = float(np.dot(w_active, column * column) / weight_sum)
-                curvature += float(l2[k]) + ridge
-                correlation = float(np.dot(w_active, column * residual) / weight_sum)
-                beta[k] = _soft_threshold(correlation, float(l1[k])) / max(
-                    curvature, np.sqrt(_EPS)
-                )
-                residual -= column * beta[k]
-            if np.linalg.norm(beta - old) <= tol * max(np.linalg.norm(old), 1.0):
-                break
-        loadings[j] = beta
-    return loadings
+    weighted_residual = weights * (centered - scores @ beta.T)
+    converged = ~valid
+
+    for _ in range(max_iter):
+        pending = ~converged
+        if not np.any(pending):
+            break
+        old = beta.copy()
+        pending_float = pending.astype(np.float64)
+
+        for k, weighted_column in enumerate(weighted_columns):
+            previous_coefficient = beta[:, k].copy()
+            weighted_residual += weighted_column * (
+                previous_coefficient * pending_float
+            )[None, :]
+            correlation = (
+                scores[:, k] @ weighted_residual / weight_sums
+            )
+            updated = np.sign(correlation) * np.maximum(
+                np.abs(correlation) - float(l1[k]), 0.0
+            )
+            updated /= np.maximum(curvatures[:, k], np.sqrt(_EPS))
+            beta[:, k] = np.where(pending, updated, previous_coefficient)
+            weighted_residual -= weighted_column * (
+                beta[:, k] * pending_float
+            )[None, :]
+
+        changes = np.linalg.norm(beta - old, axis=1)
+        scales = np.maximum(np.linalg.norm(old, axis=1), 1.0)
+        converged |= valid & (changes <= tol * scales)
+
+    return beta
 
 
 def _normalize_loading_columns(

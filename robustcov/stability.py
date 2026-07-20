@@ -12,6 +12,8 @@ from typing import Any
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
+from ._estimator import EstimatorMixin
+
 
 def _as_2d_finite_array(X: np.ndarray, *, name: str = "X") -> np.ndarray:
     X = np.asarray(X, dtype=float)
@@ -181,7 +183,7 @@ def _draw_resample_indices(
 
 
 @dataclass
-class SubspaceStability:
+class SubspaceStability(EstimatorMixin):
     """Bootstrap stability analysis for PCA-style subspace estimators.
 
     The class repeatedly refits a PCA estimator on bootstrap samples, aligns

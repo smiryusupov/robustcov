@@ -1,10 +1,21 @@
-"""Run robustcov application use-case examples.
+"""Run robustcov examples by method family or application group.
 
-By default this runs a compact, user-facing subset so the command stays quick and
-stable on laptops. Use ``--all`` to execute every gallery script.
+Examples
+--------
+Run the compact default set::
 
-Run:
     python examples/run_use_case_gallery.py
+
+Run a method family::
+
+    python examples/run_use_case_gallery.py --group ica
+    python examples/run_use_case_gallery.py --group pca
+    python examples/run_use_case_gallery.py --group robust
+    python examples/run_use_case_gallery.py --group monitoring
+
+List groups or run every registered gallery script::
+
+    python examples/run_use_case_gallery.py --list
     python examples/run_use_case_gallery.py --all
 """
 from __future__ import annotations
@@ -15,35 +26,69 @@ import subprocess
 import sys
 from pathlib import Path
 
-QUICK_SCRIPTS = [
-    "use_case_breast_cancer_screening.py",
-    "use_case_digits_one_class_baselines.py",
-    "use_case_wine_class_screening.py",
-    "use_case_finance_risk.py",
-    "use_case_fraud_screening.py",
-    "use_case_ml_preprocessing.py",
-]
+GROUPS: dict[str, list[str]] = {
+    "quick": [
+        "ica_two_scatter.py",
+        "robust_factor_model.py",
+        "use_case_finance_risk.py",
+        "use_case_fraud_screening.py",
+        "use_case_sensor_anomaly.py",
+        "use_case_breast_cancer_screening.py",
+    ],
+    "ica": [
+        "ica_two_scatter.py",
+        "sobi_source_separation.py",
+        "source_separation_and_factor_models.py",
+    ],
+    "pca": [
+        "distributionally_robust_pca.py",
+        "distributionally_robust_pca_drift_monitoring.py",
+        "robust_factor_model.py",
+        "plot_robust_pca_yield_curve.py",
+        "plot_robust_pca_subspace_stability.py",
+        "plot_robust_pca_market_risk.py",
+        "plot_cellpca_process_spectra.py",
+        "plot_sparse_cellpca_spectra.py",
+        "plot_density_power_pca.py",
+        "plot_robust_multilinear_pca.py",
+    ],
+    "robust": [
+        "use_case_finance_risk.py",
+        "use_case_portfolio_stress.py",
+        "plot_mrcd_high_dimensional_outliers.py",
+        "plot_kmrcd_nonlinear_manifold.py",
+        "plot_dets_detmm_tradeoff.py",
+        "plot_cellmcd_market_data.py",
+        "plot_cellrcov_high_dimensional.py",
+        "plot_mmcd_sensor_windows.py",
+        "plot_robust_graphical_lasso_market_network.py",
+        "plot_spatial_sign_graphical_lasso.py",
+    ],
+    "monitoring": [
+        "use_case_fraud_screening.py",
+        "use_case_network_traffic.py",
+        "use_case_sensor_anomaly.py",
+        "use_case_maintenance_monitoring.py",
+        "use_case_quality_control.py",
+        "plot_robust_subspace_monitoring.py",
+        "distributionally_robust_pca_drift_monitoring.py",
+        "feature_geometry_drift_detection.py",
+        "feature_geometry_embedding_monitoring.py",
+        "use_case_breast_cancer_screening.py",
+        "use_case_digits_one_class_baselines.py",
+        "use_case_wine_class_screening.py",
+        "use_case_ml_preprocessing.py",
+    ],
+}
 
-ALL_SCRIPTS = QUICK_SCRIPTS + [
-    "use_case_sensor_anomaly.py",
-    "use_case_quality_control.py",
-    "use_case_network_traffic.py",
-    "use_case_biomedical_signal.py",
-    "use_case_image_feature_anomaly.py",
-    "use_case_text_embedding_outliers.py",
-    "use_case_portfolio_stress.py",
-    "use_case_maintenance_monitoring.py",
-    "use_case_multimodal_anomaly.py",
-    "plot_robust_subspace_monitoring.py",
-    "plot_mrcd_high_dimensional_outliers.py",
-    "plot_mmcd_sensor_windows.py",
-    "plot_cellmcd_market_data.py",
-    "plot_cellpca_process_spectra.py",
-    "plot_robust_graphical_lasso_market_network.py",
-]
+
+def all_scripts() -> list[str]:
+    """Return registered scripts once, preserving group order."""
+
+    return list(dict.fromkeys(script for scripts in GROUPS.values() for script in scripts))
 
 
-def run_script(path: Path, timeout: int):
+def run_script(path: Path, timeout: int) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ)
     env.setdefault("OMP_NUM_THREADS", "2")
     env.setdefault("OPENBLAS_NUM_THREADS", "1")
@@ -68,15 +113,36 @@ def run_script(path: Path, timeout: int):
         return subprocess.CompletedProcess([sys.executable, str(path)], 124, out, err)
 
 
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--all", action="store_true", help="run every gallery example instead of the compact default subset")
-    ap.add_argument("--timeout", type=int, default=60, help="per-example timeout in seconds")
-    args = ap.parse_args()
+def print_groups() -> None:
+    print("registered example groups")
+    for name, scripts in GROUPS.items():
+        print(f"\n{name}")
+        for script in scripts:
+            print(f"  {script}")
 
-    scripts = ALL_SCRIPTS if args.all else QUICK_SCRIPTS
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--all", action="store_true", help="run every registered gallery example")
+    selection.add_argument("--group", choices=tuple(GROUPS), help="run one method/application group")
+    selection.add_argument("--list", action="store_true", help="list groups and their scripts")
+    parser.add_argument("--timeout", type=int, default=60, help="per-example timeout in seconds")
+    args = parser.parse_args()
+
+    if args.list:
+        print_groups()
+        return
+
+    group_name = args.group or "quick"
+    scripts = all_scripts() if args.all else GROUPS[group_name]
     here = Path(__file__).resolve().parent
-    rows = []
+
+    missing = [script for script in scripts if not (here / script).is_file()]
+    if missing:
+        raise FileNotFoundError(f"registered example scripts are missing: {missing}")
+
+    rows: list[tuple[str, int]] = []
     for script in scripts:
         proc = run_script(here / script, args.timeout)
         if proc.stdout:
@@ -85,9 +151,14 @@ if __name__ == "__main__":
             print(proc.stderr.strip())
         rows.append((script, proc.returncode))
 
-    print("\nuse-case gallery summary")
+    label = "all" if args.all else group_name
+    print(f"\nuse-case gallery summary ({label})")
     for script, code in rows:
         status = "ok" if code == 0 else f"failed({code})"
         print(f"{script},{status}")
     if any(code != 0 for _, code in rows):
         raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()

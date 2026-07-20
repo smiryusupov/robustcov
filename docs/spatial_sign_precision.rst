@@ -58,7 +58,11 @@ The sample spatial-sign covariance matrix is
      U(x_i-\widehat\mu)U(x_i-\widehat\mu)^T.
 
 Observations equal to the spatial median contribute the zero vector.  The
-fitted object reports their count through ``zero_sign_count_``.
+fitted object reports their count through ``zero_sign_count_``.  Spatial-median
+and zero-sign tolerances are evaluated relative to the observed radial scale,
+which preserves behavior under very small or very large measurement units.  A
+sample in which every observation coincides is rejected because its spatial
+sign shape is undefined.
 
 Under the high-dimensional elliptical assumptions studied by Lu and Feng,
 :math:`p\widehat S` approximates a trace-normalized covariance shape.  The

@@ -20,6 +20,8 @@ from scipy.stats import chi2
 
 from ._utils import radial_kurtosis
 from .covariance import ConvergenceWarning
+from ._estimator import EstimatorMixin
+from ._native import matrix_mahalanobis2_batch, resolve_backend
 
 
 _EPS = np.finfo(np.float64).eps
@@ -65,7 +67,11 @@ def _regularize_spd(A: np.ndarray, ridge: float, *, name: str) -> np.ndarray:
     A = _symmetrize(np.asarray(A, dtype=np.float64))
     d = A.shape[0]
     average = float(np.trace(A) / d)
-    scale = max(abs(average), np.linalg.norm(A, ord="fro") / max(d, 1), 1.0)
+    scale = max(
+        abs(average),
+        np.linalg.norm(A, ord="fro") / max(d, 1),
+        np.finfo(np.float64).tiny,
+    )
     if ridge > 0:
         A = A + float(ridge) * scale * np.eye(d)
     values, vectors = np.linalg.eigh(A)
@@ -115,13 +121,16 @@ def _matrix_distances(
     location: np.ndarray,
     row_precision: np.ndarray,
     column_precision: np.ndarray,
+    *,
+    backend: str = "auto",
 ) -> np.ndarray:
-    residuals = X - location
-    distances = np.empty(X.shape[0], dtype=np.float64)
-    for i, residual in enumerate(residuals):
-        transformed = row_precision @ residual @ column_precision
-        distances[i] = float(np.sum(residual * transformed))
-    return np.maximum(distances, 0.0)
+    return matrix_mahalanobis2_batch(
+        X,
+        location,
+        row_precision,
+        column_precision,
+        backend=backend,
+    )
 
 
 def _flip_flop_mle(
@@ -158,26 +167,32 @@ def _flip_flop_mle(
     iterations = 0
     for iterations in range(1, int(max_iter) + 1):
         column_precision, _ = _precision_logdet(column_covariance)
-        row_update = np.zeros((r, r), dtype=np.float64)
-        for residual in residuals:
-            row_update += residual @ column_precision @ residual.T
-        row_update /= float(n * c)
+        row_update = np.einsum(
+            "nrc,cd,nsd->rs",
+            residuals,
+            column_precision,
+            residuals,
+            optimize=True,
+        ) / float(n * c)
         row_update = _regularize_spd(row_update, ridge, name="row covariance")
 
         row_precision, _ = _precision_logdet(row_update)
-        column_update = np.zeros((c, c), dtype=np.float64)
-        for residual in residuals:
-            column_update += residual.T @ row_precision @ residual
-        column_update /= float(n * r)
+        column_update = np.einsum(
+            "nrc,rs,nsd->cd",
+            residuals,
+            row_precision,
+            residuals,
+            optimize=True,
+        ) / float(n * r)
         column_update = _regularize_spd(
             column_update, ridge, name="column covariance"
         )
 
         row_update, column_update = _normalize_factors(row_update, column_update)
         objective = _matrix_objective(row_update, column_update)
-        relative = abs(previous - objective) / max(1.0, abs(previous), abs(objective))
+        objective_change = abs(previous - objective)
         row_covariance, column_covariance = row_update, column_update
-        if np.isfinite(previous) and relative <= tol:
+        if np.isfinite(previous) and objective_change <= tol:
             converged = True
             break
         previous = objective
@@ -224,7 +239,7 @@ def _minimum_elemental_size(n_rows: int, n_columns: int) -> int:
     return max(3, int(np.floor(ratio_term)) + 2)
 
 
-class MatrixMinimumCovarianceDeterminant:
+class MatrixMinimumCovarianceDeterminant(EstimatorMixin):
     """Robust location and Kronecker covariance for matrix-valued samples.
 
     Parameters
@@ -243,7 +258,7 @@ class MatrixMinimumCovarianceDeterminant:
     flip_flop_max_iter : int, default=100
         Maximum matrix-normal MLE updates within each full C-step.
     flip_flop_tol : float, default=1e-7
-        Relative objective tolerance for flip-flop updates.
+        Absolute change tolerance for the log-determinant flip-flop objective.
     ridge : float, default=1e-8
         Small trace-relative ridge used for numerical stability.  Setting it to
         zero preserves exact matrix-affine equivariance when all updates remain
@@ -259,6 +274,9 @@ class MatrixMinimumCovarianceDeterminant:
         ``"median"`` imputes each matrix cell by its median across observations.
     random_state : int, default=0
         Seed for randomized elemental starts.
+    backend : {"auto", "python", "cpp"}, default="auto"
+        Numerical backend for repeated matrix Mahalanobis distances. ``"auto"``
+        uses the native extension when available and otherwise falls back to NumPy.
 
     Notes
     -----
@@ -294,49 +312,85 @@ class MatrixMinimumCovarianceDeterminant:
         missing_values="raise",
         tail_diagnostics=True,
         random_state=0,
+        backend="auto",
     ):
-        if quality not in self._QUALITY_PRESETS:
-            raise ValueError("quality must be one of 'fast', 'balanced', or 'high'")
-        if support_fraction is not None and contamination is not None:
-            raise ValueError("Specify either support_fraction or contamination, not both")
-        if support_fraction is not None and not (0.5 <= float(support_fraction) <= 1.0):
-            raise ValueError("support_fraction must be in [0.5, 1]")
-        if contamination is not None and not (0.0 <= float(contamination) < 0.5):
-            raise ValueError("contamination must be in [0, 0.5)")
-        if int(flip_flop_max_iter) < 1 or int(flip_flop_initial_iter) < 1:
-            raise ValueError("flip-flop iteration limits must be positive")
-        if float(flip_flop_tol) <= 0 or float(tol) <= 0:
-            raise ValueError("tolerances must be positive")
-        if float(ridge) < 0:
-            raise ValueError("ridge must be non-negative")
-        if not (0.5 < float(reweight_alpha) < 1.0):
-            raise ValueError("reweight_alpha must be between 0.5 and 1")
-        if missing_values not in {"raise", "median"}:
-            raise ValueError("missing_values must be 'raise' or 'median'")
-
-        preset = self._QUALITY_PRESETS[quality]
+        # Store constructor parameters unchanged. Validation and quality-preset
+        # resolution happen in fit(), following the scikit-learn estimator
+        # contract and keeping clone()/parameter search behavior predictable.
         self.support_fraction = support_fraction
         self.contamination = contamination
         self.quality = quality
-        self.n_init = preset["n_init"] if n_init is None else int(n_init)
-        self.n_best = preset["n_best"] if n_best is None else int(n_best)
-        self.initial_c_steps = (
-            preset["initial_c_steps"] if initial_c_steps is None else int(initial_c_steps)
-        )
-        self.max_iter = preset["max_iter"] if max_iter is None else int(max_iter)
-        if self.n_init < 1 or self.n_best < 1 or self.initial_c_steps < 0 or self.max_iter < 1:
-            raise ValueError("subset-search iteration counts must be positive")
-        self.flip_flop_max_iter = int(flip_flop_max_iter)
-        self.flip_flop_initial_iter = int(flip_flop_initial_iter)
-        self.flip_flop_tol = float(flip_flop_tol)
-        self.tol = float(tol)
-        self.ridge = float(ridge)
-        self.reweight = bool(reweight)
-        self.reweight_alpha = float(reweight_alpha)
-        self.adapt_support = bool(adapt_support)
+        self.n_init = n_init
+        self.n_best = n_best
+        self.initial_c_steps = initial_c_steps
+        self.max_iter = max_iter
+        self.flip_flop_max_iter = flip_flop_max_iter
+        self.flip_flop_initial_iter = flip_flop_initial_iter
+        self.flip_flop_tol = flip_flop_tol
+        self.tol = tol
+        self.ridge = ridge
+        self.reweight = reweight
+        self.reweight_alpha = reweight_alpha
+        self.adapt_support = adapt_support
         self.missing_values = missing_values
-        self.tail_diagnostics = bool(tail_diagnostics)
-        self.random_state = int(random_state)
+        self.tail_diagnostics = tail_diagnostics
+        self.random_state = random_state
+        self.backend = backend
+        self._validate_parameters(resolve=False)
+
+    def _validate_parameters(self, *, resolve: bool = True) -> None:
+        if self.quality not in self._QUALITY_PRESETS:
+            raise ValueError("quality must be one of 'fast', 'balanced', or 'high'")
+        if self.support_fraction is not None and self.contamination is not None:
+            raise ValueError("Specify either support_fraction or contamination, not both")
+        if self.support_fraction is not None and not (
+            0.5 <= float(self.support_fraction) <= 1.0
+        ):
+            raise ValueError("support_fraction must be in [0.5, 1]")
+        if self.contamination is not None and not (
+            0.0 <= float(self.contamination) < 0.5
+        ):
+            raise ValueError("contamination must be in [0, 0.5)")
+        if int(self.flip_flop_max_iter) < 1 or int(self.flip_flop_initial_iter) < 1:
+            raise ValueError("flip-flop iteration limits must be positive")
+        if float(self.flip_flop_tol) <= 0 or float(self.tol) <= 0:
+            raise ValueError("tolerances must be positive")
+        if float(self.ridge) < 0:
+            raise ValueError("ridge must be non-negative")
+        if not (0.5 < float(self.reweight_alpha) < 1.0):
+            raise ValueError("reweight_alpha must be between 0.5 and 1")
+        if self.missing_values not in {"raise", "median"}:
+            raise ValueError("missing_values must be 'raise' or 'median'")
+        if self.backend not in {"auto", "python", "cpp"}:
+            raise ValueError("backend must be 'auto', 'python', or 'cpp'")
+
+        preset = self._QUALITY_PRESETS[self.quality]
+        effective_n_init = preset["n_init"] if self.n_init is None else int(self.n_init)
+        effective_n_best = preset["n_best"] if self.n_best is None else int(self.n_best)
+        effective_initial_c_steps = (
+            preset["initial_c_steps"]
+            if self.initial_c_steps is None
+            else int(self.initial_c_steps)
+        )
+        effective_max_iter = (
+            preset["max_iter"] if self.max_iter is None else int(self.max_iter)
+        )
+        if (
+            effective_n_init < 1
+            or effective_n_best < 1
+            or effective_initial_c_steps < 0
+            or effective_max_iter < 1
+        ):
+            raise ValueError("subset-search iteration counts must be positive")
+        if resolve:
+            self.effective_n_init_ = effective_n_init
+            self.effective_n_best_ = effective_n_best
+            self.effective_initial_c_steps_ = effective_initial_c_steps
+            self.effective_max_iter_ = effective_max_iter
+            # Validate explicit native requests, but preserve ``auto`` so the
+            # workload-aware dispatcher can choose NumPy for medium batches.
+            resolved_backend = resolve_backend(self.backend)
+            self.backend_ = self.backend if self.backend == "auto" else resolved_backend
 
     def _fit_subset(self, X: np.ndarray, support: np.ndarray, *, initial: bool):
         return _flip_flop_mle(
@@ -365,7 +419,7 @@ class MatrixMinimumCovarianceDeterminant:
             row_precision, _ = _precision_logdet(row_cov)
             column_precision, _ = _precision_logdet(col_cov)
             distances = _matrix_distances(
-                X, location, row_precision, column_precision
+                X, location, row_precision, column_precision, backend=self.backend_
             )
             new_support = _smallest_indices(distances, h)
             if np.array_equal(new_support, support):
@@ -373,7 +427,7 @@ class MatrixMinimumCovarianceDeterminant:
                 break
             candidate = self._fit_subset(X, new_support, initial=initial)
             candidate_objective = float(candidate[-1])
-            allowance = 1e-8 * max(1.0, abs(objective))
+            allowance = 1e-8
             if candidate_objective > objective + allowance:
                 # Numerical ridge and incomplete flip-flop iterations can break
                 # exact C-step monotonicity.  Keep the better previous iterate.
@@ -381,9 +435,7 @@ class MatrixMinimumCovarianceDeterminant:
             support = new_support
             location, row_cov, col_cov, _, _, objective = candidate
             objective_path.append(float(objective))
-            if abs(objective_path[-2] - objective_path[-1]) <= self.tol * max(
-                1.0, abs(objective_path[-2])
-            ):
+            if abs(objective_path[-2] - objective_path[-1]) <= self.tol:
                 converged = True
                 break
 
@@ -399,6 +451,7 @@ class MatrixMinimumCovarianceDeterminant:
         }
 
     def fit(self, X, y=None):
+        self._validate_parameters()
         X = _check_matrix_sample(
             X, allow_nan=self.missing_values == "median"
         )
@@ -440,7 +493,7 @@ class MatrixMinimumCovarianceDeterminant:
         median_matrix = np.median(X, axis=0)
         central_distance = np.sum((X - median_matrix) ** 2, axis=(1, 2))
         starts = [_smallest_indices(central_distance, start_size)]
-        for _ in range(max(0, self.n_init - 1)):
+        for _ in range(max(0, self.effective_n_init_ - 1)):
             starts.append(np.sort(rng.choice(n, size=start_size, replace=False)))
 
         screened = []
@@ -451,7 +504,8 @@ class MatrixMinimumCovarianceDeterminant:
                     row_precision, _ = _precision_logdet(seed_model[1])
                     column_precision, _ = _precision_logdet(seed_model[2])
                     seed_distances = _matrix_distances(
-                        X, seed_model[0], row_precision, column_precision
+                        X, seed_model[0], row_precision, column_precision,
+                        backend=self.backend_,
                     )
                     support = _smallest_indices(seed_distances, self.h_)
                 else:
@@ -459,7 +513,7 @@ class MatrixMinimumCovarianceDeterminant:
                 result = self._c_steps(
                     X,
                     support,
-                    steps=self.initial_c_steps,
+                    steps=self.effective_initial_c_steps_,
                     initial=True,
                 )
                 if np.isfinite(result["objective"]):
@@ -475,13 +529,13 @@ class MatrixMinimumCovarianceDeterminant:
         screened.sort(key=lambda item: item["objective"])
 
         polished = []
-        for result in screened[: min(self.n_best, len(screened))]:
+        for result in screened[: min(self.effective_n_best_, len(screened))]:
             try:
                 polished.append(
                     self._c_steps(
                         X,
                         result["support"],
-                        steps=self.max_iter,
+                        steps=self.effective_max_iter_,
                         initial=False,
                     )
                 )
@@ -500,7 +554,8 @@ class MatrixMinimumCovarianceDeterminant:
         raw_row_precision, _ = _precision_logdet(raw_row)
         raw_column_precision, _ = _precision_logdet(raw_column)
         raw_distances = _matrix_distances(
-            X, best["location"], raw_row_precision, raw_column_precision
+            X, best["location"], raw_row_precision, raw_column_precision,
+            backend=self.backend_,
         )
         raw_support = np.zeros(n, dtype=bool)
         raw_support[best["support"]] = True
@@ -549,7 +604,7 @@ class MatrixMinimumCovarianceDeterminant:
         row_precision, row_logdet = _precision_logdet(row_covariance)
         column_precision, column_logdet = _precision_logdet(column_covariance)
         distances = _matrix_distances(
-            X, location, row_precision, column_precision
+            X, location, row_precision, column_precision, backend=self.backend_
         )
 
         self.location_ = location
@@ -608,6 +663,7 @@ class MatrixMinimumCovarianceDeterminant:
             self.location_,
             self.row_precision_,
             self.column_precision_,
+            backend=self.backend_,
         )
 
     def score_samples(self, X) -> np.ndarray:

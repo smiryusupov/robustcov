@@ -188,6 +188,7 @@ def test_unfitted_and_shape_errors():
 
 
 def test_plotting_helpers(tmp_path):
+    pytest.importorskip("matplotlib")
     rng, X, _ = _low_rank_data(12, n=60, p=8)
     X.flat[rng.choice(X.size, 20, replace=False)] += 7.0
     model = rc.CellPCA(n_components=2).fit(X)
@@ -204,3 +205,90 @@ def test_plotting_helpers(tmp_path):
     assert fig1 is not None and fig2 is not None
     assert residual_path.exists() and residual_path.stat().st_size > 0
     assert outlier_path.exists() and outlier_path.stat().st_size > 0
+
+
+def _loop_weighted_scores(X, observed, weights, center, loadings, ridge):
+    n = X.shape[0]
+    q = loadings.shape[1]
+    scores = np.zeros((n, q), dtype=np.float64)
+    identity = np.eye(q)
+    centered = np.where(observed, X, center) - center
+    for i in range(n):
+        w = weights[i]
+        if not np.any(w > 0.0):
+            continue
+        gram = loadings.T @ (w[:, None] * loadings) + ridge * identity
+        rhs = loadings.T @ (w * centered[i])
+        scores[i] = np.linalg.solve(gram, rhs)
+    return scores
+
+
+def _loop_weighted_loadings(
+    X, observed, weights, center, scores, previous, ridge
+):
+    p = X.shape[1]
+    q = scores.shape[1]
+    identity = np.eye(q)
+    centered = np.where(observed, X, center) - center
+    loadings = previous.copy()
+    working_scores = scores.copy()
+    for j in range(p):
+        w = weights[:, j]
+        if not np.any(w > 0.0):
+            continue
+        gram = working_scores.T @ (w[:, None] * working_scores) + ridge * identity
+        rhs = working_scores.T @ (w * centered[:, j])
+        loadings[j] = np.linalg.solve(gram, rhs)
+    qmat, rmat = np.linalg.qr(loadings, mode="reduced")
+    working_scores[:] = working_scores @ rmat.T
+    return qmat, working_scores
+
+
+def test_batched_weighted_normal_equations_match_loop_reference():
+    import robustcov.cellpca as cellpca
+
+    rng = np.random.default_rng(123)
+    X = rng.normal(size=(37, 11))
+    observed = rng.random(X.shape) > 0.12
+    X = np.where(observed, X, np.nan)
+    weights = rng.random(X.shape) * observed
+    weights[3] = 0.0
+    weights[:, 7] = 0.0
+    center = rng.normal(size=X.shape[1])
+    loadings, _ = np.linalg.qr(rng.normal(size=(X.shape[1], 4)))
+    ridge = 1e-7
+
+    expected_scores = _loop_weighted_scores(
+        X, observed, weights, center, loadings, ridge
+    )
+    actual_scores = cellpca._weighted_scores(
+        X, observed, weights, center, loadings, ridge
+    )
+    assert np.allclose(actual_scores, expected_scores, rtol=1e-12, atol=1e-12)
+
+    expected_loadings, expected_rotated_scores = _loop_weighted_loadings(
+        X,
+        observed,
+        weights,
+        center,
+        expected_scores,
+        loadings,
+        ridge,
+    )
+    actual_input_scores = actual_scores.copy()
+    actual_loadings = cellpca._weighted_loadings(
+        X,
+        observed,
+        weights,
+        center,
+        actual_input_scores,
+        loadings,
+        ridge,
+    )
+    assert np.allclose(actual_loadings, expected_loadings, rtol=1e-12, atol=1e-12)
+    assert np.allclose(
+        actual_input_scores,
+        expected_rotated_scores,
+        rtol=1e-12,
+        atol=1e-12,
+    )

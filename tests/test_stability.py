@@ -206,6 +206,7 @@ def test_subspace_stability_unfitted_and_component_errors():
 
 
 def test_plot_subspace_stability(tmp_path):
+    pytest.importorskip("matplotlib")
     X, _ = make_low_rank(seed=20)
     analysis = rc.SubspaceStability(
         pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),

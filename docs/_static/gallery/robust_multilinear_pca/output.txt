@@ -1,0 +1,7 @@
+matrix sample shape: (110, 8, 12)
+retained ranks: (2, 3)
+backend: cpp
+row-mode projection error, baseline / robust: 0.994 / 0.037
+column-mode projection error, baseline / robust: 1.136 / 0.058
+clean-cell MAE, baseline / robust: 0.343 / 0.061
+cell / case outlier AUROC: 0.981 / 1.000

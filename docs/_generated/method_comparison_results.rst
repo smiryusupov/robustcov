@@ -27,117 +27,117 @@ Scatter and covariance
      - 0.177
      - —
      - 1.000
-     - 0.237
+     - 0.543
      - ok
    * - cellwise errors + missing
      - Empirical covariance
      - 4.090
      - 1.000
      - —
-     - 7.91e-04
+     - 0.001
      - ok
    * - cellwise errors + missing
      - FastMCD
      - 1.747
      - 0.982
      - —
-     - 0.010
+     - 0.005
      - ok
    * - cellwise errors + missing
      - MRCD
      - 3.367
      - 0.995
      - —
-     - 0.009
+     - 0.019
      - ok
    * - cellwise errors + missing
      - RegularizedCauchy
-     - 4.032
+     - 3.801
      - 1.000
      - —
-     - 0.003
+     - 0.010
      - ok
    * - cellwise errors + missing
      - RegularizedTyler
      - 4.070
      - 1.000
      - —
-     - 9.61e-04
+     - 0.002
      - ok
    * - cellwise errors + missing
      - StudentTScatter
-     - 3.990
+     - 3.610
      - 1.000
      - —
-     - 0.002
+     - 0.007
      - ok
    * - heavy-tailed elliptical
      - DetMM
      - 0.472
      - —
      - —
-     - 0.023
+     - 0.095
      - ok
    * - heavy-tailed elliptical
      - DetS
      - 0.483
      - —
      - —
-     - 0.017
+     - 0.071
      - ok
    * - heavy-tailed elliptical
      - Empirical covariance
      - 1.597
      - —
      - —
-     - 3.51e-04
+     - 6.31e-04
      - ok
    * - heavy-tailed elliptical
      - FastMCD
      - 0.295
      - —
      - —
-     - 9.46e-04
+     - 0.003
      - ok
    * - heavy-tailed elliptical
      - MRCD
      - 0.385
      - —
      - —
-     - 0.006
+     - 0.021
      - ok
    * - heavy-tailed elliptical
      - RegularizedCauchy
      - 0.200
      - —
      - —
-     - 0.002
+     - 0.007
      - ok
    * - heavy-tailed elliptical
      - RegularizedTyler
      - 0.220
      - —
      - —
-     - 6.66e-04
+     - 0.002
      - ok
    * - heavy-tailed elliptical
      - StudentTScatter
-     - 0.169
+     - 0.168
      - —
      - —
-     - 0.002
+     - 0.005
      - ok
    * - high-dimensional mixed contamination
      - CellRCov
      - 0.383
      - 1.000
      - 0.999
-     - 0.174
+     - 0.128
      - ok
    * - high-dimensional mixed contamination
      - Empirical covariance
      - 1.512
-     - 0.792
+     - 0.805
      - —
      - 0.003
      - ok
@@ -146,119 +146,119 @@ Scatter and covariance
      - 1.009
      - 0.910
      - —
-     - 0.031
+     - 0.054
      - ok
    * - high-dimensional mixed contamination
      - RegularizedCauchy
-     - 0.825
+     - 0.826
      - 0.822
      - —
-     - 0.080
+     - 0.046
      - ok
    * - high-dimensional mixed contamination
      - RegularizedTyler
      - 0.854
      - 0.799
      - —
-     - 0.042
+     - 0.103
      - ok
    * - high-dimensional mixed contamination
      - StudentTScatter
-     - 0.862
+     - 0.863
      - 0.815
      - —
-     - 0.064
+     - 0.040
      - ok
    * - high-dimensional row outliers
      - Empirical covariance
      - 1.490
-     - 0.951
+     - 0.931
      - —
-     - 0.002
+     - 0.003
      - ok
    * - high-dimensional row outliers
      - MRCD
      - 0.998
      - 1.000
      - —
-     - 0.027
+     - 0.056
      - ok
    * - high-dimensional row outliers
      - RegularizedCauchy
      - 0.792
      - 0.980
      - —
-     - 0.076
+     - 0.049
      - ok
    * - high-dimensional row outliers
      - RegularizedTyler
      - 0.819
      - 0.975
      - —
-     - 0.041
+     - 0.095
      - ok
    * - high-dimensional row outliers
      - StudentTScatter
-     - 0.835
-     - 0.975
+     - 0.832
+     - 0.978
      - —
-     - 0.094
+     - 0.040
      - ok
    * - rowwise outliers
      - DetMM
      - 0.523
      - 1.000
      - —
-     - 0.080
+     - 0.338
      - ok
    * - rowwise outliers
      - DetS
      - 0.520
      - 1.000
      - —
-     - 0.016
+     - 0.055
      - ok
    * - rowwise outliers
      - Empirical covariance
      - 2.285
      - 0.928
      - —
-     - 4.78e-04
+     - 7.74e-04
      - ok
    * - rowwise outliers
      - FastMCD
      - 0.200
      - 1.000
      - —
-     - 0.012
+     - 0.004
      - ok
    * - rowwise outliers
      - MRCD
      - 0.332
      - 1.000
      - —
-     - 0.008
+     - 0.021
      - ok
    * - rowwise outliers
      - RegularizedCauchy
-     - 0.577
+     - 0.591
      - 1.000
      - —
-     - 0.003
+     - 0.014
      - ok
    * - rowwise outliers
      - RegularizedTyler
      - 0.938
      - 0.984
      - —
-     - 7.42e-04
+     - 0.002
      - ok
    * - rowwise outliers
      - StudentTScatter
-     - 0.785
-     - 0.999
+     - 0.843
+     - 0.998
      - —
-     - 0.002
+     - 0.009
      - ok
 
 Nonlinear kernel outlier detection
@@ -275,17 +275,17 @@ Nonlinear kernel outlier detection
      - Status
    * - KMRCD(RBF)
      - 0.929
-     - 0.267
+     - 0.352
      - nonlinear feature-space subset fit; gamma fixed for this scenario
      - ok
    * - KMRCD(linear)
      - 0.474
-     - 0.209
+     - 0.328
      - kernel formulation with linear geometry
      - ok
    * - MRCD
      - 0.477
-     - 0.007
+     - 0.017
      - linear robust subset baseline
      - ok
 
@@ -313,7 +313,7 @@ Principal subspaces
      - 0.499
      - —
      - —
-     - 0.598
+     - 1.608
    * - cellwise low-rank + missing
      - CellPCA
      - 0.021
@@ -322,7 +322,7 @@ Principal subspaces
      - 0.125
      - —
      - —
-     - 0.023
+     - 0.019
    * - cellwise low-rank + missing
      - DensityPowerRobustPCA, imputed
      - 0.026
@@ -331,7 +331,7 @@ Principal subspaces
      - 0.198
      - —
      - —
-     - 0.055
+     - 0.127
    * - cellwise low-rank + missing
      - Median-imputed PCA
      - 0.704
@@ -340,16 +340,16 @@ Principal subspaces
      - 0.572
      - —
      - —
-     - 2.80e-04
+     - 4.47e-04
    * - cellwise low-rank + missing
      - RobustPCA(Cauchy, imputed)
-     - 0.084
+     - 0.209
      - —
-     - 1.000
-     - 0.489
+     - 0.999
+     - 0.476
      - —
      - —
-     - 0.006
+     - 0.015
    * - rowwise low-rank outliers
      - DensityPowerRobustPCA
      - 0.266
@@ -358,7 +358,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.197
+     - 0.388
    * - rowwise low-rank outliers
      - Empirical PCA
      - 0.821
@@ -367,7 +367,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 2.83e-04
+     - 4.45e-04
    * - rowwise low-rank outliers
      - RobustPCA(Cauchy)
      - 0.029
@@ -376,7 +376,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.005
+     - 0.011
    * - rowwise low-rank outliers
      - RobustPCA(FastMCD)
      - 0.034
@@ -385,7 +385,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.016
+     - 0.007
    * - rowwise low-rank outliers
      - RobustPCA(MRCD)
      - 0.057
@@ -394,7 +394,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.014
+     - 0.023
    * - rowwise low-rank outliers
      - RobustPCA(StudentT)
      - 0.028
@@ -403,7 +403,7 @@ Principal subspaces
      - —
      - —
      - —
-     - 0.006
+     - 0.008
    * - sparse cellwise low-rank + missing
      - CellPCA
      - 0.030
@@ -412,7 +412,7 @@ Principal subspaces
      - 0.085
      - 0.326
      - 0.000
-     - 0.037
+     - 0.029
    * - sparse cellwise low-rank + missing
      - Median-imputed PCA
      - 0.602
@@ -421,7 +421,7 @@ Principal subspaces
      - 0.285
      - 0.326
      - 0.000
-     - 3.77e-04
+     - 0.001
    * - sparse cellwise low-rank + missing
      - SparseCellPCA
      - 0.026
@@ -430,7 +430,7 @@ Principal subspaces
      - 0.085
      - 1.000
      - 0.806
-     - 0.088
+     - 0.062
 
 Matrix-valued observations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -447,13 +447,42 @@ Matrix-valued observations
    * - All-sample matrix-normal MLE
      - 0.266
      - 0.993
-     - 0.022
+     - 0.063
      - non-robust separable baseline
    * - MMCD
      - 0.162
      - 1.000
-     - 0.042
+     - 0.101
      - rowwise contamination in matrix-valued observations
+
+Matrix-valued low-rank models
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 11 13 11 9 9 8
+
+   * - Method
+     - Row-mode error
+     - Column-mode error
+     - Clean-cell MAE
+     - Row AUROC
+     - Cell AUROC
+     - Seconds
+   * - Median-imputed MPCA
+     - 1.016
+     - 1.327
+     - 0.398
+     - —
+     - —
+     - 0.002
+   * - RobustMultilinearPCA
+     - 0.054
+     - 0.064
+     - 0.063
+     - 1.000
+     - 0.982
+     - 0.132
 
 Sparse conditional-dependence graphs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -470,44 +499,252 @@ Sparse conditional-dependence graphs
      - Edges
      - Seconds
    * - Cauchy graphical lasso
-     - 0.130
-     - 0.375
-     - 0.545
-     - 0.444
+     - 0.132
+     - 0.312
+     - 0.455
+     - 0.370
      - 16
-     - 0.003
+     - 0.011
    * - CellMCD graphical lasso
      - 0.328
      - 0.265
      - 0.818
      - 0.400
      - 34
-     - 0.243
+     - 0.603
    * - Empirical graphical lasso
      - 0.199
      - 0.167
      - 0.364
      - 0.229
      - 24
-     - 9.13e-04
+     - 0.002
    * - Cauchy graphical lasso
      - 0.156
      - 0.333
      - 0.545
      - 0.414
      - 18
-     - 0.003
+     - 0.010
    * - Empirical graphical lasso
      - 0.415
      - 0.276
      - 0.727
      - 0.400
      - 29
-     - 0.002
+     - 0.005
    * - Spatial-sign graphical lasso
      - 0.157
      - 0.350
      - 0.636
      - 0.452
      - 20
+     - 0.003
+
+Independent component analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 27 8 8 10 8 8
+
+   * - Scenario
+     - Method
+     - MDI
+     - Amari
+     - Source corr.
+     - Seconds
+     - Status
+   * - clean non-Gaussian mixture
+     - Classical two-scatter ICA
+     - 0.898
+     - 0.636
+     - 0.671
+     - 0.002
+     - ok
+   * - clean non-Gaussian mixture
+     - TwoScatterICA
+     - 0.071
+     - 0.037
+     - 0.998
+     - 0.008
+     - ok
+   * - clean non-Gaussian mixture
+     - TwoScatterICA(symmetrized)
+     - 0.030
+     - 0.013
+     - 1.000
+     - 0.029
+     - ok
+   * - clean non-Gaussian mixture
+     - sklearn FastICA
+     - 0.043
+     - 0.021
+     - 0.999
+     - 0.003
+     - ok
+   * - impulsive row contamination
+     - Classical two-scatter ICA
+     - 0.592
+     - 0.373
+     - 0.866
      - 0.001
+     - ok
+   * - impulsive row contamination
+     - TwoScatterICA
+     - 0.086
+     - 0.035
+     - 0.998
+     - 0.008
+     - ok
+   * - impulsive row contamination
+     - TwoScatterICA(symmetrized)
+     - 0.598
+     - 0.295
+     - 0.868
+     - 0.025
+     - ok
+   * - impulsive row contamination
+     - sklearn FastICA
+     - 0.735
+     - 0.509
+     - 0.797
+     - 0.020
+     - ok
+
+Temporal source separation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 22 8 10 14 8 8
+
+   * - Scenario
+     - Method
+     - MDI
+     - Source corr.
+     - Off-diagonal energy
+     - Seconds
+     - Status
+   * - clean temporally correlated sources
+     - RobustSOBI
+     - 0.075
+     - 0.998
+     - 0.020
+     - 0.017
+     - ok
+   * - clean temporally correlated sources
+     - SOBI
+     - 0.063
+     - 0.999
+     - 0.016
+     - 0.005
+     - ok
+   * - clean temporally correlated sources
+     - sklearn FastICA
+     - 0.615
+     - 0.833
+     - —
+     - 0.211
+     - ok
+   * - impulsive temporal contamination
+     - RobustSOBI
+     - 0.059
+     - 0.999
+     - 0.217
+     - 0.018
+     - ok
+   * - impulsive temporal contamination
+     - SOBI
+     - 0.703
+     - 0.781
+     - 0.041
+     - 0.013
+     - ok
+   * - impulsive temporal contamination
+     - sklearn FastICA
+     - 0.790
+     - 0.716
+     - —
+     - 0.036
+     - ok
+
+Static factor models
+~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 27 11 9 11 12 9 8
+
+   * - Scenario
+     - Method
+     - Subspace error
+     - Score corr.
+     - Common error
+     - Covariance error
+     - Count error
+     - Seconds
+   * - factor model + row contamination
+     - Empirical PCA factors
+     - 0.730
+     - 0.648
+     - 0.643
+     - 6.994
+     - 0
+     - 7.57e-04
+   * - factor model + row contamination
+     - RobustFactorModel(auto)
+     - 0.057
+     - 0.980
+     - 0.133
+     - 0.131
+     - 0
+     - 0.033
+   * - factor model + row contamination
+     - RobustFactorModel(huber)
+     - 0.169
+     - 0.980
+     - 0.188
+     - 0.224
+     - 0
+     - 0.122
+   * - factor model + row contamination
+     - RobustFactorModel(kendall)
+     - 0.057
+     - 0.980
+     - 0.133
+     - 0.131
+     - 0
+     - 0.034
+   * - heavy-tailed factor model
+     - Empirical PCA factors
+     - 0.029
+     - 0.986
+     - 0.118
+     - 0.012
+     - 0
+     - 7.29e-04
+   * - heavy-tailed factor model
+     - RobustFactorModel(auto)
+     - 0.036
+     - 0.980
+     - 0.123
+     - 0.174
+     - 0
+     - 0.033
+   * - heavy-tailed factor model
+     - RobustFactorModel(huber)
+     - 0.030
+     - 0.980
+     - 0.121
+     - 0.184
+     - 0
+     - 0.049
+   * - heavy-tailed factor model
+     - RobustFactorModel(kendall)
+     - 0.036
+     - 0.980
+     - 0.123
+     - 0.174
+     - 0
+     - 0.037

@@ -23,6 +23,8 @@ from typing import Any
 
 import numpy as np
 
+from ._estimator import EstimatorMixin
+
 
 _EPS = np.finfo(np.float64).eps
 
@@ -189,7 +191,7 @@ def _weighted_score_update(
 
 
 @dataclass
-class DensityPowerRobustPCA:
+class DensityPowerRobustPCA(EstimatorMixin):
     """Direct robust PCA using a Gaussian density-power-divergence loss.
 
     The estimator fits a rank-``n_components`` low-rank model by alternating

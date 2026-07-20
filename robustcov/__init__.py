@@ -17,6 +17,11 @@ from .sparse_cellpca import (
     SparseCasewiseCellwisePCA,
 )
 from .cellrcov import CellwiseRegularizedCovariance, CellRCov, CellwiseRobustCovariance
+from .multilinear_pca import (
+    RobustMultilinearPCA,
+    CasewiseCellwiseMultilinearPCA,
+    CellwiseRobustMultilinearPCA,
+)
 from .sparse_precision import (
     RobustGraphicalLasso,
     SparseRobustPrecision,
@@ -25,6 +30,17 @@ from .sparse_precision import (
     SGLASSO,
 )
 from .stability import SubspaceStability
+from .ica import TwoScatterICA
+from .sobi import SOBI, RobustSOBI
+from .factor_models import RobustFactorModel, spatial_kendall_matrix
+from .joint_diagonalization import (
+    joint_diagonalize_symmetric,
+    off_diagonal_energy,
+    gain_matrix,
+    minimum_distance_index,
+    amari_index,
+    canonicalize_unmixing,
+)
 from .m_estimators import (
     IterativeMScatter,
     StudentTScatter,
@@ -39,9 +55,23 @@ from .multimodal import ClusterRobustOutlierDetector
 from .preprocessing import RobustMedianImputer
 from .diagnostics import diagnostic_report, RobustDiagnosticReport
 from .parallel import has_openmp, get_num_threads, set_num_threads, thread_limit
+from ._native import native_available
 from .external import top_k_mask, scores_to_submission
 from .metrics import RobustInputMetric, pairwise_mahalanobis_squared
 from .kernels import robust_rbf_kernel, robust_matern_kernel
+from .provenance import (
+    Reference,
+    MethodProvenance,
+    STATUS_LABELS,
+    REFERENCE_CATALOG,
+    METHOD_PROVENANCE,
+    PUBLIC_ESTIMATOR_PROVENANCE_NAMES,
+    canonical_method_name,
+    get_method_provenance,
+    iter_method_provenance,
+    attach_method_provenance,
+)
+
 from .plotting import (
     plot_mahalanobis_diagnostics,
     plot_mahalanobis_qq,
@@ -63,10 +93,26 @@ from .plotting import (
     plot_sparse_cellpca_loadings,
     plot_partial_correlation_network,
     plot_subspace_stability,
+    plot_multilinear_residual_map,
+    plot_multilinear_outlier_map,
 )
 
 __all__ = [
     "RobustPCA",
+    "TwoScatterICA",
+    "SOBI",
+    "RobustSOBI",
+    "RobustFactorModel",
+    "spatial_kendall_matrix",
+    "joint_diagonalize_symmetric",
+    "off_diagonal_energy",
+    "gain_matrix",
+    "minimum_distance_index",
+    "amari_index",
+    "canonicalize_unmixing",
+    "RobustMultilinearPCA",
+    "CasewiseCellwiseMultilinearPCA",
+    "CellwiseRobustMultilinearPCA",
     "DensityPowerRobustPCA",
     "DPDRobustPCA",
     "SubspaceStability",
@@ -141,6 +187,18 @@ __all__ = [
     "plot_sparse_cellpca_loadings",
     "plot_partial_correlation_network",
     "plot_subspace_stability",
+    "plot_multilinear_residual_map",
+    "plot_multilinear_outlier_map",
+    "Reference",
+    "MethodProvenance",
+    "STATUS_LABELS",
+    "REFERENCE_CATALOG",
+    "METHOD_PROVENANCE",
+    "PUBLIC_ESTIMATOR_PROVENANCE_NAMES",
+    "canonical_method_name",
+    "get_method_provenance",
+    "iter_method_provenance",
+    "native_available",
     "has_openmp",
     "get_num_threads",
     "set_num_threads",
@@ -159,3 +217,7 @@ from .features import FeatureGeometry, ClassConditionalFeatureGeometry
 from .pca import RobustPCA
 
 from .monitoring import RobustSubspaceMonitor, SubspaceDriftResult
+
+
+# Expose provenance on public estimator classes and numerical algorithms.
+attach_method_provenance(globals())

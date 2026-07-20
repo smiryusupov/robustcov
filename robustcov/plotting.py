@@ -7,8 +7,21 @@ import csv
 from pathlib import Path
 
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.stats import chi2
+
+try:  # plotting is an optional dependency
+    import matplotlib.pyplot as plt
+except ImportError as exc:  # pragma: no cover - depends on optional installation
+    _matplotlib_import_error = exc
+
+    class _MissingMatplotlib:
+        def __getattr__(self, name):
+            raise ImportError(
+                "Plotting requires matplotlib. Install it with "
+                "`python -m pip install 'robustcov[plot]'`."
+            ) from _matplotlib_import_error
+
+    plt = _MissingMatplotlib()
 
 
 def _maybe_save_show(fig, output_path=None, show=True):
@@ -968,6 +981,86 @@ def plot_subspace_stability(
     ax2.legend()
 
     fig.suptitle(title or "Bootstrap PCA subspace stability")
+    fig.tight_layout()
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig
+
+
+def plot_multilinear_residual_map(
+    estimator,
+    *,
+    index=0,
+    row_labels=None,
+    column_labels=None,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot standardized cell residuals for one fitted matrix observation."""
+    if not hasattr(estimator, "standardized_residuals_"):
+        raise RuntimeError("estimator must be fitted before plotting")
+    index = int(index)
+    residuals = np.asarray(estimator.standardized_residuals_, dtype=float)
+    if index < 0 or index >= residuals.shape[0]:
+        raise IndexError("index is out of range")
+    shown = residuals[index]
+    limit = max(float(np.nanmax(np.abs(shown))), np.finfo(float).eps)
+    fig = plt.figure(figsize=(7.2, 5.0))
+    ax = fig.add_subplot(111)
+    image = ax.imshow(
+        shown,
+        aspect="auto",
+        interpolation="nearest",
+        cmap="coolwarm",
+        vmin=-limit,
+        vmax=limit,
+    )
+    fig.colorbar(image, ax=ax, label="standardized residual")
+    if row_labels is not None:
+        if len(row_labels) != shown.shape[0]:
+            raise ValueError("row_labels must match the number of matrix rows")
+        ax.set_yticks(np.arange(shown.shape[0]), labels=row_labels)
+    else:
+        ax.set_ylabel("row mode")
+    if column_labels is not None:
+        if len(column_labels) != shown.shape[1]:
+            raise ValueError("column_labels must match the number of matrix columns")
+        ax.set_xticks(
+            np.arange(shown.shape[1]), labels=column_labels, rotation=55, ha="right"
+        )
+    else:
+        ax.set_xlabel("column mode")
+    flagged = np.argwhere(estimator.cell_outlier_mask_[index])
+    if flagged.size:
+        ax.scatter(flagged[:, 1], flagged[:, 0], marker="s", facecolors="none", edgecolors="black")
+    ax.set_title(title or f"Multilinear PCA residual map — observation {index}")
+    fig.tight_layout()
+    _maybe_save_show(fig, output_path=output_path, show=show)
+    return fig
+
+
+def plot_multilinear_outlier_map(
+    estimator,
+    *,
+    title=None,
+    output_path=None,
+    show=True,
+):
+    """Plot casewise deviation against the largest absolute cell residual."""
+    if not hasattr(estimator, "case_deviations_"):
+        raise RuntimeError("estimator must be fitted before plotting")
+    x = np.asarray(estimator.case_deviations_, dtype=float)
+    y = np.asarray(estimator.max_cell_residuals_, dtype=float)
+    fig = plt.figure(figsize=(6.4, 5.0))
+    ax = fig.add_subplot(111)
+    regular = ~np.asarray(estimator.case_outlier_mask_, dtype=bool)
+    ax.scatter(x[regular], y[regular], s=28, alpha=0.75, label="regular-weight cases")
+    if np.any(~regular):
+        ax.scatter(x[~regular], y[~regular], s=38, marker="x", label="downweighted cases")
+    ax.set_xlabel("casewise deviation")
+    ax.set_ylabel("maximum absolute cell residual")
+    ax.set_title(title or "Robust multilinear PCA outlier map")
+    ax.legend()
     fig.tight_layout()
     _maybe_save_show(fig, output_path=output_path, show=show)
     return fig

@@ -3,7 +3,9 @@
 This benchmark is deliberately task-specific. It does not combine covariance,
 PCA, matrix-valued estimation, and sparse precision recovery into one ranking.
 Each scenario has known synthetic ground truth and reports metrics appropriate
-to that task.
+to that task.  The current suite covers covariance/scatter, nonlinear kernel
+outlier detection, PCA, matrix/tensor structure, sparse precision, ICA, SOBI,
+and static factor models.
 
 Quick run used by the documentation::
 
@@ -60,6 +62,17 @@ class Profile:
     pca_max_iter: int
     graph_n_alphas: int
     graph_max_iter: int
+    tensor_n: int
+    tensor_rows: int
+    tensor_columns: int
+    ica_n: int
+    ica_p: int
+    sobi_n: int
+    sobi_p: int
+    sobi_lags: int
+    factor_n: int
+    factor_p: int
+    factor_q: int
 
 
 _MEASURE_PYTHON_MEMORY = False
@@ -82,6 +95,17 @@ PROFILES = {
         pca_max_iter=60,
         graph_n_alphas=7,
         graph_max_iter=140,
+        tensor_n=72,
+        tensor_rows=8,
+        tensor_columns=10,
+        ica_n=1200,
+        ica_p=3,
+        sobi_n=1800,
+        sobi_p=4,
+        sobi_lags=12,
+        factor_n=260,
+        factor_p=18,
+        factor_q=3,
     ),
     "full": Profile(
         scatter_n=360,
@@ -99,6 +123,17 @@ PROFILES = {
         pca_max_iter=100,
         graph_n_alphas=12,
         graph_max_iter=220,
+        tensor_n=120,
+        tensor_rows=12,
+        tensor_columns=15,
+        ica_n=4000,
+        ica_p=3,
+        sobi_n=6000,
+        sobi_p=8,
+        sobi_lags=24,
+        factor_n=800,
+        factor_p=50,
+        factor_q=5,
     ),
 }
 
@@ -124,11 +159,25 @@ CSV_FIELDS = [
     "loading_support_f1",
     "loading_sparsity",
     "matrix_covariance_error",
+    "row_mode_subspace_error",
+    "column_mode_subspace_error",
+    "tensor_reconstruction_mae",
     "precision_error",
     "edge_precision",
     "edge_recall",
     "edge_f1",
     "n_edges",
+    "minimum_distance_index",
+    "amari_index",
+    "source_correlation",
+    "joint_diagonalization_error",
+    "reconstruction_error",
+    "factor_count",
+    "factor_count_error",
+    "factor_subspace_error",
+    "factor_score_correlation",
+    "common_component_error",
+    "factor_covariance_error",
     "notes",
 ]
 
@@ -183,6 +232,45 @@ def projection_error(components: np.ndarray, truth_basis: np.ndarray) -> float:
     P_true = truth_orthonormal @ truth_orthonormal.T
     q = truth_basis.shape[0]
     return float(np.linalg.norm(P_est - P_true, ord="fro") / math.sqrt(2.0 * q))
+
+
+def relative_array_error(estimate: np.ndarray, truth: np.ndarray) -> float:
+    """Relative Frobenius error for rectangular arrays."""
+    estimate = np.asarray(estimate, dtype=float)
+    truth = np.asarray(truth, dtype=float)
+    denominator = max(float(np.linalg.norm(truth, ord="fro")), np.finfo(float).tiny)
+    return float(np.linalg.norm(estimate - truth, ord="fro") / denominator)
+
+
+def matched_component_correlation(
+    estimated: np.ndarray,
+    truth: np.ndarray,
+) -> float:
+    """Mean absolute correlation after optimal permutation matching.
+
+    ICA, SOBI, and factor scores are identifiable only up to permutation and
+    sign.  This metric therefore standardizes every component and solves the
+    maximum-correlation assignment before averaging the matched correlations.
+    """
+    estimated = np.asarray(estimated, dtype=float)
+    truth = np.asarray(truth, dtype=float)
+    if estimated.ndim != 2 or truth.ndim != 2:
+        raise ValueError("estimated and truth must be two-dimensional")
+    if estimated.shape[0] != truth.shape[0]:
+        raise ValueError("estimated and truth must have the same number of rows")
+    estimated = estimated - np.mean(estimated, axis=0)
+    truth = truth - np.mean(truth, axis=0)
+    estimated_scale = np.linalg.norm(estimated, axis=0)
+    truth_scale = np.linalg.norm(truth, axis=0)
+    valid_estimated = estimated_scale > np.finfo(float).tiny
+    valid_truth = truth_scale > np.finfo(float).tiny
+    if not np.any(valid_estimated) or not np.any(valid_truth):
+        return float("nan")
+    estimated = estimated[:, valid_estimated] / estimated_scale[valid_estimated]
+    truth = truth[:, valid_truth] / truth_scale[valid_truth]
+    correlations = np.abs(truth.T @ estimated)
+    truth_order, estimate_order = linear_sum_assignment(-correlations)
+    return float(np.mean(correlations[truth_order, estimate_order]))
 
 
 def loading_support_metrics(components: np.ndarray, truth_basis: np.ndarray) -> tuple[float, float, float, float]:
@@ -1072,6 +1160,88 @@ def run_matrix_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dic
 # Sparse precision benchmark
 
 
+
+def _mode_projection_error(estimate: np.ndarray, truth: np.ndarray) -> float:
+    return float(np.linalg.norm(estimate @ estimate.T - truth @ truth.T, ord="fro"))
+
+
+def _classical_mpca(X: np.ndarray, ranks: tuple[int, int]) -> dict[str, np.ndarray]:
+    center = np.nanmedian(X, axis=0)
+    safe = np.where(np.isfinite(X), X, center)
+    centered = safe - center
+    n, r, c = X.shape
+    row_cov = np.einsum("nac,nbc->ab", centered, centered, optimize=True) / (n * c)
+    col_cov = np.einsum("nra,nrb->ab", centered, centered, optimize=True) / (n * r)
+    row_values, row_vectors = np.linalg.eigh(row_cov)
+    col_values, col_vectors = np.linalg.eigh(col_cov)
+    U = row_vectors[:, np.argsort(row_values)[::-1][: ranks[0]]]
+    V = col_vectors[:, np.argsort(col_values)[::-1][: ranks[1]]]
+    cores = np.einsum("au,nab,bv->nuv", U, centered, V, optimize=True)
+    fitted = center + np.einsum("au,nuv,bv->nab", U, cores, V, optimize=True)
+    return {"row_components": U, "column_components": V, "fitted": fitted}
+
+
+def run_tensor_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for repeat in range(repeats):
+        rng = np.random.default_rng(seed + 5000 + repeat)
+        n, r, c = profile.tensor_n, profile.tensor_rows, profile.tensor_columns
+        ranks = (2, 3)
+        U, _ = np.linalg.qr(rng.normal(size=(r, ranks[0])))
+        V, _ = np.linalg.qr(rng.normal(size=(c, ranks[1])))
+        cores = rng.normal(size=(n, *ranks)) * np.linspace(3.0, 1.0, 6).reshape(ranks)
+        center = rng.normal(scale=0.15, size=(r, c))
+        clean = center + np.einsum("au,nuv,bv->nab", U, cores, V, optimize=True)
+        clean += 0.08 * rng.normal(size=clean.shape)
+        X = clean.copy()
+        cell_truth = np.zeros_like(X, dtype=bool)
+        bad = rng.choice(X.size, size=int(0.045 * X.size), replace=False)
+        cell_truth.flat[bad] = True
+        X.flat[bad] += rng.choice([-1.0, 1.0], size=bad.size) * rng.uniform(5.0, 8.0, size=bad.size)
+        case_truth = np.zeros(n, dtype=bool)
+        case_truth[: max(5, int(0.09 * n))] = True
+        X[case_truth] += rng.normal(0.0, 4.0, size=X[case_truth].shape)
+        missing = rng.random(X.shape) < 0.03
+        X[missing] = np.nan
+        regular_cells = ~(cell_truth | case_truth[:, None, None] | missing)
+
+        methods = [
+            ("Median-imputed MPCA", lambda: _classical_mpca(X, ranks), "non-robust multilinear baseline"),
+            ("RobustMultilinearPCA", lambda: rc.RobustMultilinearPCA(ranks=ranks, max_iter=45, backend="auto").fit(X), "casewise/cellwise robust Tucker-2 fit"),
+        ]
+        for name, factory, notes in methods:
+            base = _base_row(family="multilinear pca", scenario="matrix low-rank + mixed contamination", method=name, n=n, p=r * c, repeat=repeat)
+            try:
+                model, seconds, peak = _measure(factory)
+                if isinstance(model, dict):
+                    row_components = model["row_components"]
+                    column_components = model["column_components"]
+                    fitted = model["fitted"]
+                    row_auc = ""
+                    cell_auc = ""
+                else:
+                    row_components = model.row_components_
+                    column_components = model.column_components_
+                    fitted = model.fitted_values_
+                    row_auc = binary_auc(case_truth, model.case_deviations_)
+                    cell_auc = binary_auc(cell_truth[~missing], np.abs(model.standardized_residuals_[~missing]))
+                base.update({
+                    "status": "ok",
+                    "seconds": seconds,
+                    "python_peak_mb": peak,
+                    "row_mode_subspace_error": _mode_projection_error(row_components, U),
+                    "column_mode_subspace_error": _mode_projection_error(column_components, V),
+                    "tensor_reconstruction_mae": float(np.mean(np.abs(fitted[regular_cells] - clean[regular_cells]))),
+                    "row_outlier_auc": row_auc,
+                    "cell_outlier_auc": cell_auc,
+                    "notes": notes,
+                })
+                rows.append(base)
+            except Exception as exc:
+                rows.append(_failure_row(family="multilinear pca", scenario="matrix low-rank + mixed contamination", method=name, n=n, p=r*c, repeat=repeat, exc=exc))
+    return rows
+
+
 def run_graph_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
 
@@ -1244,6 +1414,430 @@ def run_graph_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict
 
 
 # ---------------------------------------------------------------------------
+# Independent component analysis and temporal source separation
+
+
+def _standardize_columns(X: np.ndarray) -> np.ndarray:
+    X = np.asarray(X, dtype=float)
+    centered = X - np.mean(X, axis=0)
+    scale = np.std(centered, axis=0, ddof=0)
+    scale = np.maximum(scale, np.finfo(float).tiny)
+    return centered / scale
+
+
+def make_ica_problem(
+    rng: np.random.Generator,
+    n_samples: int,
+    n_sources: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    columns = []
+    for index in range(n_sources):
+        selector = index % 4
+        if selector == 0:
+            column = rng.laplace(size=n_samples)
+        elif selector == 1:
+            column = rng.uniform(-np.sqrt(3.0), np.sqrt(3.0), size=n_samples)
+        elif selector == 2:
+            column = rng.standard_t(df=5.0, size=n_samples)
+        else:
+            column = rng.logistic(size=n_samples)
+        columns.append(column)
+    sources = _standardize_columns(np.column_stack(columns))
+    mixing = rng.normal(scale=0.35, size=(n_sources, n_sources))
+    mixing += np.diag(np.linspace(1.0, 1.8, n_sources))
+    observations = sources @ mixing.T
+    return observations, sources, mixing
+
+
+def add_impulsive_rows(
+    rng: np.random.Generator,
+    X: np.ndarray,
+    fraction: float,
+    magnitude: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    contaminated = np.asarray(X, dtype=float).copy()
+    count = max(1, int(round(fraction * contaminated.shape[0])))
+    rows = rng.choice(contaminated.shape[0], size=count, replace=False)
+    feature_scale = np.maximum(np.std(contaminated, axis=0), np.finfo(float).tiny)
+    contaminated[rows] += rng.normal(
+        scale=magnitude * feature_scale,
+        size=(count, contaminated.shape[1]),
+    )
+    labels = np.zeros(contaminated.shape[0], dtype=bool)
+    labels[rows] = True
+    return contaminated, labels
+
+
+def _fastica_factory(seed: int) -> Callable[[], Any] | None:
+    try:
+        from sklearn.decomposition import FastICA
+    except Exception:
+        return None
+    return lambda: FastICA(
+        whiten="unit-variance",
+        algorithm="parallel",
+        fun="logcosh",
+        max_iter=1200,
+        tol=1e-6,
+        random_state=seed,
+    )
+
+
+def _source_separation_metrics(
+    model: Any,
+    clean_observations: np.ndarray,
+    truth_sources: np.ndarray,
+    mixing: np.ndarray,
+) -> dict[str, float | str]:
+    if hasattr(model, "unmixing_"):
+        unmixing = np.asarray(model.unmixing_, dtype=float)
+    elif hasattr(model, "components_"):
+        unmixing = np.asarray(model.components_, dtype=float)
+    else:
+        raise AttributeError("source-separation model must expose unmixing_ or components_")
+    estimated_sources = np.asarray(model.transform(clean_observations), dtype=float)
+    reconstructed = np.asarray(model.inverse_transform(estimated_sources), dtype=float)
+    return {
+        "minimum_distance_index": rc.minimum_distance_index(unmixing, mixing),
+        "amari_index": rc.amari_index(unmixing, mixing),
+        "source_correlation": matched_component_correlation(
+            estimated_sources, truth_sources
+        ),
+        "reconstruction_error": relative_array_error(
+            reconstructed, clean_observations
+        ),
+        "joint_diagonalization_error": _finite_float(
+            getattr(model, "off_diagonal_energy_", "")
+        ),
+    }
+
+
+def run_ica_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for repeat in range(repeats):
+        rng = np.random.default_rng(seed + 7000 + repeat)
+        clean, sources, mixing = make_ica_problem(rng, profile.ica_n, profile.ica_p)
+        contaminated, _ = add_impulsive_rows(rng, clean, fraction=0.035, magnitude=18.0)
+        scenarios = [
+            ("clean non-Gaussian mixture", clean),
+            ("impulsive row contamination", contaminated),
+        ]
+        for scenario, training_data in scenarios:
+            methods: list[tuple[str, Callable[[], Any], str]] = [
+                (
+                    "Classical two-scatter ICA",
+                    lambda: rc.TwoScatterICA(
+                        scatter_estimator=EmpiricalScatter(),
+                        radial_clip_quantile=1.0,
+                        random_state=seed,
+                    ),
+                    "empirical whitening and untrimmed radial scatter",
+                ),
+                (
+                    "TwoScatterICA",
+                    lambda: rc.TwoScatterICA(
+                        radial_clip_quantile=0.90,
+                        random_state=seed,
+                    ),
+                    "robust Student-t whitening with bounded radial scatter",
+                ),
+                (
+                    "TwoScatterICA(symmetrized)",
+                    lambda: rc.TwoScatterICA(
+                        radial_clip_quantile=0.90,
+                        symmetrize=True,
+                        max_pairs=12000 if profile.ica_n <= 1500 else 30000,
+                        random_state=seed,
+                    ),
+                    "pair-difference robust two-scatter ICA",
+                ),
+            ]
+            fastica = _fastica_factory(seed)
+            if fastica is not None:
+                methods.append(("sklearn FastICA", fastica, "common non-robust ICA baseline"))
+
+            for name, factory, note in methods:
+                base = _base_row(
+                    family="ica",
+                    scenario=scenario,
+                    method=name,
+                    n=training_data.shape[0],
+                    p=training_data.shape[1],
+                    repeat=repeat,
+                )
+                try:
+                    model, seconds, peak = _measure(
+                        lambda factory=factory: factory().fit(training_data)
+                    )
+                    base.update(_source_separation_metrics(
+                        model, clean, sources, mixing
+                    ))
+                    base["seconds"] = seconds
+                    base["python_peak_mb"] = peak
+                    base["notes"] = note
+                    rows.append(base)
+                except Exception as exc:
+                    rows.append(_failure_row(
+                        family="ica",
+                        scenario=scenario,
+                        method=name,
+                        n=training_data.shape[0],
+                        p=training_data.shape[1],
+                        repeat=repeat,
+                        exc=exc,
+                    ))
+    return rows
+
+
+def make_temporal_sources(
+    rng: np.random.Generator,
+    n_samples: int,
+    n_sources: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    coefficients = np.linspace(-0.80, 0.90, n_sources)
+    innovations = rng.standard_t(df=6.0, size=(n_samples + 200, n_sources))
+    sources = np.zeros_like(innovations)
+    for index in range(1, sources.shape[0]):
+        sources[index] = coefficients * sources[index - 1] + innovations[index]
+    sources = _standardize_columns(sources[200:])
+    mixing = rng.normal(scale=0.30, size=(n_sources, n_sources))
+    mixing += np.diag(np.linspace(1.0, 1.7, n_sources))
+    observations = sources @ mixing.T
+    return observations, sources, mixing
+
+
+def run_sobi_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for repeat in range(repeats):
+        rng = np.random.default_rng(seed + 8000 + repeat)
+        clean, sources, mixing = make_temporal_sources(
+            rng, profile.sobi_n, profile.sobi_p
+        )
+        contaminated, _ = add_impulsive_rows(
+            rng, clean, fraction=0.025, magnitude=25.0
+        )
+        for scenario, training_data in [
+            ("clean temporally correlated sources", clean),
+            ("impulsive temporal contamination", contaminated),
+        ]:
+            methods: list[tuple[str, Callable[[], Any], str]] = [
+                (
+                    "SOBI",
+                    lambda: rc.SOBI(
+                        lags=profile.sobi_lags,
+                        backend="auto",
+                    ),
+                    "classical second-order blind identification",
+                ),
+                (
+                    "RobustSOBI",
+                    lambda: rc.RobustSOBI(
+                        lags=profile.sobi_lags,
+                        lag_weighting="huber",
+                        backend="auto",
+                    ),
+                    "robust whitening and weighted lag scatters",
+                ),
+            ]
+            fastica = _fastica_factory(seed)
+            if fastica is not None:
+                methods.append(("sklearn FastICA", fastica, "non-temporal ICA baseline"))
+            for name, factory, note in methods:
+                base = _base_row(
+                    family="sobi",
+                    scenario=scenario,
+                    method=name,
+                    n=training_data.shape[0],
+                    p=training_data.shape[1],
+                    repeat=repeat,
+                )
+                try:
+                    model, seconds, peak = _measure(
+                        lambda factory=factory: factory().fit(training_data)
+                    )
+                    base.update(_source_separation_metrics(
+                        model, clean, sources, mixing
+                    ))
+                    base["seconds"] = seconds
+                    base["python_peak_mb"] = peak
+                    base["notes"] = note
+                    rows.append(base)
+                except Exception as exc:
+                    rows.append(_failure_row(
+                        family="sobi",
+                        scenario=scenario,
+                        method=name,
+                        n=training_data.shape[0],
+                        p=training_data.shape[1],
+                        repeat=repeat,
+                        exc=exc,
+                    ))
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# Static robust factor models
+
+
+class EmpiricalFactorModel:
+    """Classical PCA factor-model baseline used only by the benchmark."""
+
+    def __init__(self, n_factors: int):
+        self.n_factors = int(n_factors)
+
+    def fit(self, X: np.ndarray) -> "EmpiricalFactorModel":
+        X = np.asarray(X, dtype=float)
+        self.location_ = np.mean(X, axis=0)
+        centered = X - self.location_
+        _, _, right = np.linalg.svd(centered, full_matrices=False)
+        self.loadings_ = right[: self.n_factors].T
+        self.components_ = self.loadings_.T
+        self.factor_scores_ = centered @ self.loadings_
+        self.common_component_ = self.factor_scores_ @ self.loadings_.T + self.location_
+        self.idiosyncratic_ = X - self.common_component_
+        factor_covariance = np.cov(self.factor_scores_, rowvar=False, ddof=1)
+        residual_variance = np.var(self.idiosyncratic_, axis=0, ddof=1)
+        self.covariance_ = (
+            self.loadings_ @ np.atleast_2d(factor_covariance) @ self.loadings_.T
+            + np.diag(residual_variance)
+        )
+        self.n_factors_ = self.n_factors
+        return self
+
+    def transform(self, X: np.ndarray) -> np.ndarray:
+        return (np.asarray(X, dtype=float) - self.location_) @ self.loadings_
+
+    def inverse_transform(self, factors: np.ndarray) -> np.ndarray:
+        return np.asarray(factors, dtype=float) @ self.loadings_.T + self.location_
+
+
+def make_factor_problem(
+    rng: np.random.Generator,
+    n_samples: int,
+    n_features: int,
+    n_factors: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    raw = rng.normal(size=(n_features, n_factors))
+    loadings, _ = np.linalg.qr(raw)
+    strengths = np.linspace(2.8, 1.3, n_factors)
+    factors = rng.standard_t(df=5.0, size=(n_samples, n_factors)) * strengths
+    location = rng.normal(scale=0.2, size=n_features)
+    common = factors @ loadings.T + location
+    residual_scale = np.linspace(0.18, 0.42, n_features)
+    clean = common + rng.normal(scale=residual_scale, size=(n_samples, n_features))
+    covariance = np.cov(clean, rowvar=False, ddof=1)
+    return clean, factors, loadings, common, covariance
+
+
+def run_factor_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for repeat in range(repeats):
+        rng = np.random.default_rng(seed + 9000 + repeat)
+        clean, factors, loadings, common, truth_covariance = make_factor_problem(
+            rng,
+            profile.factor_n,
+            profile.factor_p,
+            profile.factor_q,
+        )
+        contaminated, _ = add_impulsive_rows(
+            rng, clean, fraction=0.10, magnitude=10.0
+        )
+        for scenario, training_data in [
+            ("heavy-tailed factor model", clean),
+            ("factor model + row contamination", contaminated),
+        ]:
+            methods: list[tuple[str, Callable[[], Any], str]] = [
+                (
+                    "Empirical PCA factors",
+                    lambda: EmpiricalFactorModel(profile.factor_q),
+                    "classical PCA factor baseline with known factor count",
+                ),
+                (
+                    "RobustFactorModel(kendall)",
+                    lambda: rc.RobustFactorModel(
+                        n_factors=profile.factor_q,
+                        method="kendall",
+                        max_pairs=15000,
+                        random_state=seed,
+                    ),
+                    "spatial-Kendall loading subspace",
+                ),
+                (
+                    "RobustFactorModel(huber)",
+                    lambda: rc.RobustFactorModel(
+                        n_factors=profile.factor_q,
+                        method="huber",
+                        max_pairs=15000,
+                        max_iter=80,
+                        tol=1e-6,
+                        random_state=seed,
+                    ),
+                    "Kendall initialization with Huber alternating refinement",
+                ),
+                (
+                    "RobustFactorModel(auto)",
+                    lambda: rc.RobustFactorModel(
+                        n_factors="auto",
+                        method="kendall",
+                        max_factors=min(8, profile.factor_p - 1),
+                        max_pairs=15000,
+                        random_state=seed,
+                    ),
+                    "automatic factor-count selection from Kendall eigenvalue ratios",
+                ),
+            ]
+            for name, factory, note in methods:
+                base = _base_row(
+                    family="factor model",
+                    scenario=scenario,
+                    method=name,
+                    n=training_data.shape[0],
+                    p=training_data.shape[1],
+                    repeat=repeat,
+                )
+                try:
+                    model, seconds, peak = _measure(
+                        lambda factory=factory: factory().fit(training_data)
+                    )
+                    estimated_factors = np.asarray(model.transform(clean), dtype=float)
+                    estimated_common = np.asarray(
+                        model.inverse_transform(estimated_factors), dtype=float
+                    )
+                    base["seconds"] = seconds
+                    base["python_peak_mb"] = peak
+                    base["factor_count"] = int(model.n_factors_)
+                    base["factor_count_error"] = abs(
+                        int(model.n_factors_) - profile.factor_q
+                    )
+                    base["factor_subspace_error"] = projection_error(
+                        np.asarray(model.loadings_, dtype=float).T,
+                        loadings.T,
+                    )
+                    base["factor_score_correlation"] = matched_component_correlation(
+                        estimated_factors, factors
+                    )
+                    base["common_component_error"] = relative_array_error(
+                        estimated_common, common
+                    )
+                    base["factor_covariance_error"] = relative_frobenius(
+                        np.asarray(model.covariance_, dtype=float), truth_covariance
+                    )
+                    base["notes"] = note
+                    rows.append(base)
+                except Exception as exc:
+                    rows.append(_failure_row(
+                        family="factor model",
+                        scenario=scenario,
+                        method=name,
+                        n=training_data.shape[0],
+                        p=training_data.shape[1],
+                        repeat=repeat,
+                        exc=exc,
+                    ))
+    return rows
+
+
+# ---------------------------------------------------------------------------
 # Output and generated documentation
 
 
@@ -1390,6 +1984,19 @@ def write_rst(path: Path, rows: list[dict[str, Any]], profile_name: str, repeats
         "24 18 12 9 30",
     ))
 
+    tensor_rows = [row for row in aggregated if row["family"] == "multilinear pca"]
+    lines.extend(["Matrix-valued low-rank models", "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", ""])
+    table = [[
+        str(row["method"]), _format(row["row_mode_subspace_error"]),
+        _format(row["column_mode_subspace_error"]), _format(row["tensor_reconstruction_mae"]),
+        _format(row["row_outlier_auc"]), _format(row["cell_outlier_auc"]), _format(row["seconds"]),
+    ] for row in tensor_rows]
+    lines.append(_rst_table(
+        ["Method", "Row-mode error", "Column-mode error", "Clean-cell MAE", "Row AUROC", "Cell AUROC", "Seconds"],
+        table,
+        "25 11 13 11 9 9 8",
+    ))
+
     graph_rows = [row for row in aggregated if row["family"] == "sparse precision"]
     lines.extend(["Sparse conditional-dependence graphs", "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", ""])
     table = [[
@@ -1402,6 +2009,55 @@ def write_rst(path: Path, rows: list[dict[str, Any]], profile_name: str, repeats
         table,
         "24 17 11 10 9 7 8",
     ))
+
+    ica_rows = [row for row in aggregated if row["family"] == "ica"]
+    if ica_rows:
+        lines.extend(["Independent component analysis", "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", ""])
+        table = [[
+            str(row["scenario"]), str(row["method"]),
+            _format(row["minimum_distance_index"]), _format(row["amari_index"]),
+            _format(row["source_correlation"]), _format(row["seconds"]),
+            str(row["status"]),
+        ] for row in ica_rows]
+        lines.append(_rst_table(
+            ["Scenario", "Method", "MDI", "Amari", "Source corr.", "Seconds", "Status"],
+            table,
+            "24 27 8 8 10 8 8",
+        ))
+
+    sobi_rows = [row for row in aggregated if row["family"] == "sobi"]
+    if sobi_rows:
+        lines.extend(["Temporal source separation", "~~~~~~~~~~~~~~~~~~~~~~~~~~", ""])
+        table = [[
+            str(row["scenario"]), str(row["method"]),
+            _format(row["minimum_distance_index"]),
+            _format(row["source_correlation"]),
+            _format(row["joint_diagonalization_error"]),
+            _format(row["seconds"]), str(row["status"]),
+        ] for row in sobi_rows]
+        lines.append(_rst_table(
+            ["Scenario", "Method", "MDI", "Source corr.", "Off-diagonal energy", "Seconds", "Status"],
+            table,
+            "25 22 8 10 14 8 8",
+        ))
+
+    factor_rows = [row for row in aggregated if row["family"] == "factor model"]
+    if factor_rows:
+        lines.extend(["Static factor models", "~~~~~~~~~~~~~~~~~~~~", ""])
+        table = [[
+            str(row["scenario"]), str(row["method"]),
+            _format(row["factor_subspace_error"]),
+            _format(row["factor_score_correlation"]),
+            _format(row["common_component_error"]),
+            _format(row["factor_covariance_error"]),
+            _format(row["factor_count_error"], digits=0),
+            _format(row["seconds"]),
+        ] for row in factor_rows]
+        lines.append(_rst_table(
+            ["Scenario", "Method", "Subspace error", "Score corr.", "Common error", "Covariance error", "Count error", "Seconds"],
+            table,
+            "24 27 11 9 11 12 9 8",
+        ))
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines))
@@ -1419,7 +2075,12 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, default=None, help="Default: 1. Use 3 or more for stable timing comparisons.")
     parser.add_argument("--seed", type=int, default=20260718)
     parser.add_argument("--measure-python-memory", action="store_true", help="Record tracemalloc peak memory. This slows Python-heavy methods and excludes native allocations.")
-    parser.add_argument("--families", nargs="+", choices=["scatter", "kernel", "pca", "matrix", "graph"], default=["scatter", "kernel", "pca", "matrix", "graph"])
+    parser.add_argument(
+        "--families",
+        nargs="+",
+        choices=["scatter", "kernel", "pca", "matrix", "tensor", "graph", "ica", "sobi", "factor"],
+        default=["scatter", "kernel", "pca", "matrix", "tensor", "graph", "ica", "sobi", "factor"],
+    )
     parser.add_argument("--csv", type=Path, default=None)
     parser.add_argument("--rst", type=Path, default=None)
     args = parser.parse_args()
@@ -1441,8 +2102,16 @@ def main() -> None:
         rows.extend(run_pca_benchmarks(profile, repeats, args.seed))
     if "matrix" in args.families:
         rows.extend(run_matrix_benchmarks(profile, repeats, args.seed))
+    if "tensor" in args.families:
+        rows.extend(run_tensor_benchmarks(profile, repeats, args.seed))
     if "graph" in args.families:
         rows.extend(run_graph_benchmarks(profile, repeats, args.seed))
+    if "ica" in args.families:
+        rows.extend(run_ica_benchmarks(profile, repeats, args.seed))
+    if "sobi" in args.families:
+        rows.extend(run_sobi_benchmarks(profile, repeats, args.seed))
+    if "factor" in args.families:
+        rows.extend(run_factor_benchmarks(profile, repeats, args.seed))
 
     print_rows(rows)
     if args.csv is not None:

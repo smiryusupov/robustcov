@@ -1,13 +1,32 @@
 cff-version: 1.2.0
 title: "robustcov"
-message: "If you use robustcov, please cite it using this metadata."
+message: >-
+  If you use robustcov, cite the software release and the primary methodological
+  references for the estimators used. See the Methods, provenance, and
+  references page in the documentation.
 type: software
 authors:
   - family-names: "Miryusupov"
     given-names: "Shohruh"
     email: "shohruh@miryusupov.com"
 repository-code: "https://github.com/smiryusupov/robustcov"
-url: "https://github.com/smiryusupov/robustcov"
+url: "https://robustcov.readthedocs.io/"
 license: "Apache-2.0"
 version: "0.0.2"
 date-released: "2026-06-07"
+abstract: >-
+  robustcov provides robust covariance, scatter, precision, PCA, ICA, SOBI,
+  factor-model, anomaly-detection, feature-geometry, and monitoring workflows
+  through a common Python/C++ API. Method-level documentation distinguishes
+  published algorithms, literature-based adaptations, and package-specific
+  compositions.
+keywords:
+  - robust statistics
+  - covariance estimation
+  - scatter estimation
+  - principal component analysis
+  - independent component analysis
+  - blind source separation
+  - factor models
+  - anomaly detection
+  - sparse precision matrices

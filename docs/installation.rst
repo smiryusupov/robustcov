@@ -13,6 +13,31 @@ After a release is published, install ``robustcov`` from PyPI:
 
 Release wheels are built for CPython 3.12, 3.13, and 3.14 on Ubuntu, Windows, and macOS. The project contains a C++/pybind11 extension built with ``scikit-build-core``.
 
+Optional plotting dependency
+----------------------------
+
+The numerical core does not require Matplotlib. Install plotting helpers with:
+
+.. code-block:: bash
+
+   python -m pip install "robustcov[plot]"
+
+Importing ``robustcov`` without Matplotlib remains supported. Calling a plotting helper without the extra raises an error that points to the command above.
+
+Native-free installation behavior
+---------------------------------
+
+``robustcov`` can be imported when the compiled extension is unavailable. NumPy-backed estimators continue to work, ``robustcov.native_available()`` returns ``False``, and thread helpers report a serial fallback. Native-only estimators such as ``FastMCD`` and ``TylerShape`` fail at ``fit`` time with an actionable message rather than breaking the package import.
+
+For packaging tests or constrained environments, build a native-free wheel explicitly:
+
+.. code-block:: bash
+
+   python -m pip install build
+   python -m build --wheel -Ccmake.define.ROBUSTCOV_BUILD_NATIVE=OFF
+
+Release wheels should continue to include the native extension. The native-free option is a fallback and packaging-validation path, not a replacement for the normal release build.
+
 Conda environment install
 -------------------------
 

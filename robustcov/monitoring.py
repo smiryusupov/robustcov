@@ -10,6 +10,8 @@ from typing import Any, Iterable
 
 import numpy as np
 
+from ._estimator import EstimatorMixin
+
 from .geometry import affine_invariant_distance, det_normalize
 from .pca import RobustPCA
 
@@ -39,17 +41,24 @@ def _as_2d_finite_array(X: np.ndarray, *, name: str = "X") -> np.ndarray:
 
 
 def _robust_center_scale(values: np.ndarray) -> tuple[float, float]:
+    """Return robust center and scale without imposing absolute data units."""
     values = np.asarray(values, dtype=float)
     center = float(np.median(values))
+    magnitude = max(
+        float(np.max(np.abs(values), initial=0.0)),
+        np.finfo(float).tiny,
+    )
+    resolution = 100.0 * np.finfo(float).eps * magnitude
+
     mad = float(np.median(np.abs(values - center)))
     scale = 1.4826 * mad
-    if not np.isfinite(scale) or scale <= 100.0 * np.finfo(float).eps:
+    if not np.isfinite(scale) or scale <= resolution:
         q25, q75 = np.quantile(values, [0.25, 0.75])
         scale = float((q75 - q25) / 1.349)
-    if not np.isfinite(scale) or scale <= 100.0 * np.finfo(float).eps:
+    if not np.isfinite(scale) or scale <= resolution:
         scale = float(np.std(values))
-    if not np.isfinite(scale) or scale <= 100.0 * np.finfo(float).eps:
-        scale = max(abs(center), 1.0) * 1e-12
+    if not np.isfinite(scale) or scale <= resolution:
+        scale = max(1e-12 * magnitude, np.finfo(float).tiny)
     return center, scale
 
 
@@ -181,7 +190,7 @@ class SubspaceDriftResult:
 
 
 @dataclass
-class RobustSubspaceMonitor:
+class RobustSubspaceMonitor(EstimatorMixin):
     """Monitor rolling multivariate drift relative to a robust reference model.
 
     The monitor fits one frozen :class:`~robustcov.RobustPCA` reference model and

@@ -91,8 +91,18 @@ def _robust_standardize(
 
     fallback = np.std(X, axis=0, ddof=1)
     positive = scale[np.isfinite(scale) & (scale > 0)]
-    reference = float(np.median(positive)) if positive.size else 1.0
-    floor = max(np.sqrt(_EPS) * max(reference, 1.0), np.finfo(float).tiny)
+    fallback_positive = fallback[np.isfinite(fallback) & (fallback > 0)]
+    if positive.size:
+        reference = float(np.median(positive))
+    elif fallback_positive.size:
+        reference = float(np.median(fallback_positive))
+    else:
+        reference = 1.0
+    # Use a relative floor.  An absolute unit-scale floor destroys scale
+    # equivariance for legitimately small-valued data (for example, measurements
+    # expressed in meters instead of nanometers).  Truly constant columns still
+    # fall back to 1.0 so they standardize to zeros and can be regularized later.
+    floor = max(np.sqrt(_EPS) * reference, np.finfo(float).tiny)
     scale = np.where(np.isfinite(scale) & (scale > floor), scale, fallback)
     scale = np.where(np.isfinite(scale) & (scale > floor), scale, 1.0)
     U = (X - center) / scale
