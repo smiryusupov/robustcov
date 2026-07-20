@@ -114,3 +114,36 @@ def test_new_method_examples_run(script: str, expected_text: str, tmp_path):
         "distributionally_robust_pca_drift_monitoring.py": {"drift_timeline.png", "alert_rates.png", "feature_contributions.png"},
     }[script]
     assert expected_images <= {path.name for path in outdir.glob("*.png")}
+
+
+def test_example_navigation_stays_category_only():
+    """The global sidebar should expose categories, not every example page."""
+
+    gallery_index = (DOCS / "use_case_gallery.rst").read_text(encoding="utf-8")
+    assert "All detailed pages" not in gallery_index
+    assert "   gallery/" not in gallery_index
+
+    expected_categories = {
+        "gallery_methods/ica_source_separation",
+        "gallery_methods/pca_factor_models",
+        "gallery_methods/robust_estimators",
+        "gallery_methods/anomaly_monitoring",
+        "gallery_topics/finance_and_risk",
+        "gallery_topics/fraud_security_and_networks",
+        "gallery_topics/sensors_industrial_quality",
+        "gallery_topics/biomedical_images_embeddings",
+        "gallery_topics/real_ml_datasets",
+        "gallery_topics/ml_preprocessing",
+    }
+    for category in expected_categories:
+        assert f"   {category}" in gallery_index
+
+    for category_dir in (DOCS / "gallery_methods", DOCS / "gallery_topics"):
+        for page in category_dir.glob("*.rst"):
+            text = page.read_text(encoding="utf-8")
+            assert ".. toctree::" not in text, page
+
+    detail_pages = sorted((DOCS / "gallery").glob("*.rst"))
+    assert detail_pages
+    for page in detail_pages:
+        assert page.read_text(encoding="utf-8").startswith(":orphan:\n"), page

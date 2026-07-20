@@ -80,18 +80,5 @@ assets with:
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/distributionally_robust_pca
-   ../gallery/distributionally_robust_pca_drift_monitoring
-   ../gallery/robust_factor_model
-   ../gallery/robust_pca_yield_curve
-   ../gallery/robust_pca_subspace_stability
-   ../gallery/robust_pca_dependent_stability
-   ../gallery/robust_pca_market_risk
-   ../gallery/robust_pca_embedding_monitoring
-   ../gallery/cellpca_process_spectra
-   ../gallery/sparse_cellpca_spectra
-   ../gallery/density_power_pca
-   ../gallery/robust_multilinear_pca
+Open an example from the cards above. Individual examples are intentionally
+kept out of the global documentation sidebar.

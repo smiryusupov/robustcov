@@ -1,3 +1,5 @@
+:orphan:
+
 Finance-style heavy-tail covariance
 ===================================
 

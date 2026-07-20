@@ -53,17 +53,5 @@ Runnable examples
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/finance_risk
-   ../gallery/portfolio_stress
-   ../gallery/mrcd_high_dimensional_outliers
-   ../gallery/kmrcd_nonlinear_manifold
-   ../gallery/dets_detmm_tradeoff
-   ../gallery/cellmcd_market_data
-   ../gallery/cellrcov_high_dimensional
-   ../gallery/mmcd_sensor_windows
-   ../gallery/robust_graphical_lasso_market_network
-   ../gallery/spatial_sign_graphical_lasso
-   ../geometry
+Open an example from the cards above. Individual examples are intentionally
+kept out of the global documentation sidebar.

@@ -1,3 +1,5 @@
+:orphan:
+
 CellMCD for isolated bad ticks
 ==============================
 

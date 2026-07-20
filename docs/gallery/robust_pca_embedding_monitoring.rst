@@ -1,3 +1,5 @@
+:orphan:
+
 Monitoring production embeddings with RobustPCA
 ================================================
 

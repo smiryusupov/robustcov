@@ -1,3 +1,5 @@
+:orphan:
+
 Sparse CellPCA for interpretable spectra
 ========================================
 

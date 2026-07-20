@@ -44,9 +44,5 @@ embedded in the documentation, run:
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/ica_two_scatter
-   ../gallery/sobi_source_separation
-   ../source_separation_factor_models
+Open an example from the cards above. Individual examples are intentionally
+kept out of the global documentation sidebar.

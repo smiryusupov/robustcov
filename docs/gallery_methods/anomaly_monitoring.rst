@@ -59,19 +59,5 @@ Runnable examples
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/fraud_screening
-   ../gallery/network_traffic
-   ../gallery/sensor_anomaly
-   ../gallery/maintenance_monitoring
-   ../gallery/quality_control
-   ../gallery/robust_subspace_monitoring
-   ../gallery/distributionally_robust_pca_drift_monitoring
-   ../gallery/feature_geometry_drift_detection
-   ../gallery/feature_geometry_embedding_monitoring
-   ../gallery/breast_cancer_screening
-   ../gallery/digits_one_class
-   ../gallery/wine_class_screening
-   ../gallery/ml_preprocessing
+Open an example from the cards above. Individual examples are intentionally
+kept out of the global documentation sidebar.

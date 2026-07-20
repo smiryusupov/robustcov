@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Simplified the example-gallery navigation so the sidebar exposes only method
+  and application-domain landing pages; individual examples remain linked from
+  those pages without expanding into a long global list.
 - Reorganized the documentation and README around user goals, clarified the package
   promise and boundaries, grouped method pages hierarchically, and focused the
   public external benchmark gallery on reviewed C-MAPSS snapshots.

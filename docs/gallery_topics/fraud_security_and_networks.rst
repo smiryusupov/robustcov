@@ -26,8 +26,5 @@ Start with the first card if you want the simplest demonstration.  Then move to 
 Detailed pages
 --------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ../gallery/fraud_screening
-   ../gallery/network_traffic
+Open an example from the cards above. Individual examples are intentionally
+kept out of the global documentation sidebar.

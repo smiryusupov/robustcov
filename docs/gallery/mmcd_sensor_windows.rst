@@ -1,3 +1,5 @@
+:orphan:
+
 Matrix MCD for multichannel sensor windows
 ==========================================
 

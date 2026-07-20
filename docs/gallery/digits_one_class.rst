@@ -1,3 +1,5 @@
+:orphan:
+
 Digits one-class anomaly detection
 ==================================
 

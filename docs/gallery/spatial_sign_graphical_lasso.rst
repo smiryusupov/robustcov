@@ -1,3 +1,5 @@
+:orphan:
+
 Spatial-sign graph under radial heavy tails
 ===========================================
 

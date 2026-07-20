@@ -1,3 +1,5 @@
+:orphan:
+
 Portfolio covariance stress comparison
 ======================================
 

@@ -1,3 +1,5 @@
+:orphan:
+
 Bootstrap stability of yield-curve factors
 ===========================================
 

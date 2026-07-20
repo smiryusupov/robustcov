@@ -1,3 +1,5 @@
+:orphan:
+
 Sensor anomaly detection
 ========================
 

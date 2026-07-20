@@ -1,3 +1,5 @@
+:orphan:
+
 Robust GP kernel / input metric
 ===============================
 

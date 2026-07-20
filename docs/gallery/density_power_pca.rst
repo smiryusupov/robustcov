@@ -1,3 +1,5 @@
+:orphan:
+
 Density-power PCA under mixed contamination
 ===========================================
 

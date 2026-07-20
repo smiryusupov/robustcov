@@ -1,3 +1,5 @@
+:orphan:
+
 Image-feature one-class anomaly detection
 =========================================
 

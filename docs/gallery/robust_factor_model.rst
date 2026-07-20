@@ -1,3 +1,5 @@
+:orphan:
+
 Robust static factor model
 ==========================
 

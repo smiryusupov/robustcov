@@ -1,3 +1,5 @@
+:orphan:
+
 Kernel MRCD on a curved manifold
 ================================
 

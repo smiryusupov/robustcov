@@ -1,3 +1,5 @@
+:orphan:
+
 Predictive-maintenance monitoring
 =================================
 

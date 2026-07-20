@@ -1,3 +1,5 @@
+:orphan:
+
 Robust feature geometry for synthetic OOD
 =========================================
 
