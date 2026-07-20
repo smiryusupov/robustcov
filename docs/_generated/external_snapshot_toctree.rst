@@ -5,3 +5,4 @@
    :hidden:
 
    external_results/cmapss_fd002
+   external_results/cmapss_fd004

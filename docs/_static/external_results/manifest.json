@@ -8,6 +8,14 @@
       "preview": "risk_over_engine_life.png",
       "slug": "cmapss_fd002",
       "title": "NASA C-MAPSS FD002"
+    },
+    {
+      "description": "FD004 contains six operating conditions and two fault modes, providing the harder anticipated-regime-versus-degradation benchmark.",
+      "generated_at": "2026-07-20T13:37:22+00:00",
+      "git_commit": "6f93e1d3c6c53e85a2fcbd38f9e44c2e03c5dbfd",
+      "preview": "risk_over_engine_life.png",
+      "slug": "cmapss_fd004",
+      "title": "NASA C-MAPSS FD004"
     }
   ]
 }
