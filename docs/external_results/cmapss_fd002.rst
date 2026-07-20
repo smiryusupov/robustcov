@@ -45,9 +45,9 @@ Provenance
    * - Field
      - Value
    * - Generated (UTC)
-     - 2026-07-20T07:40:47+00:00
+     - 2026-07-20T10:27:09+00:00
    * - Git commit
-     - ``5f9696f95486b9d31f0e419da705e2961fddd03e``
+     - ``d22bcb9b8fa8b8bd8293d03aeb49bda5d621e57f``
    * - Command
      - ``python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002 --outdir results/external/cmapss_fd002``
    * - Archive SHA-256

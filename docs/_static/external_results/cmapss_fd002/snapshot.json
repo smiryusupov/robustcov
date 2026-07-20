@@ -19,21 +19,23 @@
       "size_bytes": 681
     }
   },
-  "generated_at": "2026-07-20T07:40:47+00:00",
-  "git_commit": "5f9696f95486b9d31f0e419da705e2961fddd03e",
+  "generated_at": "2026-07-20T10:27:09+00:00",
+  "git_commit": "d22bcb9b8fa8b8bd8293d03aeb49bda5d621e57f",
   "metadata": {
     "archive_sha256": "c9c5dec12a945a82e8bb4446589d7fb3cc057b5e5d81fa1a12e25ee9912ad3b2",
     "calibration_life_fraction": "(0.20,0.35]",
+    "calibration_p_value_resolution": "{'Empirical PCA': 0.0012468827930174563, 'DRO-PCA': 0.0012468827930174563}",
     "dataset_citation": "A. Saxena and K. Goebel (2008). Turbofan Engine Degradation Simulation Data Set, NASA Ames Prognostics Data Repository, NASA Ames Research Center.",
     "dataset_homepage": "https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data",
     "dataset_subset": "FD002",
     "exact_worst_case_risk": "0.9093038515816535",
+    "false_alarm_rate": "0.05",
     "n_components": "6",
     "n_operating_regimes": "9",
     "n_sensors_retained": "21",
     "radius": "4.493547565958199",
     "reference_life_fraction": "<=0.20",
-    "threshold": "finite_sample_calibration_window_order_statistic",
+    "threshold": "split_conformal_upper_tail_p_value",
     "transport_geometry": "healthy_operating_regime_mean_shift_diagonal"
   },
   "protocol": "DRO-PCA degradation monitoring across operating regimes",
