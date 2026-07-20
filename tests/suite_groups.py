@@ -37,7 +37,6 @@ PRIMARY_MODULES: dict[str, frozenset[str]] = {
             "test_distributionally_robust_pca_benchmark.py",
             "test_latent_structure_benchmarks.py",
             "test_method_comparison_benchmark.py",
-        "test_example_gallery_organization.py",
             "test_example_gallery_organization.py",
         }
     ),
@@ -46,6 +45,7 @@ PRIMARY_MODULES: dict[str, frozenset[str]] = {
         {
             "test_packaging_resilience.py",
             "test_release_readiness.py",
+            "test_release_rehearsal.py",
         }
     ),
 }

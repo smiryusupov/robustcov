@@ -48,8 +48,21 @@ Then publish only its approved outputs:
      --command "python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002 --outdir results/external/cmapss_fd002"
 
 Review the generated Git diff before committing. The publisher removes local
-cache paths, copies only allowlisted files, records SHA-256 digests, and creates
-the result page and gallery registry.
+cache paths, copies only allowlisted files, records SHA-256 digests, validates
+the complete five-bin FD002/FD004 summary, and creates the result page and
+gallery registry.
+
+The current snapshot schema also records:
+
+* requested false-alarm rate and conformal-calibration resolution;
+* DRO candidate source and selected path parameter;
+* projector distance between empirical PCA and DRO-PCA;
+* early- and late-life alert rates and risk ratios;
+* whether alert rates are monotone over the five reported life intervals.
+
+Generated pages report the observed values directly and state when PCA and
+DRO-PCA projectors are numerically equivalent. They present the result as a
+fixed monitoring-protocol validation rather than a universal method ranking.
 
 Validate all committed snapshots with:
 
@@ -134,3 +147,8 @@ For release-candidate validation, require both reviewed C-MAPSS profiles:
 
 ``--allow-dirty`` exists only for local preview generation; such snapshots cannot
 pass the registry check and must not be committed.
+
+Snapshots created before the current evidence schema are rejected. Regenerate
+FD002 and FD004 after changes to the alert calibration, estimator selection, or
+summary contract rather than manually editing ``snapshot.json`` or generated
+result pages.

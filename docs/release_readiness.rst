@@ -14,8 +14,15 @@ three operating systems and Python versions. A separate Linux job tests the
 oldest supported NumPy, SciPy, and scikit-learn versions from
 ``requirements/minimum.txt``.
 
-Source checks
--------------
+Version and source checks
+-------------------------
+
+Verify that the package metadata, runtime version, citation metadata, and public
+API manifest agree:
+
+.. code-block:: bash
+
+   python scripts/check_release_version.py --require-prerelease
 
 Run the source metadata and public-export audit:
 
@@ -73,6 +80,17 @@ artifact:
    python scripts/package_smoke_test.py \
      --expect-native no native-free-wheel/*.whl
 
+Artifact checksums
+------------------
+
+Create a deterministic checksum manifest after building all release artifacts:
+
+.. code-block:: bash
+
+   python scripts/write_artifact_checksums.py \
+     dist/* native-free-wheel/*.whl \
+     --output release-metadata/SHA256SUMS
+
 Release sign-off
 ----------------
 
@@ -98,3 +116,33 @@ After reviewed FD002 and FD004 snapshots are committed, run:
 This adds the public API manifest checks and requires clean, commit-pinned
 C-MAPSS evidence. Ordinary source checks remain available without this flag
 during development.
+
+
+TestPyPI rehearsal
+------------------
+
+Run the ``release distributions`` GitHub Actions workflow manually with
+``publish_target=testpypi``. The workflow uses the ``testpypi`` GitHub
+environment and Trusted Publishing, then installs the published wheel outside
+the checkout and runs the installed-package smoke test.
+
+The TestPyPI and production publishing jobs are separate from the build jobs and
+are the only jobs granted ``id-token: write``. Configure the production
+``pypi`` environment with a required reviewer and release-tag restrictions.
+
+A package-index version cannot be overwritten. Increment the alpha serial before
+repeating a published rehearsal.
+
+Production publication
+----------------------
+
+The tag must match the declared package version exactly:
+
+.. code-block:: bash
+
+   python scripts/check_release_version.py --tag v0.1.0a1
+
+Pushing that signed tag triggers the same distribution build and evidence gate,
+then publishes through the protected ``pypi`` environment. The PyPI publishing
+action creates PEP 740-compatible attestations by default when Trusted
+Publishing is used.

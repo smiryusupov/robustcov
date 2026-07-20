@@ -214,6 +214,8 @@ def run_analysis(
     late_scores = dro.transform(Z[late])
     late_residual = Z[late] - dro.inverse_transform(late_scores)
     feature_contributions = np.mean(np.square(late_residual), axis=0)
+    empirical_projector = empirical_basis @ empirical_basis.T
+    dro_projector = dro.components_.T @ dro.components_
     metadata: dict[str, object] = {
         "reference_life_fraction": "<=0.20",
         "calibration_life_fraction": "(0.20,0.35]",
@@ -225,10 +227,18 @@ def run_analysis(
         "transport_geometry": "healthy_operating_regime_mean_shift_diagonal",
         "threshold": "split_conformal_upper_tail_p_value",
         "false_alarm_rate": float(false_alarm_rate),
+        "calibration_window_counts": {
+            method: len(values) for method, values in calibration_scores.items()
+        },
         "calibration_p_value_resolution": {
             method: float(calibrator.min_p_value_)
             for method, calibrator in calibrators.items()
         },
+        "dro_selected_candidate_source": str(dro.selected_candidate_source_),
+        "dro_selected_gamma": float(dro.selected_gamma_),
+        "projector_distance_to_empirical": float(
+            np.linalg.norm(dro_projector - empirical_projector, ord="fro")
+        ),
     }
     return rows, summary, metadata, feature_contributions
 

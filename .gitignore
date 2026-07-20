@@ -76,6 +76,9 @@ desktop.ini
 # Packaging/signing
 *.tar.gz
 *.whl
+release-metadata/
+native-free-wheel/
+native-wheel/
 
 # Conda
 .conda/

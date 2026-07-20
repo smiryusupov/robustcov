@@ -788,14 +788,19 @@ External result pages should be read as evidence, not as leaderboard claims. Som
 
 ## Scope
 
-`robustcov` currently focuses on:
+`robustcov` currently focuses on a coherent robust multivariate workflow:
 
-1. efficient robust covariance for classical contamination;
-2. heavy-tail scatter estimators for small-sample/high-dimensional regimes;
-3. robust-distance anomaly diagnostics;
-4. application and benchmark galleries with reproducible scripts.
+1. covariance, scatter, and sparse precision estimation under rowwise, cellwise,
+   heavy-tailed, and high-dimensional contamination;
+2. robust PCA, low-rank-plus-sparse decomposition, latent-factor methods, and
+   source separation;
+3. anomaly scoring, conformal alert calibration, and fixed or adaptive subspace
+   monitoring; and
+4. reproducible method benchmarks and reviewed external case studies.
 
-Minimum-volume ellipsoid and full robust mixture modeling are not core priorities yet. They may be added later as experimental features if they strengthen the package without distracting from the current scope.
+The package does not attempt to cover every robust-learning problem. Methods are
+added when they fit this geometry-and-monitoring workflow and can be supported by
+clear provenance, tests, diagnostics, and evidence.
 
 ## Development
 
@@ -812,7 +817,11 @@ python -m build
 python -m twine check dist/*
 ```
 
-Release wheels are built by `.github/workflows/wheels.yml` using `cibuildwheel`. Push a `v*` tag to publish to PyPI via Trusted Publishing after configuring the `pypi` environment on PyPI/GitHub. See `RELEASE.md` for the full checklist.
+Release wheels are built by `.github/workflows/wheels.yml` using `cibuildwheel`.
+A manual workflow dispatch publishes the release candidate to TestPyPI and
+smoke-tests the installed package outside the checkout. A matching signed `v*`
+tag publishes the same checked artifacts to PyPI through a protected Trusted
+Publisher environment. See `RELEASE.md` for the full checklist.
 
 ## Project status
 

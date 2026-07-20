@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
+import math
 from pathlib import Path
 import shutil
 import subprocess
@@ -25,7 +26,8 @@ import sys
 from typing import Iterable
 
 
-SCHEMA_VERSION = 1
+MANIFEST_SCHEMA_VERSION = 1
+SNAPSHOT_SCHEMA_VERSION = 2
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 MAX_TABLE_BYTES = 2 * 1024 * 1024
 ALLOWED_SUFFIXES = {".png", ".svg", ".csv", ".json"}
@@ -115,6 +117,134 @@ def _read_metadata(path: Path) -> dict[str, str]:
     return result
 
 
+def _read_cmapss_summary(path: Path) -> tuple[list[dict[str, object]], dict[str, object]]:
+    required_columns = {"method", "life_bin", "mean_risk", "alert_rate", "n_windows"}
+    try:
+        with path.open(newline="", encoding="utf-8") as handle:
+            reader = csv.DictReader(handle)
+            if reader.fieldnames is None or not required_columns.issubset(reader.fieldnames):
+                raise SnapshotError(
+                    f"{path} must contain columns {sorted(required_columns)}"
+                )
+            rows = list(reader)
+    except (OSError, csv.Error) as exc:
+        raise SnapshotError(f"could not read C-MAPSS summary {path}") from exc
+    if not rows:
+        raise SnapshotError(f"C-MAPSS summary is empty: {path}")
+
+    normalized: list[dict[str, object]] = []
+    by_method_bin: dict[tuple[str, str], dict[str, object]] = {}
+    for raw in rows:
+        method = str(raw.get("method", "")).strip()
+        life_bin = str(raw.get("life_bin", "")).strip()
+        try:
+            mean_risk = float(raw["mean_risk"])
+            alert_rate = float(raw["alert_rate"])
+            n_windows = int(raw["n_windows"])
+        except (TypeError, ValueError, KeyError) as exc:
+            raise SnapshotError(f"invalid numerical value in {path}: {raw}") from exc
+        if method not in {"Empirical PCA", "DRO-PCA"}:
+            raise SnapshotError(f"unexpected method in {path}: {method!r}")
+        if not math.isfinite(mean_risk) or mean_risk < 0.0:
+            raise SnapshotError(f"invalid mean_risk in {path}: {mean_risk!r}")
+        if not math.isfinite(alert_rate) or not 0.0 <= alert_rate <= 1.0:
+            raise SnapshotError(f"invalid alert_rate in {path}: {alert_rate!r}")
+        if n_windows <= 0:
+            raise SnapshotError(f"n_windows must be positive in {path}: {n_windows!r}")
+        key = (method, life_bin)
+        if key in by_method_bin:
+            raise SnapshotError(f"duplicate method/life_bin row in {path}: {key}")
+        row = {
+            "method": method,
+            "life_bin": life_bin,
+            "mean_risk": mean_risk,
+            "alert_rate": alert_rate,
+            "n_windows": n_windows,
+        }
+        normalized.append(row)
+        by_method_bin[key] = row
+
+    life_bins = ("0.0-0.2", "0.2-0.4", "0.4-0.6", "0.6-0.8", "0.8-1.0")
+    for method in ("Empirical PCA", "DRO-PCA"):
+        missing = [life_bin for life_bin in life_bins if (method, life_bin) not in by_method_bin]
+        if missing:
+            raise SnapshotError(f"{path} is missing {method} life bins: {missing}")
+
+    methods: dict[str, dict[str, object]] = {}
+    for method in ("Empirical PCA", "DRO-PCA"):
+        early = by_method_bin[(method, "0.0-0.2")]
+        late = by_method_bin[(method, "0.8-1.0")]
+        ordered = [by_method_bin[(method, life_bin)] for life_bin in life_bins]
+        methods[method] = {
+            "early_alert_rate": early["alert_rate"],
+            "late_alert_rate": late["alert_rate"],
+            "alert_rate_change": float(late["alert_rate"]) - float(early["alert_rate"]),
+            "early_mean_risk": early["mean_risk"],
+            "late_mean_risk": late["mean_risk"],
+            "risk_ratio_late_to_early": (
+                float(late["mean_risk"]) / float(early["mean_risk"])
+                if float(early["mean_risk"]) > 0.0
+                else None
+            ),
+            "total_windows": sum(int(row["n_windows"]) for row in ordered),
+            "alert_rates_monotone": all(
+                float(left["alert_rate"]) <= float(right["alert_rate"]) + 1e-12
+                for left, right in zip(ordered, ordered[1:])
+            ),
+        }
+    return normalized, {"life_bins": list(life_bins), "methods": methods}
+
+
+def _metadata_float(metadata: dict[str, str], key: str) -> float | None:
+    value = metadata.get(key)
+    if value in {None, ""}:
+        return None
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if math.isfinite(parsed) else None
+
+
+def _interpretation_lines(snapshot: dict[str, object]) -> list[str]:
+    metrics = snapshot.get("summary_metrics", {})
+    methods = metrics.get("methods", {}) if isinstance(metrics, dict) else {}
+    lines: list[str] = []
+    for method in ("Empirical PCA", "DRO-PCA"):
+        values = methods.get(method, {}) if isinstance(methods, dict) else {}
+        if not isinstance(values, dict):
+            continue
+        early = values.get("early_alert_rate")
+        late = values.get("late_alert_rate")
+        if isinstance(early, (int, float)) and isinstance(late, (int, float)):
+            lines.append(
+                f"* **{method}:** alert rate changes from {100.0 * float(early):.1f}% "
+                f"in the first life interval to {100.0 * float(late):.1f}% in the final interval."
+            )
+    metadata = snapshot.get("metadata", {})
+    if isinstance(metadata, dict):
+        distance = _metadata_float({str(k): str(v) for k, v in metadata.items()}, "projector_distance_to_empirical")
+        source = str(metadata.get("dro_selected_candidate_source", "not recorded"))
+        gamma = metadata.get("dro_selected_gamma", "not recorded")
+        if distance is not None and distance <= 1e-8:
+            lines.append(
+                "* The fitted DRO-PCA and empirical-PCA projectors are numerically equivalent "
+                f"(Frobenius distance {distance:.3g}); the curves may overlap."
+            )
+        elif distance is not None:
+            lines.append(
+                f"* The fitted projectors differ by Frobenius distance {distance:.3g}."
+            )
+        lines.append(
+            f"* DRO candidate selection: source ``{source}``, gamma ``{gamma}``."
+        )
+    lines.append(
+        "* This snapshot validates the monitoring workflow on this fixed protocol; it does not "
+        "establish universal superiority of one PCA estimator."
+    )
+    return lines
+
+
 def _git_state(root: Path) -> tuple[str, bool]:
     """Return the current commit and whether tracked or untracked files differ."""
 
@@ -158,12 +288,12 @@ def _atomic_write_json(path: Path, payload: object) -> None:
 
 def _load_manifest(path: Path) -> dict[str, object]:
     if not path.exists():
-        return {"schema_version": SCHEMA_VERSION, "snapshots": []}
+        return {"schema_version": MANIFEST_SCHEMA_VERSION, "snapshots": []}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise SnapshotError(f"invalid snapshot manifest: {path}") from exc
-    if payload.get("schema_version") != SCHEMA_VERSION or not isinstance(payload.get("snapshots"), list):
+    if payload.get("schema_version") != MANIFEST_SCHEMA_VERSION or not isinstance(payload.get("snapshots"), list):
         raise SnapshotError(f"unsupported snapshot manifest schema in {path}")
     return payload
 
@@ -187,6 +317,11 @@ def _page_text(profile: SnapshotProfile, snapshot: dict[str, object]) -> str:
         "",
         profile.protocol + ".",
         "",
+        "Interpretation",
+        "--------------",
+        "",
+        *_interpretation_lines(snapshot),
+        "",
     ]
     for filename, caption, alt in profile.figures:
         lines.extend(
@@ -204,7 +339,19 @@ def _page_text(profile: SnapshotProfile, snapshot: dict[str, object]) -> str:
         lines.append(
             f"* :download:`{filename} <../_static/external_results/{profile.slug}/{filename}>`"
         )
-    lines.extend(["", "Provenance", "----------", "", ".. list-table::", "   :header-rows: 1", "", "   * - Field", "     - Value"])
+    lines.extend(
+        [
+            "",
+            "Provenance",
+            "----------",
+            "",
+            ".. list-table::",
+            "   :header-rows: 1",
+            "",
+            "   * - Field",
+            "     - Value",
+        ]
+    )
     public_fields = {
         "Generated (UTC)": snapshot["generated_at"],
         "Git commit": snapshot["git_commit"],
@@ -212,10 +359,25 @@ def _page_text(profile: SnapshotProfile, snapshot: dict[str, object]) -> str:
         "Archive SHA-256": metadata.get("archive_sha256", "not recorded"),
         "Dataset citation": metadata.get("dataset_citation", "see dataset guide"),
         "Dataset homepage": metadata.get("dataset_homepage", "see dataset guide"),
+        "Requested false-alarm rate": metadata.get("false_alarm_rate", "not recorded"),
+        "DRO candidate source": metadata.get("dro_selected_candidate_source", "not recorded"),
+        "DRO selected gamma": metadata.get("dro_selected_gamma", "not recorded"),
+        "Projector distance to empirical": metadata.get(
+            "projector_distance_to_empirical", "not recorded"
+        ),
+    }
+    literal_fields = {
+        "Git commit",
+        "Command",
+        "Archive SHA-256",
+        "DRO candidate source",
+        "DRO selected gamma",
+        "Projector distance to empirical",
     }
     for key, value in public_fields.items():
         safe_value = str(value).replace("\n", " ")
-        lines.extend([f"   * - {key}", f"     - ``{safe_value}``"]) if key in {"Git commit", "Command", "Archive SHA-256"} else lines.extend([f"   * - {key}", f"     - {safe_value}"])
+        lines.append(f"   * - {key}")
+        lines.append(f"     - ``{safe_value}``" if key in literal_fields else f"     - {safe_value}")
     lines.extend(
         [
             "",
@@ -299,6 +461,19 @@ def publish(
             raise SnapshotError(
                 f"metadata {key!r} must be {expected!r} for {profile.slug}, got {metadata.get(key)!r}"
             )
+    required_metadata = {
+        "false_alarm_rate",
+        "dro_selected_candidate_source",
+        "dro_selected_gamma",
+        "projector_distance_to_empirical",
+    }
+    missing_metadata = sorted(required_metadata.difference(metadata))
+    if missing_metadata:
+        raise SnapshotError(
+            "C-MAPSS results predate the reviewed evidence contract; regenerate the protocol. "
+            f"Missing metadata: {missing_metadata}"
+        )
+    _, summary_metrics = _read_cmapss_summary(results_dir / "summary.csv")
 
     destination = root / "docs/_static/external_results" / profile.slug
     if destination.exists() and not replace:
@@ -318,7 +493,7 @@ def publish(
             files[filename] = {"sha256": _digest(target), "size_bytes": target.stat().st_size}
         timestamp = generated_at or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
         snapshot: dict[str, object] = {
-            "schema_version": SCHEMA_VERSION,
+            "schema_version": SNAPSHOT_SCHEMA_VERSION,
             "slug": profile.slug,
             "title": profile.title,
             "protocol": profile.protocol,
@@ -328,6 +503,7 @@ def publish(
             "git_dirty": git_dirty,
             "command": command,
             "metadata": metadata,
+            "summary_metrics": summary_metrics,
             "files": files,
         }
         _atomic_write_json(temporary / "snapshot.json", snapshot)
@@ -421,8 +597,40 @@ def check(
         except (OSError, json.JSONDecodeError) as exc:
             errors.append(f"invalid {snapshot_path}: {exc}")
             continue
+        if snapshot.get("schema_version") != SNAPSHOT_SCHEMA_VERSION:
+            errors.append(
+                f"snapshot {slug} uses schema {snapshot.get('schema_version')!r}; "
+                "regenerate it with the current publisher"
+            )
+        if snapshot.get("slug") != slug:
+            errors.append(f"snapshot slug mismatch for {slug}: {snapshot.get('slug')!r}")
         if snapshot.get("git_dirty") is True:
             errors.append(f"snapshot was generated from a dirty working tree: {slug}")
+        profile = PROFILES.get(slug)
+        metadata = snapshot.get("metadata", {})
+        if profile is not None and isinstance(metadata, dict):
+            for key, expected in profile.expected_metadata:
+                if metadata.get(key) != expected:
+                    errors.append(
+                        f"snapshot metadata {key!r} must be {expected!r} for {slug}"
+                    )
+            required_metadata = {
+                "false_alarm_rate",
+                "dro_selected_candidate_source",
+                "dro_selected_gamma",
+                "projector_distance_to_empirical",
+            }
+            missing_metadata = sorted(required_metadata.difference(metadata))
+            if missing_metadata:
+                errors.append(f"snapshot {slug} is missing metadata: {missing_metadata}")
+        summary_path = directory / "summary.csv"
+        try:
+            _, expected_metrics = _read_cmapss_summary(summary_path)
+        except SnapshotError as exc:
+            errors.append(str(exc))
+        else:
+            if snapshot.get("summary_metrics") != expected_metrics:
+                errors.append(f"summary metrics are stale for {slug}; republish the snapshot")
         for filename, details in snapshot.get("files", {}).items():
             path = directory / filename
             try:
@@ -436,6 +644,11 @@ def check(
         present = {path.name for path in directory.iterdir() if path.is_file()}
         if present & forbidden:
             errors.append(f"row-level or raw output found in {directory}: {sorted(present & forbidden)}")
+        if profile is not None and isinstance(snapshot, dict):
+            expected_page = _page_text(profile, snapshot)
+            actual_page = page.read_text(encoding="utf-8") if page.is_file() else None
+            if actual_page != expected_page:
+                errors.append(f"stale generated snapshot page {page}; republish the snapshot")
     missing_required = sorted(set(required_slugs).difference(seen))
     if missing_required:
         errors.append(f"required snapshots are missing: {missing_required}")

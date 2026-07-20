@@ -28,10 +28,22 @@ def _write_cmapss_results(path: Path, *, subset: str = "FD002") -> None:
         "late_life_sensor_contributions.png",
     ):
         (path / name).write_bytes(b"\x89PNG\r\n\x1a\nreviewed-test-output")
-    (path / "summary.csv").write_text(
-        "method,life_bin,alert_rate\nDRO-PCA,0.8-1.0,0.935\n",
-        encoding="utf-8",
-    )
+    summary_rows = [
+        ("Empirical PCA", "0.0-0.2", 0.013, 0.04, 800),
+        ("Empirical PCA", "0.2-0.4", 0.014, 0.06, 1000),
+        ("Empirical PCA", "0.4-0.6", 0.018, 0.12, 1000),
+        ("Empirical PCA", "0.6-0.8", 0.045, 0.43, 1000),
+        ("Empirical PCA", "0.8-1.0", 0.123, 0.94, 700),
+        ("DRO-PCA", "0.0-0.2", 0.013, 0.04, 800),
+        ("DRO-PCA", "0.2-0.4", 0.014, 0.06, 1000),
+        ("DRO-PCA", "0.4-0.6", 0.018, 0.12, 1000),
+        ("DRO-PCA", "0.6-0.8", 0.045, 0.43, 1000),
+        ("DRO-PCA", "0.8-1.0", 0.123, 0.94, 700),
+    ]
+    with (path / "summary.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["method", "life_bin", "mean_risk", "alert_rate", "n_windows"])
+        writer.writerows(summary_rows)
     (path / "window_scores.csv").write_text("private,row\n1,2\n", encoding="utf-8")
     with (path / "run_metadata.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
@@ -40,6 +52,10 @@ def _write_cmapss_results(path: Path, *, subset: str = "FD002") -> None:
         writer.writerow(["archive_sha256", "abc123"])
         writer.writerow(["dataset_citation", "Example citation"])
         writer.writerow(["dataset_homepage", "https://example.test/dataset"])
+        writer.writerow(["false_alarm_rate", "0.05"])
+        writer.writerow(["dro_selected_candidate_source", "path"])
+        writer.writerow(["dro_selected_gamma", "0.0"])
+        writer.writerow(["projector_distance_to_empirical", "0.0"])
         writer.writerow(["cache_dir", "/private/local/cache"])
 
 
@@ -65,8 +81,12 @@ def test_publish_external_snapshot_copies_only_reviewed_outputs(tmp_path: Path) 
     payload = json.loads((destination / "snapshot.json").read_text(encoding="utf-8"))
     assert payload["metadata"]["archive_sha256"] == "abc123"
     assert "cache_dir" not in payload["metadata"]
+    assert payload["schema_version"] == publisher.SNAPSHOT_SCHEMA_VERSION
     assert payload["files"]["risk_over_engine_life.png"]["sha256"]
-    assert (root / "docs/external_results/cmapss_fd002.rst").is_file()
+    assert payload["summary_metrics"]["methods"]["DRO-PCA"]["late_alert_rate"] == 0.94
+    page_text = (root / "docs/external_results/cmapss_fd002.rst").read_text(encoding="utf-8")
+    assert "Interpretation" in page_text
+    assert "numerically equivalent" in page_text
     manifest = json.loads(
         (root / "docs/_static/external_results/manifest.json").read_text(encoding="utf-8")
     )

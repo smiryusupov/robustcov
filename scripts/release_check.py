@@ -10,6 +10,7 @@ from email.parser import Parser
 import json
 from pathlib import Path, PurePosixPath
 import re
+import subprocess
 import tarfile
 import tomllib
 from typing import Iterable
@@ -184,6 +185,9 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         "docs/external_snapshot_policy.rst",
         "docs/_static/external_results/manifest.json",
         "scripts/publish_external_snapshot.py",
+        "scripts/check_release_version.py",
+        "scripts/installed_package_smoke.py",
+        "scripts/write_artifact_checksums.py",
         "examples_external/gas_sensor_drift_dro_pca.py",
         "examples_external/cmapss_dro_pca_monitoring.py",
         ".github/workflows/external-data.yml",
@@ -255,6 +259,20 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         "source: version-specific build NumPy lower bounds",
         expected_build_numpy.issubset(build_requirements),
         repr(sorted(build_requirements)),
+    )
+    _check(
+        checks,
+        "source: explicit-sdist build backend",
+        "scikit-build-core>=1.0.3" in build_requirements,
+        repr(sorted(build_requirements)),
+    )
+    sdist_config = config.get("tool", {}).get("scikit-build", {}).get("sdist", {})
+    _check(
+        checks,
+        "source: explicit clean sdist inclusion",
+        sdist_config.get("inclusion-mode") == "explicit"
+        and "pyproject.toml" in sdist_config.get("include", []),
+        repr(sdist_config.get("inclusion-mode")),
     )
 
     expected_minimum_lines = {
@@ -402,6 +420,9 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
             f"{top}/docs/references.bib",
             f"{top}/scripts/package_smoke_test.py",
             f"{top}/scripts/release_check.py",
+            f"{top}/scripts/check_release_version.py",
+            f"{top}/scripts/installed_package_smoke.py",
+            f"{top}/scripts/write_artifact_checksums.py",
             f"{top}/requirements/minimum.txt",
             f"{top}/robustcov/datasets/__init__.py",
             f"{top}/robustcov/datasets/_external.py",
@@ -450,19 +471,57 @@ def release_candidate_checks(root: Path) -> list[Check]:
 
     dirty: list[str] = []
     unknown_commits: list[str] = []
+    stale_schema: list[str] = []
+    incomplete_evidence: list[str] = []
+    non_ancestor_commits: list[str] = []
     for slug in sorted(required.intersection(slugs)):
         snapshot_path = root / "docs" / "_static" / "external_results" / slug / "snapshot.json"
+        page_path = root / "docs" / "external_results" / f"{slug}.rst"
         try:
             snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             dirty.append(slug)
             continue
+        if snapshot.get("schema_version") != 2:
+            stale_schema.append(slug)
         if snapshot.get("git_dirty") is not False:
             dirty.append(slug)
-        if snapshot.get("git_commit") in {None, "", "unknown"}:
+        commit = snapshot.get("git_commit")
+        if commit in {None, "", "unknown"}:
             unknown_commits.append(slug)
+        elif (root / ".git").exists():
+            try:
+                subprocess.run(
+                    ["git", "merge-base", "--is-ancestor", str(commit), "HEAD"],
+                    cwd=root,
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except (OSError, subprocess.CalledProcessError):
+                non_ancestor_commits.append(slug)
+        metadata = snapshot.get("metadata", {})
+        summary_metrics = snapshot.get("summary_metrics", {})
+        required_metadata = {
+            "false_alarm_rate",
+            "dro_selected_candidate_source",
+            "dro_selected_gamma",
+            "projector_distance_to_empirical",
+        }
+        methods = summary_metrics.get("methods", {}) if isinstance(summary_metrics, dict) else {}
+        if (
+            not isinstance(metadata, dict)
+            or not required_metadata.issubset(metadata)
+            or not isinstance(methods, dict)
+            or not {"Empirical PCA", "DRO-PCA"}.issubset(methods)
+            or not page_path.is_file()
+        ):
+            incomplete_evidence.append(slug)
+    _check(checks, "release candidate: current snapshot schema", not stale_schema, f"invalid={stale_schema}")
+    _check(checks, "release candidate: complete snapshot evidence", not incomplete_evidence, f"invalid={incomplete_evidence}")
     _check(checks, "release candidate: clean snapshot provenance", not dirty, f"invalid={dirty}")
     _check(checks, "release candidate: snapshot commits recorded", not unknown_commits, f"invalid={unknown_commits}")
+    _check(checks, "release candidate: snapshot commits are ancestors", not non_ancestor_commits, f"invalid={non_ancestor_commits}")
     return checks
 
 

@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+No changes yet.
+
+## 0.1.0a1 - 2026-07-20
+
+### Release engineering
+
+- Added exact version/tag checks across package metadata, runtime exports,
+  citation metadata, and the public API manifest.
+- Added a manual TestPyPI Trusted Publishing rehearsal with post-publication
+  installation tests outside the source checkout.
+- Added deterministic SHA-256 release-artifact manifests and strengthened the
+  C-MAPSS snapshot schema with summary validation, candidate diagnostics, and
+  explicit interpretation of overlapping PCA/DRO-PCA results.
+
 ### Changed
 
 - Simplified public documentation by removing the defensive project-claims page; method provenance and evidence rules now live in contributor guidance and automated checks.

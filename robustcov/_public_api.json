@@ -12,7 +12,7 @@
     "OnlineRobustSubspaceTracker",
     "OnlineSubspaceUpdate"
   ],
-  "package_version": "0.0.2",
+  "package_version": "0.1.0a1",
   "provisional_top_level": [
     "AutoRobustAnomalyDetector",
     "AutoRobustScatter",

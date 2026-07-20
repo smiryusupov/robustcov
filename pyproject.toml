@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-  "scikit-build-core>=0.11.3",
+  "scikit-build-core>=1.0.3",
   "pybind11>=3.0.1",
   "numpy>=2.0.0; python_version < '3.13'",
   "numpy>=2.1.0; python_version >= '3.13' and python_version < '3.14'",
@@ -10,7 +10,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "robustcov"
-version = "0.0.2"
+version = "0.1.0a1"
 description = "Robust covariance, anomaly scoring, PCA, and monitoring for contaminated and heavy-tailed data."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -164,7 +164,9 @@ wheel.packages = ["robustcov"]
 cmake.version = ">=3.18"
 
 [tool.scikit-build.sdist]
+inclusion-mode = "explicit"
 include = [
+  "pyproject.toml",
   "CMakeLists.txt",
   "src/**",
   "robustcov/**",
