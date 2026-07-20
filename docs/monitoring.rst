@@ -9,6 +9,17 @@ is updated.
 This setup is useful when the baseline must remain stable.  A long-running data
 problem cannot gradually teach the monitor that the problem is normal.
 
+Frozen reference or adaptive tracking?
+--------------------------------------
+
+Use ``RobustSubspaceMonitor`` when the reference definition of acceptable
+operation must remain fixed. Use
+:class:`~robustcov.OnlineRobustSubspaceTracker` when the normal subspace is
+expected to evolve gradually and reviewed updates should follow it. The online
+tracker screens each batch before adaptation and keeps a bounded recent-sample
+buffer; it is not a distribution-free detector and it is not an implementation
+of NORST. See :doc:`online_subspace_tracking`.
+
 A first monitor
 ---------------
 
@@ -169,5 +180,6 @@ See also
 --------
 
 * :doc:`robust_pca`
+* :doc:`online_subspace_tracking`
 * :doc:`feature_geometry`
 * :doc:`gallery/robust_subspace_monitoring`

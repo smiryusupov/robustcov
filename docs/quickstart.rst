@@ -101,3 +101,26 @@ After the quickstart, see :doc:`estimator_guide` for estimator selection,
 :doc:`use_case_gallery` for application examples, :doc:`benchmark_gallery` for
 evidence and comparisons, and :doc:`geometry` for robust SPD geometry utilities, and :doc:`monitoring` for frozen-reference rolling drift diagnostics.
 
+
+
+Track a slowly changing subspace
+--------------------------------
+
+When a fixed baseline is too restrictive, initialize an experimental online
+tracker on an acceptable reference block and update it with micro-batches:
+
+.. code-block:: python
+
+   tracker = rc.OnlineRobustSubspaceTracker(
+       n_components=4,
+       update_interval=64,
+       buffer_size=256,
+       adaptation_rate=0.5,
+   ).fit(X_initial)
+
+   result = tracker.update(X_next)
+   print(result.n_accepted, result.change_detected)
+
+The tracker repairs isolated projected-residual cells, rejects dense row
+outliers, and adapts only through bounded robust mini-batch updates. See
+:doc:`online_subspace_tracking` for assumptions and limitations.

@@ -37,4 +37,5 @@ geometry,ClassConditionalFeatureGeometry,workflow,examples/feature_geometry_clas
 geometry,RobustInputMetric,workflow,examples/gp_robust_input_metric.py,kernel/input-metric behavior,
 preprocessing,RobustMedianImputer,workflow,examples/use_case_ml_preprocessing.py,downstream classification,
 scatter base,IterativeMScatter,performance,benchmarks/estimator_optimization_gate.py,complete-fit runtime/equivalence,
+experimental monitoring,OnlineRobustSubspaceTracker,validation,benchmarks/online_subspace_tracking_validation.py,projector error under gradual rotation / corruption-screening diagnostics,robustcov composite inspired by online robust subspace-tracking research; not NORST
 experimental PCA,DistributionallyRobustPCA,comparative,benchmarks/distributionally_robust_pca.py,held-out target reconstruction risk under distribution shift,exact weighted-Wasserstein risk evaluated over a deterministic candidate path

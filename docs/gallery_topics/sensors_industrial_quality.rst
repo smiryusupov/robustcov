@@ -41,6 +41,11 @@ These examples focus on process monitoring: sensor streams, maintenance windows,
        <h3>Quality control</h3>
        <p>Separate stable process variation from abnormal production runs.</p>
      </a>
+     <a class="gallery-card" href="../gallery/online_robust_subspace_tracking.html">
+       <div class="gallery-card-placeholder">Adaptive<br>tracking</div>
+       <h3>Online robust subspace tracking</h3>
+       <p>Track gradual sensor-geometry changes with bounded updates and corruption screening.</p>
+     </a>
    </div>
 
 How to use this topic
@@ -52,6 +57,7 @@ Detailed pages
 --------------
 
 - :doc:`Rolling subspace monitoring <../gallery/robust_subspace_monitoring>`
+- :doc:`Online robust subspace tracking <../gallery/online_robust_subspace_tracking>`
 - :doc:`Matrix-valued sensor windows <../gallery/mmcd_sensor_windows>`
 - :doc:`Process spectra with cellwise and casewise contamination <../gallery/cellpca_process_spectra>`
 - :doc:`Sparse robust process spectra <../gallery/sparse_cellpca_spectra>`

@@ -187,6 +187,18 @@ REFERENCE_CATALOG: Mapping[str, Reference] = {
         "M. Mayrhofer, U. Radojičić, and P. Filzmoser. Robust covariance estimation and explainable outlier detection for matrix-valued data. Technometrics 67(3), 516–530, 2025.",
         "https://doi.org/10.1080/00401706.2025.2475781",
     ),
+    "narayanamurthy_vaswani_2018": Reference(
+        "narayanamurthy_vaswani_2018",
+        "Narayanamurthy & Vaswani (2018)",
+        "P. Narayanamurthy and N. Vaswani. Nearly Optimal Robust Subspace Tracking. Proceedings of the 35th International Conference on Machine Learning, PMLR 80, 3701–3709, 2018.",
+        "https://proceedings.mlr.press/v80/narayanamurthy18a.html",
+    ),
+    "zhu_shen_2022": Reference(
+        "zhu_shen_2022",
+        "Zhu & Shen (2022)",
+        "T. Zhu and J. Shen. Residual-Based Sampling for Online Outlier-Robust PCA. Proceedings of the 39th International Conference on Machine Learning, PMLR 162, 27591–27611, 2022.",
+        "https://proceedings.mlr.press/v162/zhu22i.html",
+    ),
     "nordhausen_2014": Reference(
         "nordhausen_2014",
         "Nordhausen (2014)",
@@ -566,6 +578,13 @@ METHOD_PROVENANCE: Mapping[str, MethodProvenance] = {
         "Candidate registry, reproducible stability scoring, selection diagnostics, and fallback behavior.",
         "The selection criterion and defaults are package-specific engineering choices, not a published universal decision rule.",
     ),
+    "OnlineRobustSubspaceTracker": _entry(
+        "OnlineRobustSubspaceTracker", "Online subspace tracking", "robustcov_composite",
+        "Bounded-memory robust mini-batch tracking of a slowly changing principal subspace with projected-residual cell repair and dense-row rejection.",
+        ("narayanamurthy_vaswani_2018", "zhu_shen_2022", "hubert_etal_2005"),
+        "A sklearn-style streaming workflow combining robust PCA initialization, projected-residual screening, bounded recent-sample updates, projector interpolation, diagnostics, and slow-change safeguards.",
+        "This experimental estimator is inspired by robust subspace-tracking research but is not NORST: it does not solve projected l1 recovery and carries no NORST support-recovery or tracking-delay guarantee.",
+    ),
     "RobustSubspaceMonitor": _entry(
         "RobustSubspaceMonitor", "Monitoring", "robustcov_composite",
         "Reference-versus-batch monitoring using robust PCA score and orthogonal distances.",
@@ -646,7 +665,10 @@ _ALIAS_TO_CANONICAL = {
 }
 
 
-EXPERIMENTAL_ESTIMATOR_PROVENANCE_NAMES = ("DistributionallyRobustPCA",)
+EXPERIMENTAL_ESTIMATOR_PROVENANCE_NAMES = (
+    "DistributionallyRobustPCA",
+    "OnlineRobustSubspaceTracker",
+)
 
 
 PUBLIC_ESTIMATOR_PROVENANCE_NAMES = (
@@ -659,7 +681,8 @@ PUBLIC_ESTIMATOR_PROVENANCE_NAMES = (
     "TwoScatterICA", "SOBI", "RobustSOBI", "RobustFactorModel",
     "RobustOutlierDetector", "AutoRobustAnomalyDetector",
     "ClusterRobustOutlierDetector", "AutoRobustScatter",
-    "RobustSubspaceMonitor", "ConformalAlertCalibrator", "SubspaceStability", "FeatureGeometry",
+    "RobustSubspaceMonitor", "ConformalAlertCalibrator",
+    "SubspaceStability", "FeatureGeometry",
     "ClassConditionalFeatureGeometry", "RobustInputMetric",
     "RobustMedianImputer",
 )

@@ -69,6 +69,14 @@ COVERAGE = [
 
 EXPERIMENTAL_COVERAGE = [
     Coverage(
+        "experimental monitoring",
+        "OnlineRobustSubspaceTracker",
+        "validation",
+        "benchmarks/online_subspace_tracking_validation.py",
+        "projector error under gradual rotation / corruption-screening diagnostics",
+        "robustcov composite inspired by online robust subspace-tracking research; not NORST",
+    ),
+    Coverage(
         "experimental PCA",
         "DistributionallyRobustPCA",
         "comparative",

@@ -79,6 +79,13 @@ Robust anomaly diagnostics
 * D. N. Politis and H. White. 2004. Automatic block-length selection for the dependent bootstrap. *Econometric Reviews*.
 
 
+
+Online robust subspace tracking
+-------------------------------
+
+* P. Narayanamurthy and N. Vaswani. 2018. Nearly Optimal Robust Subspace Tracking. *Proceedings of the 35th International Conference on Machine Learning*, PMLR 80, 3701--3709.
+* T. Zhu and J. Shen. 2022. Residual-Based Sampling for Online Outlier-Robust PCA. *Proceedings of the 39th International Conference on Machine Learning*, PMLR 162, 27591--27611.
+
 Conformal anomaly and alert calibration
 ---------------------------------------
 

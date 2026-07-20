@@ -61,6 +61,7 @@ python examples/run_use_case_gallery.py --all
 - `use_case_maintenance_monitoring.py` – predictive-maintenance monitoring.
 - `use_case_quality_control.py` – robust process monitoring.
 - `plot_robust_subspace_monitoring.py` – score-space and orthogonal drift monitoring.
+- `online_robust_subspace_tracking.py` – experimental bounded-memory tracking of a gradually changing subspace with sparse-cell repair and row-outlier rejection.
 - `distributionally_robust_pca_drift_monitoring.py` – distribution-shift-aware PCA monitoring with empirical window calibration.
 - `feature_geometry_drift_detection.py` – robust feature-geometry drift detection.
 - `feature_geometry_embedding_monitoring.py` – practical embedding monitoring.

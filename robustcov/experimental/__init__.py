@@ -8,8 +8,15 @@ from .distributionally_robust_pca import (
     WassersteinRobustPCA,
 )
 
+from ..online_subspace import OnlineRobustSubspaceTracker, OnlineSubspaceUpdate
+
 from ..provenance import attach_method_provenance
 
-__all__ = ["DistributionallyRobustPCA", "WassersteinRobustPCA"]
+__all__ = [
+    "DistributionallyRobustPCA",
+    "WassersteinRobustPCA",
+    "OnlineRobustSubspaceTracker",
+    "OnlineSubspaceUpdate",
+]
 
 attach_method_provenance(globals())

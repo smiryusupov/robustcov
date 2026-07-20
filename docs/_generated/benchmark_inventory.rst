@@ -205,6 +205,11 @@ Benchmark coverage inventory
      - performance
      - complete-fit runtime/equivalence
      - ``benchmarks/estimator_optimization_gate.py``
+   * - experimental monitoring
+     - ``OnlineRobustSubspaceTracker``
+     - validation
+     - projector error under gradual rotation / corruption-screening diagnostics
+     - ``benchmarks/online_subspace_tracking_validation.py``
    * - experimental PCA
      - ``DistributionallyRobustPCA``
      - comparative

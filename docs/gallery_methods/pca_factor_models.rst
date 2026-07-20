@@ -47,6 +47,11 @@ and score-versus-orthogonal-distance diagnostics.
        <h3>Density-power PCA</h3>
        <p>Direct robust low-rank fitting under rowwise and cellwise contamination.</p>
      </a>
+     <a class="gallery-card" href="../gallery/online_robust_subspace_tracking.html">
+       <div class="gallery-card-placeholder">Online PCA<br>tracking</div>
+       <h3>Online robust subspace tracking</h3>
+       <p>Adapt a bounded-memory principal subspace while repairing sparse cells and rejecting dense row outliers.</p>
+     </a>
    </div>
 
 Runnable examples
@@ -54,6 +59,7 @@ Runnable examples
 
 .. code-block:: bash
 
+   python examples/online_robust_subspace_tracking.py
    python examples/distributionally_robust_pca.py
    python examples/distributionally_robust_pca_drift_monitoring.py
    python examples/robust_factor_model.py

@@ -46,6 +46,8 @@ keywords = [
   "SPD geometry",
   "kernel methods",
   "drift monitoring",
+  "online subspace tracking",
+  "online robust PCA",
   "robust PCA",
   "distributionally robust PCA",
   "Wasserstein DRO",

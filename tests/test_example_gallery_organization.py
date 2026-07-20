@@ -30,6 +30,8 @@ def test_method_groups_reference_existing_scripts():
     assert "distributionally_robust_pca.py" in runner.GROUPS["pca"]
     assert "distributionally_robust_pca_drift_monitoring.py" in runner.GROUPS["pca"]
     assert "distributionally_robust_pca_drift_monitoring.py" in runner.GROUPS["monitoring"]
+    assert "online_robust_subspace_tracking.py" in runner.GROUPS["pca"]
+    assert "online_robust_subspace_tracking.py" in runner.GROUPS["monitoring"]
     for scripts in runner.GROUPS.values():
         for script in scripts:
             assert (EXAMPLES / script).is_file(), script
@@ -46,6 +48,7 @@ def test_method_gallery_pages_and_detailed_examples_exist():
         DOCS / "gallery" / "robust_factor_model.rst",
         DOCS / "gallery" / "distributionally_robust_pca.rst",
         DOCS / "gallery" / "distributionally_robust_pca_drift_monitoring.rst",
+        DOCS / "gallery" / "online_robust_subspace_tracking.rst",
     ]
     for path in expected:
         assert path.is_file(), path

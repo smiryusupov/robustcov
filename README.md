@@ -39,7 +39,8 @@ platform.
 | Broad heavy tails or an ill-conditioned/high-dimensional covariance | `RegularizedCauchy`, `StudentTScatter`, `RegularizedTyler`, or `MRCD` |
 | Isolated bad cells or missing entries | `CellMCD`, `CellRCov`, `CellPCA`, or `SparseCellPCA` |
 | Matrix-valued or multilinear observations | `MMCD` or `RobustMultilinearPCA` |
-| Robust dimensionality reduction or changing subspaces | `RobustPCA`, `DistributionallyRobustPCA`, `SubspaceStability`, or `RobustSubspaceMonitor` |
+| Robust dimensionality reduction or a fixed-reference subspace monitor | `RobustPCA`, `DistributionallyRobustPCA`, `SubspaceStability`, or `RobustSubspaceMonitor` |
+| Follow a slowly changing subspace in a stream | Experimental `OnlineRobustSubspaceTracker` |
 | Turn a held-out anomaly or monitoring score into a finite-sample alert | `ConformalAlertCalibrator` |
 | Sparse conditional-dependence structure | `RobustGraphicalLasso` or `SGLASSO` |
 | Learned features, embeddings, whitening, or robust kernels | `FeatureGeometry` |
@@ -53,7 +54,7 @@ and API reference.
 
 - **Covariance and scatter:** `FastMCD`, `DetS`, `DetMM`, `MRCD`, `KMRCD`, regularized Cauchy, Student-t, and Tyler estimators.
 - **Cellwise and structured data:** `CellMCD`, `CellRCov`, `MMCD`, `RobustMultilinearPCA`, `CellPCA`, and `SparseCellPCA`.
-- **PCA and monitoring:** `RobustPCA`, `DensityPowerRobustPCA`, experimental `DistributionallyRobustPCA`, `SubspaceStability`, `RobustSubspaceMonitor`, and `ConformalAlertCalibrator`.
+- **PCA and monitoring:** `RobustPCA`, `DensityPowerRobustPCA`, experimental `DistributionallyRobustPCA`, `SubspaceStability`, `RobustSubspaceMonitor`, experimental `OnlineRobustSubspaceTracker`, and `ConformalAlertCalibrator`.
 - **Sparse precision:** `RobustGraphicalLasso` and `SGLASSO`.
 - **Latent structure:** `TwoScatterICA`, `SOBI`, `RobustSOBI`, and `RobustFactorModel`.
 - **Reusable geometry:** robust distances, anomaly diagnostics, whitening, `FeatureGeometry`, full-matrix kernels, SPD utilities, and optional OpenMP acceleration.
@@ -146,6 +147,25 @@ alerts = calibrator.predict_alerts(-det.score_samples(X_new))
 
 The usual finite-sample marginal interpretation requires exchangeability between
 the held-out calibration scores and future inlier scores.
+
+For a normal subspace that is expected to evolve gradually, use the experimental
+online tracker rather than silently updating a frozen monitor:
+
+```python
+tracker = rc.OnlineRobustSubspaceTracker(
+    n_components=3,
+    update_interval=64,
+    buffer_size=256,
+    adaptation_rate=0.5,
+).fit(X_initial)
+
+update = tracker.update(X_next_batch)
+print(update.n_accepted, update.n_rejected, update.change_detected)
+```
+
+The tracker is a RobustCov composition inspired by robust subspace-tracking
+research; it is not an implementation of NORST and does not inherit NORST's
+theoretical guarantees.
 
 For deterministic smooth high-breakdown scatter and an efficiency refinement:
 

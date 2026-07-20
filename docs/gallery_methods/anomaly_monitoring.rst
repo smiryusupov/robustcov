@@ -42,6 +42,11 @@ screening a one-class population, or monitoring drift over time.
        <h3>Robust preprocessing</h3>
        <p>Filter or weight contaminated rows before downstream supervised learning.</p>
      </a>
+     <a class="gallery-card" href="../gallery/online_robust_subspace_tracking.html">
+       <div class="gallery-card-placeholder">Adaptive<br>subspace</div>
+       <h3>Online subspace tracking</h3>
+       <p>Follow gradual normal-subspace change without letting sparse cells or dense row anomalies dominate updates.</p>
+     </a>
    </div>
 
 Runnable examples
@@ -52,6 +57,7 @@ Runnable examples
    python examples/use_case_fraud_screening.py
    python examples/use_case_sensor_anomaly.py
    python examples/plot_robust_subspace_monitoring.py
+   python examples/online_robust_subspace_tracking.py
    python examples/distributionally_robust_pca_drift_monitoring.py
    python examples/feature_geometry_embedding_monitoring.py
    python examples/run_use_case_gallery.py --group monitoring

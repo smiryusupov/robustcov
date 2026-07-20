@@ -121,6 +121,8 @@ __all__ = [
     "RobustSubspaceMonitor",
     "SubspaceDriftResult",
     "ConformalAlertCalibrator",
+    "OnlineRobustSubspaceTracker",
+    "OnlineSubspaceUpdate",
     "CellwiseRegularizedCovariance",
     "CellRCov",
     "CellwiseRobustCovariance",
@@ -219,6 +221,7 @@ from .pca import RobustPCA
 
 from .monitoring import RobustSubspaceMonitor, SubspaceDriftResult
 from .calibration import ConformalAlertCalibrator
+from .online_subspace import OnlineRobustSubspaceTracker, OnlineSubspaceUpdate
 
 
 # Expose provenance on public estimator classes and numerical algorithms.

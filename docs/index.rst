@@ -71,7 +71,7 @@ Choose your starting point
      - ``RobustPCA`` or ``CellPCA``
    * - Monitor a changing process or embedding stream
      - :doc:`monitoring`
-     - ``RobustSubspaceMonitor`` or ``FeatureGeometry``
+     - ``RobustSubspaceMonitor``, ``OnlineRobustSubspaceTracker``, or ``FeatureGeometry``
    * - Recover a sparse conditional-dependence graph
      - :doc:`sparse_precision`
      - ``RobustGraphicalLasso`` or ``SGLASSO``
@@ -116,6 +116,7 @@ for project maturity.
 
    workflows
    conformal_alert_calibration
+   online_subspace_tracking
    use_case_gallery
 
 .. toctree::

@@ -388,6 +388,24 @@ Numerical algorithms
 
 **Implementation notes:** The Jacobi method is established; the native implementation and package API are robustcov engineering contributions.
 
+Online subspace tracking
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _method-provenance-onlinerobustsubspacetracker:
+
+``OnlineRobustSubspaceTracker``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Status:** robustcov composite/workflow
+
+**Method:** Bounded-memory robust mini-batch tracking of a slowly changing principal subspace with projected-residual cell repair and dense-row rejection.
+
+**Primary references:** `Narayanamurthy & Vaswani (2018) <https://proceedings.mlr.press/v80/narayanamurthy18a.html>`__, `Zhu & Shen (2022) <https://proceedings.mlr.press/v162/zhu22i.html>`__, `Hubert et al. (2005) <https://doi.org/10.1198/004017004000000563>`__
+
+**robustcov contribution:** A sklearn-style streaming workflow combining robust PCA initialization, projected-residual screening, bounded recent-sample updates, projector interpolation, diagnostics, and slow-change safeguards.
+
+**Implementation notes:** This experimental estimator is inspired by robust subspace-tracking research but is not NORST: it does not solve projected l1 recovery and carries no NORST support-recovery or tracking-delay guarantee.
+
 Preprocessing
 ~~~~~~~~~~~~~
 

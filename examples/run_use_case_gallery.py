@@ -43,6 +43,7 @@ GROUPS: dict[str, list[str]] = {
     "pca": [
         "distributionally_robust_pca.py",
         "distributionally_robust_pca_drift_monitoring.py",
+        "online_robust_subspace_tracking.py",
         "robust_factor_model.py",
         "plot_robust_pca_yield_curve.py",
         "plot_robust_pca_subspace_stability.py",
@@ -72,6 +73,7 @@ GROUPS: dict[str, list[str]] = {
         "use_case_quality_control.py",
         "plot_robust_subspace_monitoring.py",
         "distributionally_robust_pca_drift_monitoring.py",
+        "online_robust_subspace_tracking.py",
         "feature_geometry_drift_detection.py",
         "feature_geometry_embedding_monitoring.py",
         "use_case_breast_cancer_screening.py",
