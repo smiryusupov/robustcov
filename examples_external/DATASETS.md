@@ -12,8 +12,8 @@ according to their licenses and run the matching script.
 | Medical screening | medical tabular CSV with diagnosis/outcome label | `kaggle_medical_screening.py` |
 | Market stress | asset price or return CSV, date + one column per asset | `finance_market_stress.py` |
 | Rolling market regimes | asset price or return CSV | `finance_rolling_window_anomaly.py` |
-| Temporal sensor drift | UCI Gas Sensor Array Drift at Different Concentrations | `gas_sensor_drift_dro_pca.py` |
-| Operating-regime and degradation shift | NASA C-MAPSS FD002/FD004 | `cmapss_dro_pca_monitoring.py` |
+| Exploratory batch-level sensor drift | UCI Gas Sensor Array Drift at Different Concentrations | `gas_sensor_drift_dro_pca.py` |
+| Reviewed operating-regime and degradation benchmark | NASA C-MAPSS FD002/FD004 | `cmapss_dro_pca_monitoring.py` |
 
 Recommended result workflow:
 

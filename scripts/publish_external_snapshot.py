@@ -49,22 +49,6 @@ class SnapshotProfile:
 
 
 PROFILES: dict[str, SnapshotProfile] = {
-    "gas_sensor_drift": SnapshotProfile(
-        slug="gas_sensor_drift",
-        title="UCI Gas Sensor Drift",
-        protocol="DRO-PCA temporal drift monitoring",
-        default_results="results/external/gas_sensor_drift_dro_pca",
-        figures=(
-            ("batch_risk.png", "Held-out temporal reconstruction risk", "Mean reconstruction risk across temporal batches."),
-            ("batch_alert_rates.png", "Calibrated alert rates", "Window alert rates after independent early-batch calibration."),
-            ("sensor_failure_control.png", "Synthetic sensor-failure control", "Alert response to the explicitly labeled off-geometry control."),
-        ),
-        tables=("summary.csv",),
-        description=(
-            "A direct temporal-drift benchmark with 13,910 observations, 128 sensor-derived "
-            "features, six gases, and ten batches collected over 36 months."
-        ),
-    ),
     "cmapss_fd002": SnapshotProfile(
         slug="cmapss_fd002",
         title="NASA C-MAPSS FD002",
@@ -363,6 +347,29 @@ def publish(
     return destination
 
 
+def remove(root: Path, slug: str, *, missing_ok: bool = False) -> bool:
+    """Remove one committed snapshot and regenerate the gallery registry."""
+
+    manifest_path = root / "docs/_static/external_results/manifest.json"
+    manifest = _load_manifest(manifest_path)
+    snapshots = manifest["snapshots"]
+    assert isinstance(snapshots, list)
+    retained = [item for item in snapshots if item.get("slug") != slug]
+    destination = root / "docs/_static/external_results" / slug
+    page = root / "docs/external_results" / f"{slug}.rst"
+    existed = len(retained) != len(snapshots) or destination.exists() or page.exists()
+    if not existed and not missing_ok:
+        raise SnapshotError(f"snapshot does not exist: {slug}")
+    if destination.exists():
+        shutil.rmtree(destination)
+    if page.exists():
+        page.unlink()
+    manifest["snapshots"] = retained
+    _atomic_write_json(manifest_path, manifest)
+    _regenerate_includes(root, manifest)
+    return existed
+
+
 def check(root: Path, *, rewrite_generated: bool = False) -> None:
     manifest_path = root / "docs/_static/external_results/manifest.json"
     manifest = _load_manifest(manifest_path)
@@ -376,6 +383,8 @@ def check(root: Path, *, rewrite_generated: bool = False) -> None:
             errors.append(f"invalid or duplicate snapshot slug: {slug!r}")
             continue
         seen.add(slug)
+        if slug not in PROFILES:
+            errors.append(f"snapshot slug is not an approved public profile: {slug!r}")
         directory = root / "docs/_static/external_results" / slug
         snapshot_path = directory / "snapshot.json"
         page = root / "docs/external_results" / f"{slug}.rst"
@@ -441,6 +450,10 @@ def main(argv: Iterable[str] | None = None) -> int:
     publish_parser.add_argument("--generated-at", help="ISO-8601 timestamp; defaults to current UTC")
     publish_parser.add_argument("--replace", action="store_true")
 
+    remove_parser = subparsers.add_parser("remove", help="remove one published snapshot")
+    remove_parser.add_argument("slug")
+    remove_parser.add_argument("--missing-ok", action="store_true")
+
     args = parser.parse_args(list(argv) if argv is not None else None)
     root = args.root.resolve()
     try:
@@ -451,6 +464,10 @@ def main(argv: Iterable[str] | None = None) -> int:
         if args.action == "check":
             check(root, rewrite_generated=args.rewrite_generated)
             print("external snapshot registry: OK")
+            return 0
+        if args.action == "remove":
+            existed = remove(root, args.slug, missing_ok=args.missing_ok)
+            print(f"removed,{args.slug}" if existed else f"absent,{args.slug}")
             return 0
         profile = PROFILES[args.dataset]
         results = args.results or root / profile.default_results

@@ -34,17 +34,18 @@ First run the protocol locally. For example:
 
 .. code-block:: bash
 
-   python examples_external/gas_sensor_drift_dro_pca.py \
+   python examples_external/cmapss_dro_pca_monitoring.py \
      --download \
-     --outdir results/external/gas_sensor_drift_dro_pca
+     --subset FD002 \
+     --outdir results/external/cmapss_fd002
 
 Then publish only its approved outputs:
 
 .. code-block:: bash
 
-   python scripts/publish_external_snapshot.py publish gas_sensor_drift \
-     --results results/external/gas_sensor_drift_dro_pca \
-     --command "python examples_external/gas_sensor_drift_dro_pca.py --download --outdir results/external/gas_sensor_drift_dro_pca"
+   python scripts/publish_external_snapshot.py publish cmapss_fd002 \
+     --results results/external/cmapss_fd002 \
+     --command "python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002 --outdir results/external/cmapss_fd002"
 
 Review the generated Git diff before committing. The publisher removes local
 cache paths, copies only allowlisted files, records SHA-256 digests, and creates
@@ -55,6 +56,16 @@ Validate all committed snapshots with:
 .. code-block:: bash
 
    python scripts/publish_external_snapshot.py check
+
+Remove a previously published snapshot with:
+
+.. code-block:: bash
+
+   python scripts/publish_external_snapshot.py remove <slug>
+
+Only the approved C-MAPSS FD002 and FD004 profiles may be published. Dataset
+loaders and exploratory protocols may remain available without appearing in the
+public snapshot gallery.
 
 Selected benchmark roadmap
 --------------------------
@@ -67,14 +78,14 @@ Selected benchmark roadmap
      - Repository interface
      - Scientific role
      - Delivery phase
-   * - UCI Gas Sensor Drift
-     - Managed public archive loader
-     - Direct temporal sensor drift
-     - Available now; publish the first reviewed snapshot.
    * - NASA C-MAPSS FD002 and FD004
      - Managed public archive loader
      - Operating-regime tolerance versus degradation
-     - Available now; publish separate FD002 and FD004 snapshots.
+     - Current reviewed public benchmark family; publish separate FD002 and FD004 snapshots.
+   * - UCI Gas Sensor Drift
+     - Managed public archive loader
+     - Exploratory batch-level covariance drift
+     - Loader and local protocol retained; not an approved public snapshot profile.
    * - UCI Air Quality
      - Managed public archive loader
      - Sensor response drift against certified reference measurements

@@ -2,8 +2,10 @@
 
 ## Unreleased
 
-- Add a reviewed external-benchmark snapshot publisher, provenance manifest,
+- Add a reviewed C-MAPSS FD002/FD004 snapshot publisher, provenance manifest,
   Read the Docs validation, and a staged roadmap for public-dataset evidence.
+- Retain UCI Gas Sensor Drift as an explicit-cache loader and exploratory local
+  analysis, outside the reviewed public snapshot gallery.
 
 - Added cache-only external dataset loaders for UCI Gas Sensor Array Drift and NASA C-MAPSS, including atomic downloads, checksum/fingerprint validation, and safe nested-ZIP extraction.
 - Added real-data DRO-PCA protocols for temporal gas-sensor drift and operating-regime-aware C-MAPSS degradation monitoring without committing raw data.

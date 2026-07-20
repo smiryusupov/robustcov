@@ -46,8 +46,8 @@ A manually downloaded ZIP can be used without network access:
        download=False,
    )
 
-DRO-PCA drift workflow
-----------------------
+Exploratory batch analysis
+--------------------------
 
 Run:
 
@@ -55,17 +55,13 @@ Run:
 
    python examples_external/gas_sensor_drift_dro_pca.py --download
 
-The script:
-
-1. fits gas-specific early-batch regressions against log concentration;
-2. robustly standardizes the residual sensor features;
-3. fits on batches 1--3;
-4. estimates a diagonal transport geometry from batch 4--5 mean shifts;
-5. calibrates window thresholds independently on batches 4--5;
-6. evaluates temporal batches 6--10;
-7. applies a clearly labelled synthetic sensor-failure control as an
-   off-geometry stress test.
+The script residualizes known gas and concentration effects, compares early and
+later batches, and writes local diagnostic figures. It is retained as an
+**exploratory batch-level analysis**, not as a reviewed external benchmark. In
+particular, within-batch row ordering and the small number of calibration windows
+make the current alert-rate output unsuitable as an operational monitoring claim.
 
 Outputs are written under
-``results/external/gas_sensor_drift_dro_pca``.  The committed repository contains
-only the loader, protocol, tests, and documentation—not the raw measurements.
+``results/external/gas_sensor_drift_dro_pca`` and remain untracked. The committed
+repository contains only the loader, exploratory protocol, tests, and
+documentation—not the raw measurements or generated result snapshots.

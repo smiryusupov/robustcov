@@ -1,16 +1,16 @@
-name: External data validation
+name: External C-MAPSS validation
 
 on:
   workflow_dispatch:
     inputs:
       dataset:
-        description: External dataset workflow to run
+        description: C-MAPSS subset to run
         required: true
-        default: gas_sensor_drift
+        default: cmapss_fd002
         type: choice
         options:
-          - gas_sensor_drift
           - cmapss_fd002
+          - cmapss_fd004
           - all
 
 permissions:
@@ -33,19 +33,20 @@ jobs:
           cache: pip
       - name: Install package and example dependencies
         run: python -m pip install -e ".[examples]"
-      - name: Run gas-sensor DRO-PCA workflow
-        if: ${{ inputs.dataset == 'gas_sensor_drift' || inputs.dataset == 'all' }}
-        run: |
-          python examples_external/gas_sensor_drift_dro_pca.py \
-            --download \
-            --outdir results/external/gas_sensor_drift_dro_pca
       - name: Run C-MAPSS FD002 DRO-PCA workflow
         if: ${{ inputs.dataset == 'cmapss_fd002' || inputs.dataset == 'all' }}
         run: |
           python examples_external/cmapss_dro_pca_monitoring.py \
             --download \
             --subset FD002 \
-            --outdir results/external/cmapss_dro_pca_monitoring
+            --outdir results/external/cmapss_fd002
+      - name: Run C-MAPSS FD004 DRO-PCA workflow
+        if: ${{ inputs.dataset == 'cmapss_fd004' || inputs.dataset == 'all' }}
+        run: |
+          python examples_external/cmapss_dro_pca_monitoring.py \
+            --download \
+            --subset FD004 \
+            --outdir results/external/cmapss_fd004
       - name: Upload result summaries and plots only
         uses: actions/upload-artifact@v4
         with:

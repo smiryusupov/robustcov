@@ -16,7 +16,7 @@ Why keep them optional?
 | `kaggle_ieee_cis_fraud.py` | IEEE-CIS Fraud Detection | transaction anomaly scores |
 | `kaggle_predictive_maintenance.py` | predictive-maintenance sensor tables | failure screening |
 | `kaggle_medical_screening.py` | medical tabular diagnosis datasets | patient-level screening |
-| `gas_sensor_drift_dro_pca.py` | UCI gas-sensor temporal batches | distribution-shift-aware PCA monitoring |
+| `gas_sensor_drift_dro_pca.py` | UCI gas-sensor temporal batches | exploratory batch-level drift analysis; not a reviewed snapshot |
 | `cmapss_dro_pca_monitoring.py` | NASA C-MAPSS FD001--FD004 | operating-regime-aware degradation monitoring |
 
 
@@ -53,16 +53,18 @@ After reviewing a run, publish only the approved aggregate figures and summary
 table into the documentation:
 
 ```bash
-python scripts/publish_external_snapshot.py publish gas_sensor_drift \
-  --results results/external/gas_sensor_drift_dro_pca \
-  --command "python examples_external/gas_sensor_drift_dro_pca.py --download --outdir results/external/gas_sensor_drift_dro_pca"
+python scripts/publish_external_snapshot.py publish cmapss_fd002 \
+  --results results/external/cmapss_fd002 \
+  --command "python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002 --outdir results/external/cmapss_fd002"
 
 python scripts/publish_external_snapshot.py check
 ```
 
-The publisher excludes `window_scores.csv`, local cache paths, raw data, and
-embeddings. It records file digests and creates the Sphinx result page and
-gallery card. See `docs/external_snapshot_policy.rst`.
+The publisher currently accepts only the reviewed C-MAPSS FD002 and FD004
+profiles. It excludes `window_scores.csv`, local cache paths, raw data, and
+embeddings, records file digests, and creates the Sphinx result page and gallery
+card. The gas-sensor script remains exploratory and is not published as a
+reference snapshot. See `docs/external_snapshot_policy.rst`.
 
 ## Notebook template
 

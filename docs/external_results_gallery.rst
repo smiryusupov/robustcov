@@ -144,8 +144,7 @@ External examples are optional and dataset-dependent.  The recommended paths are
 
 .. code-block:: bash
 
-   # Explicit cache-only public dataset loaders
-   python examples_external/gas_sensor_drift_dro_pca.py --download
+   # Reviewed public benchmark protocol
    python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002
 
    # Manually downloaded CSV/Kaggle datasets
@@ -156,8 +155,10 @@ External examples are optional and dataset-dependent.  The recommended paths are
      --outdir results/external_registry
 
 The scripts, dataset notes, and notebook templates live under ``examples_external/``.
-Raw datasets are not stored in the repository. See :doc:`external_data` for the
-cache, checksum, archive-safety, and offline-testing policy.
+Raw datasets are not stored in the repository. The UCI gas-sensor loader and
+local analysis remain available as exploratory tools, but they are not part of
+the reviewed snapshot gallery. See :doc:`external_data` for the cache, checksum,
+archive-safety, and offline-testing policy.
 
 .. toctree::
    :maxdepth: 1

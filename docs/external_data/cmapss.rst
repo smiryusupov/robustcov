@@ -62,5 +62,10 @@ The script:
 
 The fault-onset time is not supplied in the training data, so normalized-life
 bins are a transparent evaluation proxy rather than a claim of exact onset
-labels.  Results are written under
+labels. Results are written under
 ``results/external/cmapss_dro_pca_monitoring``; raw data remains in the cache.
+
+FD002 and FD004 are the approved reviewed external snapshot profiles. After
+local review, publish their aggregate figures and summary table with
+``scripts/publish_external_snapshot.py``. Read the Docs renders only those
+committed snapshots and never downloads or executes C-MAPSS.
