@@ -180,10 +180,28 @@ Robust factor models
    :undoc-members:
    :show-inheritance:
 
+Low-rank plus sparse decomposition
+----------------------------------
+
+.. automodule:: robustcov.decomposition
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Robust principal component analysis
 -----------------------------------
 
 .. autoclass:: robustcov.RobustPCA
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Experimental adversarial covariance filtering
+---------------------------------------------
+
+The filtering estimator is available only from ``robustcov.experimental``.
+
+.. autoclass:: robustcov.experimental.SpectralFilteringCovariance
    :members:
    :undoc-members:
    :show-inheritance:

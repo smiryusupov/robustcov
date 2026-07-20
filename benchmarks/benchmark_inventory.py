@@ -42,6 +42,7 @@ COVERAGE = [
     Coverage("cellwise scatter", "CellMCD", "comparative", "benchmarks/compare_methods.py", "cell AUROC / covariance error"),
     Coverage("cellwise scatter", "CellRCov", "comparative", "benchmarks/compare_methods.py", "covariance error"),
     Coverage("matrix scatter", "MatrixMCD", "comparative", "benchmarks/compare_methods.py", "Kronecker covariance error"),
+    Coverage("matrix decomposition", "PrincipalComponentPursuit", "comparative", "benchmarks/principal_component_pursuit_validation.py", "low-rank recovery error / sparse-support recovery"),
     Coverage("PCA", "RobustPCA", "comparative", "benchmarks/latent_structure_benchmarks.py", "subspace error / row AUROC"),
     Coverage("PCA", "DensityPowerRobustPCA", "comparative", "benchmarks/latent_structure_benchmarks.py", "subspace error"),
     Coverage("PCA", "CellPCA", "comparative", "benchmarks/latent_structure_benchmarks.py", "cell AUROC / missing-value MAE"),
@@ -68,6 +69,14 @@ COVERAGE = [
 ]
 
 EXPERIMENTAL_COVERAGE = [
+    Coverage(
+        "experimental scatter",
+        "SpectralFilteringCovariance",
+        "validation",
+        "benchmarks/spectral_filter_covariance_validation.py",
+        "relative covariance error / adversarial-row recall",
+        "practical robustcov spectral-filtering composite; not the optimal Gaussian filtering algorithm",
+    ),
     Coverage(
         "experimental monitoring",
         "OnlineRobustSubspaceTracker",
@@ -102,6 +111,7 @@ ALIASES = {
     "CellwiseMinimumCovarianceDeterminant": "CellMCD",
     "CellwiseRegularizedCovariance": "CellRCov",
     "CellwiseRobustCovariance": "CellRCov",
+    "PCP": "PrincipalComponentPursuit",
     "DPDRobustPCA": "DensityPowerRobustPCA",
     "CellwiseRobustPCA": "CellPCA",
     "CasewiseCellwisePCA": "CellPCA",

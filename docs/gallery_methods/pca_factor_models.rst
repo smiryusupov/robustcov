@@ -7,6 +7,11 @@ and score-versus-orthogonal-distance diagnostics.
 .. raw:: html
 
    <div class="gallery-grid">
+     <a class="gallery-card" href="../gallery/principal_component_pursuit.html">
+       <div class="gallery-card-placeholder">Low rank + sparse<br>matrix separation</div>
+       <h3>Principal Component Pursuit</h3>
+       <p>Separate an incoherent low-rank signal from sparse, arbitrarily large cell corruption.</p>
+     </a>
      <a class="gallery-card" href="../gallery/robust_pca_yield_curve.html">
        <img src="../_static/gallery/robust_pca_yield_curve/factor_loadings.png" alt="Robust PCA yield curve factors">
        <h3>Robust PCA factors</h3>
@@ -59,6 +64,7 @@ Runnable examples
 
 .. code-block:: bash
 
+   python examples/principal_component_pursuit.py
    python examples/online_robust_subspace_tracking.py
    python examples/distributionally_robust_pca.py
    python examples/distributionally_robust_pca_drift_monitoring.py

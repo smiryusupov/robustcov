@@ -9,6 +9,24 @@ methodological contribution.
 
 .. method-provenance-body-start
 
+Adversarial robust covariance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _method-provenance-spectralfilteringcovariance:
+
+``SpectralFilteringCovariance``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Status:** robustcov composite/workflow
+
+**Method:** Iterative spectral filtering of lifted quadratic features for approximately Gaussian data with adversarial row contamination.
+
+**Primary references:** `Diakonikolas et al. (2017) <https://proceedings.mlr.press/v70/diakonikolas17a.html>`__, `Cheng et al. (2019) <https://proceedings.mlr.press/v99/cheng19a.html>`__, `Novikov (2025) <https://arxiv.org/abs/2502.06564>`__
+
+**robustcov contribution:** A deterministic sklearn-style experimental estimator with geometric-median centering, matrix-free quadratic filtering, bounded row removal, regularized covariance recovery, diagnostics, and benchmark integration.
+
+**Implementation notes:** This is a practical robustcov composite inspired by filtering-based algorithmic robust statistics. It is not the optimal Gaussian covariance algorithm of the cited papers, does not implement their full recursive machinery, and carries none of their finite-sample error guarantees.
+
 Anomaly detection
 ~~~~~~~~~~~~~~~~~
 
@@ -298,6 +316,26 @@ Kernel/input geometry
 **robustcov contribution:** Estimator-to-metric adapter, pairwise distance implementation, sklearn/GPyTorch integration, and scale handling.
 
 **Implementation notes:** This is software infrastructure connecting robust scatter to downstream metric-based models.
+
+Low-rank plus sparse decomposition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _method-provenance-principalcomponentpursuit:
+
+``PrincipalComponentPursuit``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Status:** Literature implementation
+
+**Method:** Convex decomposition of a data matrix into low-rank and entrywise-sparse components.
+
+**Primary references:** `Candès et al. (2011) <https://doi.org/10.1145/1970392.1970395>`__, `Lin, Chen & Ma (2010) <https://arxiv.org/abs/1009.5055>`__
+
+**robustcov contribution:** Independent NumPy implementation of inexact augmented Lagrange multipliers, sklearn-style parameter handling, decomposition diagnostics, convergence history, projection helpers, examples, and benchmark coverage.
+
+**Implementation notes:** The implementation solves the canonical equality-constrained PCP program. It does not implement stable PCP for dense noise, missing-data matrix completion, Outlier Pursuit for column-sparse corruption, or an online decomposition algorithm.
+
+**Public aliases:** ``PCP``
 
 M-scatter infrastructure
 ~~~~~~~~~~~~~~~~~~~~~~~~

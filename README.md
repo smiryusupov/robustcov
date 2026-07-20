@@ -19,7 +19,7 @@ Use it to:
 
 - fit robust covariance or scatter and compute Mahalanobis anomaly scores;
 - convert held-out anomaly or monitoring scores into conformal p-values and calibrated alert labels;
-- perform robust PCA, reconstruction diagnostics, and frozen-reference subspace monitoring;
+- perform robust PCA, low-rank-plus-sparse decomposition, reconstruction diagnostics, and subspace monitoring;
 - build robust whitening transforms, kernels, and metrics for learned features or embeddings;
 - handle bad cells, missing values, matrix-valued observations, and multilinear low-rank structure;
 - estimate sparse precision graphs or recover robust independent sources and latent factors.
@@ -38,6 +38,7 @@ platform.
 | A minority of complete rows are outliers and `n` is comfortably larger than `p` | `FastMCD`, `DetS`, or `DetMM` |
 | Broad heavy tails or an ill-conditioned/high-dimensional covariance | `RegularizedCauchy`, `StudentTScatter`, `RegularizedTyler`, or `MRCD` |
 | Isolated bad cells or missing entries | `CellMCD`, `CellRCov`, `CellPCA`, or `SparseCellPCA` |
+| A matrix is low rank plus sparse, arbitrarily large cell corruption | `PrincipalComponentPursuit` (`PCP`) |
 | Matrix-valued or multilinear observations | `MMCD` or `RobustMultilinearPCA` |
 | Robust dimensionality reduction or a fixed-reference subspace monitor | `RobustPCA`, `DistributionallyRobustPCA`, `SubspaceStability`, or `RobustSubspaceMonitor` |
 | Follow a slowly changing subspace in a stream | Experimental `OnlineRobustSubspaceTracker` |
@@ -54,7 +55,7 @@ and API reference.
 
 - **Covariance and scatter:** `FastMCD`, `DetS`, `DetMM`, `MRCD`, `KMRCD`, regularized Cauchy, Student-t, and Tyler estimators.
 - **Cellwise and structured data:** `CellMCD`, `CellRCov`, `MMCD`, `RobustMultilinearPCA`, `CellPCA`, and `SparseCellPCA`.
-- **PCA and monitoring:** `RobustPCA`, `DensityPowerRobustPCA`, experimental `DistributionallyRobustPCA`, `SubspaceStability`, `RobustSubspaceMonitor`, experimental `OnlineRobustSubspaceTracker`, and `ConformalAlertCalibrator`.
+- **Matrix decomposition, PCA, and monitoring:** `PrincipalComponentPursuit`, `RobustPCA`, `DensityPowerRobustPCA`, experimental `DistributionallyRobustPCA`, `SubspaceStability`, `RobustSubspaceMonitor`, experimental `OnlineRobustSubspaceTracker`, and `ConformalAlertCalibrator`.
 - **Sparse precision:** `RobustGraphicalLasso` and `SGLASSO`.
 - **Latent structure:** `TwoScatterICA`, `SOBI`, `RobustSOBI`, and `RobustFactorModel`.
 - **Reusable geometry:** robust distances, anomaly diagnostics, whitening, `FeatureGeometry`, full-matrix kernels, SPD utilities, and optional OpenMP acceleration.
@@ -321,6 +322,26 @@ print(auto.best_estimator_name_)
 print(auto.summary())
 ```
 
+## Low-rank plus sparse decomposition
+
+`PrincipalComponentPursuit` implements the canonical convex program often
+called robust PCA in the matrix-decomposition literature. It separates one
+observed matrix into a low-rank signal and sparse, arbitrarily large cell
+corruption:
+
+```python
+pcp = rc.PrincipalComponentPursuit(tol=1e-7).fit(X)
+
+low_rank = pcp.low_rank_
+sparse_corruption = pcp.sparse_
+flagged_cells = pcp.sparse_support_
+print(pcp.decomposition_summary())
+```
+
+Use it when the scientific model is `X = low_rank + sparse`. It is not a
+covariance estimator, does not handle missing values or dense noise, and does
+not replace `RobustPCA` for heavy tails or rowwise outliers.
+
 ## Robust PCA
 
 `RobustPCA` computes principal components from any compatible robust scatter
@@ -381,6 +402,31 @@ print(stability.max_principal_angle_degrees_)
 Use ``resampling="iid"`` for independent rows, a block or stationary bootstrap
 for ordered weakly dependent observations, and ``resampling="cluster"`` for
 repeated measurements grouped by subject, site, or account.
+
+## Experimental adversarial covariance filtering
+
+For an approximately Gaussian reference with a known upper bound on arbitrarily
+replaced rows, ``robustcov.experimental`` provides a practical spectral-filtering
+composite:
+
+```python
+from robustcov.experimental import SpectralFilteringCovariance
+
+filtered = SpectralFilteringCovariance(
+    contamination=0.10,
+    random_state=0,
+).fit(X)
+
+print(filtered.n_removed_)
+print(filtered.covariance_)
+```
+
+The estimator filters dominant directions in lifted quadratic features and
+exposes its support and iteration diagnostics. It is inspired by algorithmic
+robust-statistics filtering, but it is not the optimal Gaussian algorithm from
+the cited papers and carries no corresponding finite-sample guarantee. Use the
+Tyler/Student-t/Cauchy family instead for clean heavy-tailed data, and CellMCD or
+CellRCov for cellwise corruption. See ``docs/adversarial_covariance_filtering.rst``.
 
 ## Experimental distributionally robust PCA
 
@@ -455,6 +501,7 @@ it is detected.
 | `RegularizedTyler` | Heavy-tailed shape estimation | Scale-free shape unless scale correction is requested |
 | `AutoRobustScatter` | Exploratory estimator selection | Diagnostic or stability-based selector |
 | `ClusterRobustOutlierDetector` | Multimodal data | Cluster-then-local-robust-scatter diagnostic |
+| `PrincipalComponentPursuit` | One matrix is low rank plus sparse gross cell corruption | Nuclear-norm plus entrywise-L1 convex decomposition solved by inexact ALM |
 | `RobustPCA` | Robust dimensionality reduction and subspace diagnostics | Eigendecomposition of a robust location and scatter estimate |
 | `DensityPowerRobustPCA` | Direct robust low-rank fitting with cell residual weights | Gaussian density-power-divergence alternating regressions |
 | experimental `DistributionallyRobustPCA` | Principal subspaces under stated train-to-target distribution shift | Exact weighted-Wasserstein risk over a deterministic adaptive candidate path |

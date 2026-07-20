@@ -339,3 +339,13 @@ python benchmarks/benchmark_inventory.py \
 
 Aliases are mapped to their canonical estimator rather than counted as separate
 algorithms.  Add an inventory row whenever a new public estimator is added.
+
+### Principal Component Pursuit validation
+
+```bash
+python benchmarks/principal_component_pursuit_validation.py
+```
+
+Checks low-rank recovery on a clean control and under sparse gross entrywise
+corruption. The comparison is with rank-matched truncated SVD and is specific
+to the PCP data model.

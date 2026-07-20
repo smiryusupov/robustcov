@@ -27,11 +27,13 @@ def _load_runner_module():
 def test_method_groups_reference_existing_scripts():
     runner = _load_runner_module()
     assert {"quick", "ica", "pca", "robust", "monitoring"} <= set(runner.GROUPS)
+    assert "principal_component_pursuit.py" in runner.GROUPS["pca"]
     assert "distributionally_robust_pca.py" in runner.GROUPS["pca"]
     assert "distributionally_robust_pca_drift_monitoring.py" in runner.GROUPS["pca"]
     assert "distributionally_robust_pca_drift_monitoring.py" in runner.GROUPS["monitoring"]
     assert "online_robust_subspace_tracking.py" in runner.GROUPS["pca"]
     assert "online_robust_subspace_tracking.py" in runner.GROUPS["monitoring"]
+    assert "adversarial_covariance_filtering.py" in runner.GROUPS["robust"]
     for scripts in runner.GROUPS.values():
         for script in scripts:
             assert (EXAMPLES / script).is_file(), script
@@ -46,9 +48,11 @@ def test_method_gallery_pages_and_detailed_examples_exist():
         DOCS / "gallery" / "ica_two_scatter.rst",
         DOCS / "gallery" / "sobi_source_separation.rst",
         DOCS / "gallery" / "robust_factor_model.rst",
+        DOCS / "gallery" / "principal_component_pursuit.rst",
         DOCS / "gallery" / "distributionally_robust_pca.rst",
         DOCS / "gallery" / "distributionally_robust_pca_drift_monitoring.rst",
         DOCS / "gallery" / "online_robust_subspace_tracking.rst",
+        DOCS / "gallery" / "adversarial_covariance_filtering.rst",
     ]
     for path in expected:
         assert path.is_file(), path
@@ -76,6 +80,7 @@ def test_method_gallery_pages_and_detailed_examples_exist():
 @pytest.mark.parametrize(
     ("script", "expected_text"),
     [
+        ("principal_component_pursuit.py", "Principal Component Pursuit,"),
         ("ica_two_scatter.py", "Minimum-distance index:"),
         ("sobi_source_separation.py", "Robust SOBI MDI:"),
         ("robust_factor_model.py", "Selected factor count:"),
@@ -110,6 +115,7 @@ def test_new_method_examples_run(script: str, expected_text: str, tmp_path):
     assert result.returncode == 0, result.stdout + result.stderr
     assert expected_text in result.stdout
     expected_images = {
+        "principal_component_pursuit.py": {"decomposition.png", "convergence.png"},
         "ica_two_scatter.py": {"source_recovery.png", "mixture_and_sources.png"},
         "sobi_source_separation.py": {"source_recovery.png", "lag_signatures.png", "mdi_comparison.png"},
         "robust_factor_model.py": {"loading_recovery.png", "factor_scores.png", "factor_selection.png"},

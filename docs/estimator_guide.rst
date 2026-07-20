@@ -50,6 +50,10 @@ reproducible cross-method benchmarks.
      - ``RobustMultilinearPCA``
      - Preserves row and column modes while applying cellwise and casewise robust weights.
      - Requires fixed mode ranks; the package initialization is not reference ROMPCA parity.
+   * - One observed matrix is low rank plus sparse, arbitrarily large cell corruption
+     - ``PrincipalComponentPursuit``
+     - Recovers explicit low-rank and sparse matrices through the canonical convex PCP program.
+     - Requires incoherence/sparsity assumptions; no missing values, dense-noise model, or out-of-sample sparse decomposition.
    * - Complete low-rank data contain large rowwise or cellwise reconstruction errors
      - ``DensityPowerRobustPCA``
      - Fits scores and loadings directly with a tunable density-power loss.
@@ -93,6 +97,7 @@ Estimator status
 
 Stable prototype APIs:
 
+* ``PrincipalComponentPursuit``
 * ``FastMCD``
 * ``DetS`` and ``DetMM``
 * ``MRCD``

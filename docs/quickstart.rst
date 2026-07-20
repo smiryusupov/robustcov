@@ -43,6 +43,23 @@ Fit the score model on training data and calibrate a separate reference split:
 See :doc:`conformal_alert_calibration` for the exchangeability assumption,
 finite-sample p-value resolution, and monitoring use.
 
+Low-rank plus sparse decomposition
+----------------------------------
+
+When one matrix is the sum of a low-rank signal and sparse, arbitrarily large
+cell corruption, use Principal Component Pursuit rather than a scatter-based
+PCA estimator:
+
+.. code-block:: python
+
+   pcp = rc.PrincipalComponentPursuit(tol=1e-7).fit(X)
+   low_rank = pcp.low_rank_
+   sparse_corruption = pcp.sparse_
+   print(pcp.decomposition_summary())
+
+See :doc:`principal_component_pursuit` for the incoherence/sparsity assumptions
+and the distinction from :class:`robustcov.RobustPCA`.
+
 Small-sample heavy-tail scatter
 -------------------------------
 

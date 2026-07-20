@@ -90,6 +90,11 @@ Benchmark coverage inventory
      - comparative
      - Kronecker covariance error
      - ``benchmarks/compare_methods.py``
+   * - matrix decomposition
+     - ``PrincipalComponentPursuit``
+     - comparative
+     - low-rank recovery error / sparse-support recovery
+     - ``benchmarks/principal_component_pursuit_validation.py``
    * - PCA
      - ``RobustPCA``
      - comparative
@@ -205,6 +210,11 @@ Benchmark coverage inventory
      - performance
      - complete-fit runtime/equivalence
      - ``benchmarks/estimator_optimization_gate.py``
+   * - experimental scatter
+     - ``SpectralFilteringCovariance``
+     - validation
+     - relative covariance error / adversarial-row recall
+     - ``benchmarks/spectral_filter_covariance_validation.py``
    * - experimental monitoring
      - ``OnlineRobustSubspaceTracker``
      - validation

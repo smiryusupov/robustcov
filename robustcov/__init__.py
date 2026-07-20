@@ -30,6 +30,7 @@ from .sparse_precision import (
     SGLASSO,
 )
 from .stability import SubspaceStability
+from .decomposition import PrincipalComponentPursuit, PCP, PCPHistoryStep
 from .ica import TwoScatterICA
 from .sobi import SOBI, RobustSOBI
 from .factor_models import RobustFactorModel, spatial_kendall_matrix
@@ -99,6 +100,9 @@ from .plotting import (
 
 __all__ = [
     "RobustPCA",
+    "PrincipalComponentPursuit",
+    "PCP",
+    "PCPHistoryStep",
     "TwoScatterICA",
     "SOBI",
     "RobustSOBI",

@@ -14,6 +14,7 @@ scatter,HellingerRegularizedTyler,comparative,benchmarks/small_sample_heavy_tail
 cellwise scatter,CellMCD,comparative,benchmarks/compare_methods.py,cell AUROC / covariance error,
 cellwise scatter,CellRCov,comparative,benchmarks/compare_methods.py,covariance error,
 matrix scatter,MatrixMCD,comparative,benchmarks/compare_methods.py,Kronecker covariance error,
+matrix decomposition,PrincipalComponentPursuit,comparative,benchmarks/principal_component_pursuit_validation.py,low-rank recovery error / sparse-support recovery,
 PCA,RobustPCA,comparative,benchmarks/latent_structure_benchmarks.py,subspace error / row AUROC,
 PCA,DensityPowerRobustPCA,comparative,benchmarks/latent_structure_benchmarks.py,subspace error,
 PCA,CellPCA,comparative,benchmarks/latent_structure_benchmarks.py,cell AUROC / missing-value MAE,
@@ -37,5 +38,6 @@ geometry,ClassConditionalFeatureGeometry,workflow,examples/feature_geometry_clas
 geometry,RobustInputMetric,workflow,examples/gp_robust_input_metric.py,kernel/input-metric behavior,
 preprocessing,RobustMedianImputer,workflow,examples/use_case_ml_preprocessing.py,downstream classification,
 scatter base,IterativeMScatter,performance,benchmarks/estimator_optimization_gate.py,complete-fit runtime/equivalence,
+experimental scatter,SpectralFilteringCovariance,validation,benchmarks/spectral_filter_covariance_validation.py,relative covariance error / adversarial-row recall,practical robustcov spectral-filtering composite; not the optimal Gaussian filtering algorithm
 experimental monitoring,OnlineRobustSubspaceTracker,validation,benchmarks/online_subspace_tracking_validation.py,projector error under gradual rotation / corruption-screening diagnostics,robustcov composite inspired by online robust subspace-tracking research; not NORST
 experimental PCA,DistributionallyRobustPCA,comparative,benchmarks/distributionally_robust_pca.py,held-out target reconstruction risk under distribution shift,exact weighted-Wasserstein risk evaluated over a deterministic candidate path

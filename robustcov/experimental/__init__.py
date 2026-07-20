@@ -9,6 +9,10 @@ from .distributionally_robust_pca import (
 )
 
 from ..online_subspace import OnlineRobustSubspaceTracker, OnlineSubspaceUpdate
+from .spectral_filter_covariance import (
+    SpectralFilteringCovariance,
+    SpectralFilterStep,
+)
 
 from ..provenance import attach_method_provenance
 
@@ -17,6 +21,8 @@ __all__ = [
     "WassersteinRobustPCA",
     "OnlineRobustSubspaceTracker",
     "OnlineSubspaceUpdate",
+    "SpectralFilteringCovariance",
+    "SpectralFilterStep",
 ]
 
 attach_method_provenance(globals())

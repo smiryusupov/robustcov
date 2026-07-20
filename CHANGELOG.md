@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added ``PrincipalComponentPursuit`` / ``PCP`` for canonical low-rank-plus-sparse matrix decomposition, with inexact-ALM optimization, cell/row/column diagnostics, convergence history, validation, provenance, API documentation, and an example.
+
+- Added experimental ``SpectralFilteringCovariance`` for bounded adversarial whole-row contamination, with matrix-free quadratic filtering, diagnostics, validation, provenance, API documentation, and an example.
+
 - Added experimental ``OnlineRobustSubspaceTracker`` for bounded-memory adaptation to gradually changing principal subspaces, with projected-residual cell repair, dense-row rejection, slow-change safeguards, diagnostics, benchmarks, and explicit non-NORST provenance.
 - Added ``ConformalAlertCalibrator`` for conservative split-conformal p-values and alert labels from arbitrary anomaly or monitoring scores, including finite-sample resolution diagnostics and C-MAPSS integration.
 - Added conformal-calibration validation, provenance, API documentation, and a task-oriented workflows page required by the documentation landing page.

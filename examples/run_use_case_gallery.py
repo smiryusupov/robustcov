@@ -41,6 +41,7 @@ GROUPS: dict[str, list[str]] = {
         "source_separation_and_factor_models.py",
     ],
     "pca": [
+        "principal_component_pursuit.py",
         "distributionally_robust_pca.py",
         "distributionally_robust_pca_drift_monitoring.py",
         "online_robust_subspace_tracking.py",
@@ -54,6 +55,7 @@ GROUPS: dict[str, list[str]] = {
         "plot_robust_multilinear_pca.py",
     ],
     "robust": [
+        "adversarial_covariance_filtering.py",
         "use_case_finance_risk.py",
         "use_case_portfolio_stress.py",
         "plot_mrcd_high_dimensional_outliers.py",

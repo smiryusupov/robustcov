@@ -23,6 +23,7 @@ python examples/run_use_case_gallery.py --all
 
 ## PCA and factor models
 
+- `principal_component_pursuit.py` – canonical low-rank-plus-sparse matrix decomposition under sparse gross cell corruption.
 - `distributionally_robust_pca.py` – weighted-Wasserstein PCA under structured deployment shift.
 - `distributionally_robust_pca_drift_monitoring.py` – calibrated window monitoring that tolerates geometry-aligned shift and flags off-geometry drift.
 - `robust_factor_model.py` – robust static factor model with automatic factor-count selection.
@@ -39,6 +40,7 @@ python examples/run_use_case_gallery.py --all
 
 ## Robust covariance, scatter, and precision
 
+- `adversarial_covariance_filtering.py` – experimental spectral filtering for approximately Gaussian data with adversarial whole-row replacements.
 - `use_case_finance_risk.py` – heavy-tail covariance for return-like data.
 - `use_case_portfolio_stress.py` – empirical versus robust portfolio covariance under stress.
 - `plot_mrcd_high_dimensional_outliers.py` – MRCD when the feature count approaches or exceeds the sample size.

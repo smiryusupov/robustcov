@@ -23,6 +23,7 @@ Detailed method pages
    :maxdepth: 2
    :hidden:
 
+   adversarial_covariance_filtering
    s_estimators
    kernel_mrcd
    matrix_covariance
@@ -31,6 +32,7 @@ Detailed method pages
    cellwise_covariance
    cellwise_regularized_covariance
    geometry
+   principal_component_pursuit
    robust_pca
    density_power_pca
    distributionally_robust_pca

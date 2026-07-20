@@ -5,6 +5,13 @@ Robust principal component analysis
 estimate.  Use it when a few unusual rows, heavy tails, or leverage points would
 otherwise pull ordinary PCA toward the wrong directions.
 
+
+.. note::
+
+   This page describes scatter-based robust PCA. If your data model is one
+   matrix equal to a low-rank component plus sparse gross cell corruption, use
+   :doc:`principal_component_pursuit` instead.
+
 The class follows the familiar PCA interface: fit a model, project new data,
 and reconstruct observations from the retained components.  It also reports two
 distances that are useful when PCA is used for diagnostics.

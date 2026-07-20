@@ -111,3 +111,16 @@ Independent components, SOBI, and factor models
 * K. Nordhausen. 2014. On robustifying some second order blind source separation methods for nonstationary time series. *Statistical Papers*.
 * J. Fan, H. Liu, and W. Wang. 2018. Large covariance estimation through elliptical factor models. *The Annals of Statistics*.
 * L. Yu, Y. He, and X. Zhang. 2019. Robust factor number specification for large-dimensional elliptical factor models. *Journal of Multivariate Analysis*.
+
+Algorithmic robust covariance filtering
+----------------------------------------
+
+* I. Diakonikolas, G. Kamath, D. M. Kane, J. Li, A. Moitra, and A. Stewart. 2017. Being Robust (in High Dimensions) Can Be Practical. *Proceedings of the 34th International Conference on Machine Learning*, PMLR 70, 999--1008.
+* Y. Cheng, I. Diakonikolas, R. Ge, and D. P. Woodruff. 2019. Faster Algorithms for High-Dimensional Robust Covariance Estimation. *Proceedings of the Thirty-Second Conference on Learning Theory*, PMLR 99, 727--757.
+* G. Novikov. 2025. Robust Scatter Matrix Estimation for Elliptical Distributions in Polynomial Time. arXiv:2502.06564.
+
+Low-rank plus sparse matrix decomposition
+-----------------------------------------
+
+* E. J. Candès, X. Li, Y. Ma, and J. Wright. 2011. Robust Principal Component Analysis? *Journal of the ACM*, 58(3), Article 11.
+* Z. Lin, M. Chen, and Y. Ma. 2010. The Augmented Lagrange Multiplier Method for Exact Recovery of Corrupted Low-Rank Matrices. arXiv:1009.5055.

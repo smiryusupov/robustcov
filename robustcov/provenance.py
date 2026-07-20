@@ -79,6 +79,12 @@ REFERENCE_CATALOG: Mapping[str, Reference] = {
         "K. Boudt, P. J. Rousseeuw, S. Vanduffel, and T. Verdonck. The minimum regularized covariance determinant estimator. Statistics and Computing 30, 113–128, 2020.",
         "https://doi.org/10.1007/s11222-019-09869-x",
     ),
+    "candes_etal_2011_pcp": Reference(
+        "candes_etal_2011_pcp",
+        "Candès et al. (2011)",
+        "E. J. Candès, X. Li, Y. Ma, and J. Wright. Robust principal component analysis? Journal of the ACM 58(3), Article 11, 2011.",
+        "https://doi.org/10.1145/1970392.1970395",
+    ),
     "cardoso_souloumiac_1996": Reference(
         "cardoso_souloumiac_1996",
         "Cardoso & Souloumiac (1996)",
@@ -102,6 +108,24 @@ REFERENCE_CATALOG: Mapping[str, Reference] = {
         "Chen et al. (2011)",
         "Y. Chen, A. Wiesel, and A. O. Hero. Robust shrinkage estimation of high-dimensional covariance matrices. IEEE Transactions on Signal Processing 59(9), 4097–4107, 2011.",
         "https://doi.org/10.1109/TSP.2011.2138698",
+    ),
+    "diakonikolas_etal_2017": Reference(
+        "diakonikolas_etal_2017",
+        "Diakonikolas et al. (2017)",
+        "I. Diakonikolas, G. Kamath, D. M. Kane, J. Li, A. Moitra, and A. Stewart. Being robust (in high dimensions) can be practical. Proceedings of the 34th International Conference on Machine Learning, PMLR 70, 999–1008, 2017.",
+        "https://proceedings.mlr.press/v70/diakonikolas17a.html",
+    ),
+    "cheng_etal_2019": Reference(
+        "cheng_etal_2019",
+        "Cheng et al. (2019)",
+        "Y. Cheng, I. Diakonikolas, R. Ge, and D. P. Woodruff. Faster algorithms for high-dimensional robust covariance estimation. Proceedings of the Thirty-Second Conference on Learning Theory, PMLR 99, 727–757, 2019.",
+        "https://proceedings.mlr.press/v99/cheng19a.html",
+    ),
+    "novikov_2025": Reference(
+        "novikov_2025",
+        "Novikov (2025)",
+        "G. Novikov. Robust scatter matrix estimation for elliptical distributions in polynomial time. arXiv:2502.06564, 2025.",
+        "https://arxiv.org/abs/2502.06564",
     ),
     "dutilleul_1999": Reference(
         "dutilleul_1999",
@@ -162,6 +186,12 @@ REFERENCE_CATALOG: Mapping[str, Reference] = {
         "Lange et al. (1989)",
         "K. L. Lange, R. J. A. Little, and J. M. G. Taylor. Robust statistical modeling using the t distribution. Journal of the American Statistical Association 84(408), 881–896, 1989.",
         "https://doi.org/10.1080/01621459.1989.10478852",
+    ),
+    "lin_chen_ma_2010": Reference(
+        "lin_chen_ma_2010",
+        "Lin, Chen & Ma (2010)",
+        "Z. Lin, M. Chen, and Y. Ma. The augmented Lagrange multiplier method for exact recovery of corrupted low-rank matrices. arXiv:1009.5055, 2010.",
+        "https://arxiv.org/abs/1009.5055",
     ),
     "lu_feng_2025": Reference(
         "lu_feng_2025",
@@ -459,6 +489,14 @@ METHOD_PROVENANCE: Mapping[str, MethodProvenance] = {
         "The MMCD criterion is literature-derived; robustcov uses its own start and quality-preset implementation.",
         ("MatrixMinimumCovarianceDeterminant", "MMCD"),
     ),
+    "PrincipalComponentPursuit": _entry(
+        "PrincipalComponentPursuit", "Low-rank plus sparse decomposition", "literature_implementation",
+        "Convex decomposition of a data matrix into low-rank and entrywise-sparse components.",
+        ("candes_etal_2011_pcp", "lin_chen_ma_2010"),
+        "Independent NumPy implementation of inexact augmented Lagrange multipliers, sklearn-style parameter handling, decomposition diagnostics, convergence history, projection helpers, examples, and benchmark coverage.",
+        "The implementation solves the canonical equality-constrained PCP program. It does not implement stable PCP for dense noise, missing-data matrix completion, Outlier Pursuit for column-sparse corruption, or an online decomposition algorithm.",
+        ("PCP",),
+    ),
     "RobustPCA": _entry(
         "RobustPCA", "Principal components", "robustcov_composite",
         "Principal-component analysis driven by a user-selectable robust scatter estimator.",
@@ -505,6 +543,13 @@ METHOD_PROVENANCE: Mapping[str, MethodProvenance] = {
         "Experimental exact-dual candidate evaluation, deterministic adaptive-geometry path search, scale-equivariant geometry normalization, sklearn-compatible API, diagnostics, and shift-focused benchmarks.",
         "The default exact formulation minimizes the genuine weighted-Wasserstein worst-case risk over a finite deterministic candidate path, not over the entire Grassmann manifold. The sqrt-n radius is a transparent heuristic rather than the full RWPI calibration from Xu, Wood, and Yang.",
         ("WassersteinRobustPCA",),
+    ),
+    "SpectralFilteringCovariance": _entry(
+        "SpectralFilteringCovariance", "Adversarial robust covariance", "robustcov_composite",
+        "Iterative spectral filtering of lifted quadratic features for approximately Gaussian data with adversarial row contamination.",
+        ("diakonikolas_etal_2017", "cheng_etal_2019", "novikov_2025"),
+        "A deterministic sklearn-style experimental estimator with geometric-median centering, matrix-free quadratic filtering, bounded row removal, regularized covariance recovery, diagnostics, and benchmark integration.",
+        "This is a practical robustcov composite inspired by filtering-based algorithmic robust statistics. It is not the optimal Gaussian covariance algorithm of the cited papers, does not implement their full recursive machinery, and carries none of their finite-sample error guarantees.",
     ),
     "RobustGraphicalLasso": _entry(
         "RobustGraphicalLasso", "Sparse precision", "robustcov_composite",
@@ -668,6 +713,7 @@ _ALIAS_TO_CANONICAL = {
 EXPERIMENTAL_ESTIMATOR_PROVENANCE_NAMES = (
     "DistributionallyRobustPCA",
     "OnlineRobustSubspaceTracker",
+    "SpectralFilteringCovariance",
 )
 
 
@@ -676,7 +722,7 @@ PUBLIC_ESTIMATOR_PROVENANCE_NAMES = (
     "RegularizedTyler", "IterativeMScatter", "StudentTScatter",
     "RegularizedCauchy", "KLRegularizedTyler", "WieselTyler",
     "HellingerRegularizedTyler", "CellMCD", "CellRCov", "MatrixMCD",
-    "RobustPCA", "DensityPowerRobustPCA", "CellPCA", "SparseCellPCA",
+    "PrincipalComponentPursuit", "RobustPCA", "DensityPowerRobustPCA", "CellPCA", "SparseCellPCA",
     "RobustMultilinearPCA", "RobustGraphicalLasso", "SGLASSO",
     "TwoScatterICA", "SOBI", "RobustSOBI", "RobustFactorModel",
     "RobustOutlierDetector", "AutoRobustAnomalyDetector",

@@ -64,6 +64,10 @@ than a ranking table.
      - ``CellRCov``
      - ``CellPCA`` for the subspace only; ``MRCD`` when contamination is truly rowwise
      - The covariance decomposition depends on a useful low-rank component and a chosen rank.
+   * - One matrix is low rank plus sparse, arbitrarily large cell corruption
+     - ``PrincipalComponentPursuit``
+     - ``CellPCA`` when missing values or mixed row/cell weighting are required
+     - PCP assumes a sufficiently incoherent low-rank component and dispersed sparse support; it is not a dense-noise model.
    * - Low-rank data contain bad cells, abnormal rows, and missing entries
      - ``CellPCA``
      - ``CellMCD`` followed by an eigendecomposition
@@ -208,6 +212,13 @@ with another estimator rather than handled directly.
      - Yes
      - Structured
      - matrices
+   * - ``PrincipalComponentPursuit``
+     - explicit low-rank and sparse matrices
+     - No
+     - Yes, sparse gross cells
+     - No
+     - Yes
+     - complete matrices
    * - ``RobustPCA``
      - principal subspace
      - Depends on scatter

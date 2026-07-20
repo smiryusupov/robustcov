@@ -30,6 +30,10 @@ See :doc:`quickstart`, :doc:`conformal_alert_calibration`, and
 PCA, subspaces, and monitoring
 ------------------------------
 
+For a single matrix that is explicitly modeled as low rank plus sparse gross
+cell corruption, use :doc:`principal_component_pursuit`. This is a matrix
+separation problem, not a robust covariance or monitoring workflow.
+
 Use robust PCA when the goal is low-rank representation, reconstruction,
 row/cell diagnostics, or monitoring changes relative to a stable reference.
 

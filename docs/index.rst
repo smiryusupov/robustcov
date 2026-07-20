@@ -6,7 +6,7 @@ covariance is unreliable. It is designed for contaminated, heavy-tailed,
 high-dimensional, incomplete, structured, or shifting data.
 
 The package turns robust location and scatter estimates into practical tools for
-covariance recovery, Mahalanobis anomaly scoring, PCA and subspace monitoring,
+covariance recovery, Mahalanobis anomaly scoring, low-rank matrix separation, PCA and subspace monitoring,
 whitening and kernels, sparse precision estimation, and structured matrix or
 tensor analysis. The estimators use sklearn-style ``fit`` methods and expose
 familiar fitted attributes such as ``location_``, ``covariance_``, and
@@ -66,6 +66,9 @@ Choose your starting point
    * - Select a covariance or scatter estimator
      - :doc:`estimator_guide`
      - Match the estimator to rowwise, cellwise, heavy-tail, or high-dimensional contamination
+   * - Separate a low-rank signal from sparse gross cell errors
+     - :doc:`principal_component_pursuit`
+     - ``PrincipalComponentPursuit`` / ``PCP``
    * - Reduce dimension and diagnose outliers
      - :doc:`workflows`
      - ``RobustPCA`` or ``CellPCA``
@@ -88,7 +91,7 @@ The common pattern
 .. code-block:: text
 
    observations, windows, or learned features
-       -> robust location and scatter or robust low-rank fit
+       -> robust location/scatter, low-rank-plus-sparse decomposition, or robust low-rank fit
        -> covariance, precision, principal subspace, or latent structure
        -> scores, whitening, kernels, graphs, diagnostics, or monitoring
 

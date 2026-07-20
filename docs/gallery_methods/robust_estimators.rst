@@ -7,6 +7,11 @@ precision matrix, sparse graph, or distance geometry.
 .. raw:: html
 
    <div class="gallery-grid">
+     <a class="gallery-card" href="../gallery/adversarial_covariance_filtering.html">
+       <div class="gallery-card-placeholder">Spectral<br>filter</div>
+       <h3>Adversarial row filtering</h3>
+       <p>Filter structured whole-row attacks in an approximately Gaussian covariance problem.</p>
+     </a>
      <a class="gallery-card" href="../gallery/finance_risk.html">
        <img src="../_static/gallery/finance_risk/covariance.png" alt="Robust covariance on heavy-tailed returns">
        <h3>Heavy-tail scatter</h3>
@@ -44,6 +49,7 @@ Runnable examples
 
 .. code-block:: bash
 
+   python examples/adversarial_covariance_filtering.py
    python examples/use_case_finance_risk.py
    python examples/plot_mrcd_high_dimensional_outliers.py
    python examples/plot_cellmcd_market_data.py
