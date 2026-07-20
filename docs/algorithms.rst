@@ -1,14 +1,46 @@
+Method catalog
+==============
 
-Algorithms
-==========
+This section groups the mathematical and practical descriptions of the
+estimators used by ``robustcov``. Start with :doc:`estimator_guide` when choosing a method; use this
+section for assumptions, fitted quantities, equations, and implementation details.
 
-This page gives the mathematical and practical description of the estimators used by
-``robustcov``. The package focuses on robust covariance/scatter estimation and robust-distance
-diagnostics, not on fitting a full probability model with density, sampler, AIC, or BIC.
+The package focuses on robust covariance/scatter estimation and robust-distance
+diagnostics, not on fitting a full probability model with density, sampler, AIC,
+or BIC.
+
+This page gives the shared notation and catalog overview.
 
 For a method-by-method distinction between published methodology, package
 adaptations, and robustcov-specific compositions, see
 :doc:`methods_and_references` and :doc:`project_contributions`.
+
+
+Detailed method pages
+---------------------
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   s_estimators
+   kernel_mrcd
+   matrix_covariance
+   robust_multilinear_pca
+   source_separation_factor_models
+   cellwise_covariance
+   cellwise_regularized_covariance
+   geometry
+   robust_pca
+   density_power_pca
+   distributionally_robust_pca
+   subspace_stability
+   cellwise_pca
+   sparse_cellwise_pca
+   sparse_precision
+   spatial_sign_precision
+   monitoring
+   feature_geometry
 
 Notation
 --------

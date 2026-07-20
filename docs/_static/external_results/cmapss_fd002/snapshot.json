@@ -1,0 +1,43 @@
+{
+  "command": "python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002 --outdir results/external/cmapss_fd002",
+  "description": "FD002 contains six operating conditions and one fault mode, separating tolerated regime changes from progressive degradation.",
+  "files": {
+    "alert_rate_by_life.png": {
+      "sha256": "fadd4fa30f61469388be861198d5af9bf770fdf64b0e625759cf1e2dfae580ec",
+      "size_bytes": 45228
+    },
+    "late_life_sensor_contributions.png": {
+      "sha256": "b6d57e1850bd042a9231064141cdd3ac791ddacfa7b75268bc757a2bbf8fb0fa",
+      "size_bytes": 60729
+    },
+    "risk_over_engine_life.png": {
+      "sha256": "beec39d4582de644fd422b2c4c672197f1bb4009dbc0f0e3161bca6d4a728ee1",
+      "size_bytes": 89242
+    },
+    "summary.csv": {
+      "sha256": "d56e094a0094f34e042ed15d3565f068f2e07a80b552d7f45da2711c5b5a4f36",
+      "size_bytes": 681
+    }
+  },
+  "generated_at": "2026-07-20T07:40:47+00:00",
+  "git_commit": "5f9696f95486b9d31f0e419da705e2961fddd03e",
+  "metadata": {
+    "archive_sha256": "c9c5dec12a945a82e8bb4446589d7fb3cc057b5e5d81fa1a12e25ee9912ad3b2",
+    "calibration_life_fraction": "(0.20,0.35]",
+    "dataset_citation": "A. Saxena and K. Goebel (2008). Turbofan Engine Degradation Simulation Data Set, NASA Ames Prognostics Data Repository, NASA Ames Research Center.",
+    "dataset_homepage": "https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data",
+    "dataset_subset": "FD002",
+    "exact_worst_case_risk": "0.9093038515816535",
+    "n_components": "6",
+    "n_operating_regimes": "9",
+    "n_sensors_retained": "21",
+    "radius": "4.493547565958199",
+    "reference_life_fraction": "<=0.20",
+    "threshold": "finite_sample_calibration_window_order_statistic",
+    "transport_geometry": "healthy_operating_regime_mean_shift_diagonal"
+  },
+  "protocol": "DRO-PCA degradation monitoring across operating regimes",
+  "schema_version": 1,
+  "slug": "cmapss_fd002",
+  "title": "NASA C-MAPSS FD002"
+}

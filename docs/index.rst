@@ -1,145 +1,169 @@
-robustcov documentation
-=======================
+RobustCov: robust multivariate geometry
+========================================
 
-``robustcov`` is a Python/C++ package for covariance and scatter estimation when
-ordinary empirical covariance is too sensitive to a small part of the data.  It
-includes robust estimators, Mahalanobis diagnostics, PCA, feature-space metrics,
-SPD geometry, and rolling subspace monitoring.
+``robustcov`` helps you estimate and use multivariate geometry when empirical
+covariance is unreliable. It is designed for contaminated, heavy-tailed,
+high-dimensional, incomplete, structured, or shifting data.
 
-The package is most useful when the data are heavy-tailed, contain leverage
-points or outliers, or provide too few observations for an unrestricted sample
-covariance matrix.
+The package turns robust location and scatter estimates into practical tools for
+covariance recovery, Mahalanobis anomaly scoring, PCA and subspace monitoring,
+whitening and kernels, sparse precision estimation, and structured matrix or
+tensor analysis. The estimators use sklearn-style ``fit`` methods and expose
+familiar fitted attributes such as ``location_``, ``covariance_``, and
+``precision_`` where those quantities are identified.
 
-Where to start
---------------
+What can I do with it?
+----------------------
 
 .. raw:: html
 
    <div class="gallery-grid">
-     <a class="gallery-card" href="use_case_gallery.html">
-       <div class="gallery-card-placeholder">Methods<br>and domains</div>
-       <h3>Browse runnable examples</h3>
-       <p>Start with ICA/SOBI, PCA/factors, robust estimators, or monitoring; then filter by application domain.</p>
+     <a class="gallery-card" href="quickstart.html">
+       <div class="gallery-card-placeholder">Score<br>anomalies</div>
+       <h3>Detect unusual observations</h3>
+       <p>Fit robust covariance, compute Mahalanobis scores, calibrate thresholds, and inspect distance diagnostics.</p>
+     </a>
+     <a class="gallery-card" href="estimator_guide.html">
+       <div class="gallery-card-placeholder">Estimate<br>geometry</div>
+       <h3>Recover covariance or scatter</h3>
+       <p>Choose methods for rowwise outliers, diffuse heavy tails, bad cells, high dimensions, or matrix-valued observations.</p>
+     </a>
+     <a class="gallery-card" href="workflows.html#pca-subspaces-and-monitoring">
+       <div class="gallery-card-placeholder">PCA<br>monitoring</div>
+       <h3>Learn and monitor subspaces</h3>
+       <p>Use robust PCA, reconstruction diagnostics, bootstrap stability, and frozen-reference monitoring.</p>
+     </a>
+     <a class="gallery-card" href="workflows.html#features-embeddings-and-kernels">
+       <div class="gallery-card-placeholder">Features<br>embeddings</div>
+       <h3>Build robust feature geometry</h3>
+       <p>Apply robust distances, whitening, kernels, and drift diagnostics to learned representations.</p>
+     </a>
+     <a class="gallery-card" href="workflows.html#structured-and-cellwise-data">
+       <div class="gallery-card-placeholder">Cells<br>matrices</div>
+       <h3>Handle structured contamination</h3>
+       <p>Work with bad cells, missing values, matrix-valued observations, multilinear PCA, and sparse graphs.</p>
      </a>
      <a class="gallery-card" href="benchmark_gallery.html">
-       <img src="_static/benchmarks/small_sample_rank.png" alt="Benchmark ranking plot">
-       <h3>Review benchmark results</h3>
-       <p>Accuracy under contamination, heavy-tail experiments, runtime comparisons, and OpenMP scaling.</p>
-     </a>
-     <a class="gallery-card" href="algorithms.html">
-       <div class="gallery-card-placeholder">Math<br>and API</div>
-       <h3>Read about the estimators</h3>
-       <p>Assumptions, fitted quantities, references, and implementation notes for the main algorithms.</p>
+       <div class="gallery-card-placeholder">Evidence<br>limits</div>
+       <h3>Review validation evidence</h3>
+       <p>See task-specific benchmarks, failure cases, performance measurements, and reviewed external case studies.</p>
      </a>
    </div>
 
-A common workflow
------------------
+Choose your starting point
+--------------------------
+
+.. list-table:: Start from your immediate goal
+   :header-rows: 1
+   :widths: 30 32 38
+
+   * - Goal
+     - Start here
+     - Typical first object
+   * - Flag unusual rows in tabular data
+     - :doc:`quickstart`
+     - ``RobustOutlierDetector`` with ``FastMCD`` or ``RegularizedCauchy``
+   * - Select a covariance or scatter estimator
+     - :doc:`estimator_guide`
+     - Match the estimator to rowwise, cellwise, heavy-tail, or high-dimensional contamination
+   * - Reduce dimension and diagnose outliers
+     - :doc:`workflows`
+     - ``RobustPCA`` or ``CellPCA``
+   * - Monitor a changing process or embedding stream
+     - :doc:`monitoring`
+     - ``RobustSubspaceMonitor`` or ``FeatureGeometry``
+   * - Recover a sparse conditional-dependence graph
+     - :doc:`sparse_precision`
+     - ``RobustGraphicalLasso`` or ``SGLASSO``
+   * - Work with matrix-valued or multilinear observations
+     - :doc:`matrix_covariance`
+     - ``MMCD`` or ``RobustMultilinearPCA``
+   * - Compare methods and inspect evidence
+     - :doc:`method_comparison` and :doc:`benchmark_gallery`
+     - Use only benchmarks that match the fitted quantity and contamination model
+
+The common pattern
+------------------
 
 .. code-block:: text
 
-   data or feature matrix
-       -> robust location and scatter
-       -> precision matrix or principal subspace
-       -> distances, whitening, kernels, diagnostics, or monitoring
+   observations, windows, or learned features
+       -> robust location and scatter or robust low-rank fit
+       -> covariance, precision, principal subspace, or latent structure
+       -> scores, whitening, kernels, graphs, diagnostics, or monitoring
 
-The main pieces are:
-
-* ``FastMCD`` for sparse, separable contamination when the sample is larger than
-  the feature dimension;
-* ``DetS`` and ``DetMM`` for deterministic smooth high-breakdown weighting and an
-  explicit robustness--efficiency tradeoff;
-* ``MRCD`` for high-breakdown covariance estimation when the feature dimension is
-  close to or greater than the sample size;
-* ``KMRCD`` for nonlinear or kernel-defined inlier structure;
-* ``MMCD`` for robust row/column covariance estimation on matrix-valued observations;
-* ``RobustMultilinearPCA`` for low-rank matrix observations with bad cells, abnormal samples, and missing entries;
-* ``TwoScatterICA`` and ``RobustSOBI`` for robust blind source separation;
-* ``RobustFactorModel`` for Kendall- and Huber-based latent factor estimation;
-* ``CellMCD`` for isolated corrupted or missing entries in otherwise useful rows;
-* ``CellRCov`` for full high-dimensional covariance recovery when bad cells, abnormal rows,
-  and missing entries occur together;
-* ``CellPCA`` for low-rank tables with cellwise errors, abnormal rows, and missing entries;
-* ``RobustGraphicalLasso`` for sparse conditional-dependence graphs built from robust scatter estimates;
-* ``SGLASSO`` for scale-free sparse graphs under radial heavy tails in elliptical data;
-* regularized Cauchy, Student-t, and Tyler estimators for heavy tails and
-  difficult covariance regimes;
-* robust-distance plots and reports for anomaly analysis;
-* ``RobustPCA`` for projection, reconstruction, and score/orthogonal-distance
-  diagnostics;
-* ``DensityPowerRobustPCA`` for a direct robust low-rank fit using density-power
-  alternating regressions;
-* experimental ``DistributionallyRobustPCA`` for weighted-Wasserstein protection
-  against a stated train-to-deployment covariance-shift geometry;
-* ``FeatureGeometry`` for robust distances and kernels on learned
-  representations;
-* ``RobustSubspaceMonitor`` for comparing rolling batches with a fixed
-  reference period;
-* SPD geometry and optional OpenMP acceleration for larger workloads.
+``robustcov`` is a numerical methods library, not a complete production anomaly
+platform. It does not train neural networks, manage streaming infrastructure, or
+choose a scientifically meaningful contamination model for you. See
+:doc:`robust_geometry_layer` for the package boundaries and :doc:`api_stability`
+for project maturity.
 
 .. toctree::
    :maxdepth: 2
-   :caption: User guide
+   :caption: Get started
 
    robust_geometry_layer
    installation
    quickstart
    estimator_guide
    method_comparison
-   use_case_gallery
-   benchmark_gallery
-   algorithms
-   s_estimators
-   kernel_mrcd
-   matrix_covariance
-   robust_multilinear_pca
-   source_separation_factor_models
-   cellwise_covariance
-   cellwise_regularized_covariance
-   geometry
-   robust_pca
-   density_power_pca
-   distributionally_robust_pca
-   subspace_stability
-   cellwise_pca
-   sparse_cellwise_pca
-   sparse_precision
-   spatial_sign_precision
-   monitoring
-   feature_geometry
-   diagnostics
-   openmp
-   performance_validation
+   api_stability
    faq
 
 .. toctree::
    :maxdepth: 2
-   :caption: Reference and evidence
+   :caption: Workflows
+
+   workflows
+   use_case_gallery
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Methods
+
+   algorithms
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Examples and evidence
+
+   benchmark_gallery
+   external_data
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference
 
    api
-   api_stability
+   diagnostics
+   openmp
    methods_and_references
-   project_contributions
    robust_statistics_background
-   external_data
-   external_results_gallery
    references
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Project
+
+   project_contributions
 
 Project status
 --------------
 
-The project is in active development.  The current estimators and examples are
-tested, but public APIs may still change before a stable release.  See
-:doc:`api_stability` for the compatibility policy.
+The project is in active alpha development. Core estimator interfaces and
+fitted attributes are intended to remain recognizable, while newer monitoring,
+geometry, and integration APIs may evolve before 1.0. Breaking changes and
+deprecations are documented explicitly.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Extended material
+   :caption: Maintainer and extended material
    :hidden:
 
    notebooks
    kaggle_roadmap
    kaggle_examples
    external_demo_workflow
+   legacy_external_examples
    release_readiness
    _generated/monte_carlo_summary

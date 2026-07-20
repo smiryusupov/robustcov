@@ -1,5 +1,5 @@
-Choosing a method and comparing results
-=======================================
+Compare methods and interpret results
+=====================================
 
 There is no single estimator that is robust to every kind of bad data.  The
 important choice is the contamination model: complete rows, isolated cells,

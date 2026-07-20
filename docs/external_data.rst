@@ -1,5 +1,5 @@
-External datasets and local caches
-==================================
+External dataset access
+=======================
 
 ``robustcov`` does not bundle or commit external datasets.  Optional loaders keep
 raw archives, extracted files, and processed arrays in a user cache outside the

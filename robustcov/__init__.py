@@ -1,7 +1,7 @@
 # Copyright 2026 Shohruh Miryusupov
 # SPDX-License-Identifier: Apache-2.0
 
-"""robustcov MVP: efficient robust covariance and shape estimators."""
+"""Robust multivariate geometry for contaminated, heavy-tailed, and shifting data."""
 
 from .covariance import FastMCD, MinCovDet, TylerShape, RegularizedTyler
 from .mrcd import MinimumRegularizedCovarianceDeterminant, MRCD, MinRegularizedCovDet

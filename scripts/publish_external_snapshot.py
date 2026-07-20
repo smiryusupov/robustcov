@@ -257,7 +257,7 @@ def _render_includes(manifest: dict[str, object]) -> tuple[str, str]:
                     "     </a>",
                 ]
             )
-            toctree.append(f"   ../external_results/{slug}")
+            toctree.append(f"   external_results/{slug}")
         cards.extend(["   </div>", ""])
     return "\n".join(cards), "\n".join(toctree) + "\n"
 
@@ -441,7 +441,11 @@ def main(argv: Iterable[str] | None = None) -> int:
 
     subparsers.add_parser("list", help="list snapshot profiles")
     check_parser = subparsers.add_parser("check", help="validate committed external snapshots")
-    check_parser.add_argument("--rewrite-generated", action="store_true", help=argparse.SUPPRESS)
+    check_parser.add_argument(
+        "--rewrite-generated",
+        action="store_true",
+        help="refresh generated gallery cards and toctree from the manifest",
+    )
 
     publish_parser = subparsers.add_parser("publish", help="publish one reviewed result directory")
     publish_parser.add_argument("dataset", choices=tuple(PROFILES))

@@ -1,8 +1,9 @@
-Benchmark gallery
-=================
+Benchmarks and validation
+=========================
 
-The benchmark gallery is the main benchmark entry point.  It is designed for readers who want to
-understand the evidence quickly: each card links to a focused benchmark page with plots, tables,
+This is the main evidence entry point. It is designed for readers who want to
+understand what has been validated, what was compared, and where the current
+methods fail. Each card links to a focused benchmark page with plots, tables,
 commands, and interpretation.
 
 The gallery and method-comparison page answer seven practical questions:
@@ -151,4 +152,6 @@ Detailed benchmark pages
    benchmarks/hard_contamination
    benchmarks/latent_structure
    benchmarks/distributionally_robust_pca
+   external_results_gallery
+   performance_validation
    benchmark_inventory

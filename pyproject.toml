@@ -11,7 +11,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "robustcov"
 version = "0.0.2"
-description = "Robust scatter geometry for anomaly detection, kernels, and ML workflows in Python."
+description = "Robust covariance, anomaly scoring, PCA, and monitoring for contaminated and heavy-tailed data."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"

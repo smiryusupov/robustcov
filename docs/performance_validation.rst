@@ -1,5 +1,5 @@
-Performance and repeated validation
-===================================
+Performance and validation
+==========================
 
 The package keeps estimator logic in Python unless profiling identifies a
 repeated numerical kernel whose native implementation gives a measurable gain.

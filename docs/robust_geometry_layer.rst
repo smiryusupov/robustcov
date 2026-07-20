@@ -1,45 +1,63 @@
-Using robust covariance as a geometry
-=====================================
+What RobustCov does
+===================
 
-Many algorithms rely on a covariance matrix even when covariance estimation is
-not the main task.  Mahalanobis distances, whitening, RBF kernels, Gaussian
-process input metrics, PCA, and several drift statistics all depend on a notion
-of scale and direction.
+``robustcov`` is a robust multivariate-geometry library. It estimates location,
+scale, covariance, scatter, precision, or low-rank structure when ordinary
+empirical covariance is too sensitive or too unstable.
 
-``robustcov`` supplies that geometry from a robust location and scatter fit.  It
-can be used on raw tabular data or on features produced by another model.
+The fitted geometry can then be reused for:
 
-From scatter to downstream tools
---------------------------------
+* Mahalanobis anomaly scores and diagnostic plots;
+* whitening and full-matrix distance metrics;
+* principal components and reconstruction diagnostics;
+* rolling subspace and feature-distribution monitoring;
+* sparse precision and conditional-dependence estimation;
+* matrix-valued covariance, cellwise-robust models, and multilinear PCA;
+* robust ICA, SOBI, and latent-factor estimation.
 
-A fitted scatter matrix can be reused in several ways:
+The package is useful when data contain a minority of abnormal rows, isolated
+bad cells, broad heavy tails, leverage points, missing entries, a difficult
+``p``-to-``n`` ratio, or a train-to-deployment covariance shift that can be
+stated explicitly.
+
+The geometry layer
+------------------
+
+Many downstream algorithms depend on a covariance matrix even when covariance
+estimation is not the final task. Mahalanobis distance, whitening, RBF kernels,
+Gaussian-process input metrics, PCA, and several monitoring statistics all need
+a notion of scale and direction.
+
+``robustcov`` supplies that notion from a robust fit:
 
 .. code-block:: text
 
-   observations or features
-       -> robust location and scatter
-       -> precision matrix and whitening
-       -> distances, kernels, PCA, and monitoring
+   observations, windows, or learned features
+       -> robust location and scatter or robust low-rank fit
+       -> covariance, precision, whitening, or principal subspace
+       -> scores, kernels, graphs, diagnostics, or monitoring
 
-The package includes:
-
-* robust covariance and scatter estimators;
-* Mahalanobis distances and anomaly diagnostics;
-* whitening and precision-matrix helpers;
-* RBF kernels with a full robust metric;
-* adapters for scikit-learn and GPyTorch kernels;
-* ``FeatureGeometry`` for unlabeled or class-conditional embeddings;
-* ``RobustPCA`` for robust subspace estimation;
-* ``RobustSubspaceMonitor`` for comparison with a fixed reference period.
-
-Feature vectors
----------------
-
-A feature workflow can start with any two-dimensional array:
+A vector-data example
+---------------------
 
 .. code-block:: python
 
    import robustcov as rc
+
+   estimator = rc.RegularizedCauchy(alpha=0.10).fit(X_reference)
+
+   scores = estimator.mahalanobis(X_new)
+   covariance = estimator.covariance_
+   precision = estimator.precision_
+
+The common fitted attributes make estimators composable with the rest of the
+package. The correct estimator still depends on the contamination model; see
+:doc:`estimator_guide` rather than treating the catalog as a universal ranking.
+
+A feature-geometry example
+--------------------------
+
+.. code-block:: python
 
    geom = rc.FeatureGeometry(
        estimator=rc.FastMCD(random_state=0),
@@ -48,28 +66,12 @@ A feature workflow can start with any two-dimensional array:
    distances = geom.mahalanobis_scores(X_new)
    K = geom.rbf_kernel(X_new, length_scale=1.0)
 
-``X_reference`` might contain text embeddings, image features, sensor summaries,
-or latent vectors from an autoencoder.  The encoder remains outside
-``robustcov``; only its output is passed to the geometry model.
+``X_reference`` may contain text embeddings, image features, sensor summaries,
+or latent vectors from an autoencoder. The encoder remains outside
+``robustcov``.
 
-PCA and rolling comparison
---------------------------
-
-When a low-dimensional representation is useful, ``RobustPCA`` computes
-components from the same robust scatter estimates:
-
-.. code-block:: python
-
-   pca = rc.RobustPCA(
-       n_components=0.95,
-       estimator=rc.RegularizedCauchy(alpha=0.10),
-   ).fit(X_reference)
-
-   scores = pca.transform(X_new)
-   orthogonal_distance = pca.orthogonal_distances(X_new)
-
-For sequential batches, ``RobustSubspaceMonitor`` keeps the reference fit fixed
-and compares it with a robust model fitted to the current window:
+A subspace-monitoring example
+-----------------------------
 
 .. code-block:: python
 
@@ -80,23 +82,22 @@ and compares it with a robust model fitted to the current window:
    ).fit(X_reference)
 
    result = monitor.update(X_batch)
-   print(result.exceeded)
+   if result.ready:
+       print(result.summary())
+       print(result.exceeded)
 
-See :doc:`robust_pca`, :doc:`monitoring`, and
-:doc:`gallery/robust_subspace_monitoring` for the full workflows.
+The reference model stays fixed while later batches are scored. See
+:doc:`monitoring` for calibration and interpretation.
 
-Kernel distribution comparisons
--------------------------------
+What the package does not do
+----------------------------
 
-The MMD helpers in the package use ordinary kernel MMD.  The robust part is the
-metric inside the kernel: distances are computed with a robust precision matrix
-rather than with unscaled Euclidean distance.  The package does not introduce a
-new MMD estimator.
+``robustcov`` does not train neural networks, provide a complete production
+monitoring service, infer causal graphs, or automatically determine whether the
+scientific contamination model is rowwise, cellwise, heavy-tailed, multimodal,
+or distributional. It provides numerical estimators, diagnostics, and reusable
+geometry that can be composed with scikit-learn, PyTorch, GPyTorch, and domain
+workflows.
 
-Boundaries of the package
--------------------------
-
-``robustcov`` focuses on estimation and geometry.  It does not train neural
-networks, implement a full OOD system, or replace scikit-learn, PyTorch, or a
-production monitoring platform.  Its outputs are meant to be composed with
-those tools.
+Start with :doc:`quickstart` for a runnable example, :doc:`workflows` for a
+task-oriented map, and :doc:`benchmark_gallery` for evidence and limitations.

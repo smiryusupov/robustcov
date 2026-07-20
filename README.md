@@ -1,4 +1,4 @@
-# robustcov
+# RobustCov
 
 [![PyPI](https://img.shields.io/pypi/v/robustcov.svg)](https://pypi.org/project/robustcov/)
 [![Python](https://img.shields.io/pypi/pyversions/robustcov.svg)](https://pypi.org/project/robustcov/)
@@ -7,41 +7,54 @@
 [![Wheels](https://github.com/smiryusupov/robustcov/actions/workflows/wheels.yml/badge.svg)](https://github.com/smiryusupov/robustcov/actions/workflows/wheels.yml)
 [![License](https://img.shields.io/pypi/l/robustcov.svg)](https://github.com/smiryusupov/robustcov/blob/main/LICENSE)
 
-`robustcov` is a Python/C++ library for robust covariance and scatter
-estimation. It also provides tools that reuse those estimates for Mahalanobis
-diagnostics, PCA, feature-space kernels, and rolling monitoring.
+**Robust covariance, anomaly scoring, PCA, and monitoring for difficult multivariate data.**
 
-It is intended for data with heavy tails, outliers, leverage points, or too few
-observations for a stable empirical covariance matrix.
+`robustcov` is a Python/C++ library for robust multivariate geometry. It
+estimates covariance, scatter, precision, principal subspaces, and related
+latent structure when empirical covariance is unreliable because the data are
+contaminated, heavy-tailed, high-dimensional, incomplete, structured, or
+shifting.
 
-> Status: **alpha / experimental**. Public APIs may change before a stable
-> release.
+Use it to:
 
-## Highlights
+- fit robust covariance or scatter and compute Mahalanobis anomaly scores;
+- perform robust PCA, reconstruction diagnostics, and frozen-reference subspace monitoring;
+- build robust whitening transforms, kernels, and metrics for learned features or embeddings;
+- handle bad cells, missing values, matrix-valued observations, and multilinear low-rank structure;
+- estimate sparse precision graphs or recover robust independent sources and latent factors.
 
-- `FastMCD` for sparse, separable contamination
-- `DetS` and `DetMM` for deterministic smooth high-breakdown scatter with a robustness--efficiency tradeoff
-- `MRCD` for high-breakdown covariance estimation when `p` is close to or greater than `n`
-- `KMRCD` for nonlinear robust outlier detection in a kernel feature space
-- `MMCD` for robust row/column covariance estimation when each observation is a matrix
-- `RobustMultilinearPCA` for low-rank matrix observations with cellwise errors, abnormal samples, and missing entries
-- `CellMCD` for covariance estimation with isolated corrupted or missing cells
-- `CellRCov` for high-dimensional covariance with bad cells, abnormal rows, and missing entries
-- `CellPCA` for low-rank structure with cellwise errors, abnormal rows, and missing entries
-- `SparseCellPCA` for the same contamination model with exact-zero interpretable loadings
-- `RobustGraphicalLasso` for sparse precision matrices from a chosen robust scatter estimator
-- `SGLASSO` for scale-free sparse graphs under heavy-tailed elliptical data
-- Regularized Cauchy, Student-t, and Tyler scatter estimators
-- Mahalanobis anomaly scores, QQ plots, distance profiles, and diagnostic reports
-- `RobustPCA` with score-distance and orthogonal-distance diagnostics
-- experimental `DistributionallyRobustPCA` for a genuine weighted-Wasserstein worst-case reconstruction objective under structured distribution shift
-- `SubspaceStability` for IID, block, stationary, and cluster bootstrap diagnostics
-- `RobustSubspaceMonitor` for comparison with a fixed reference period
-- `FeatureGeometry` for robust distances, whitening, and kernels on embeddings
-- Full-matrix input metrics for scikit-learn and GPyTorch kernels
-- Cluster-aware diagnostics for multimodal data
-- SPD distance and interpolation utilities
-- Optional OpenMP acceleration in the C++ backend
+The package provides numerical estimators and diagnostics with sklearn-style
+`fit` APIs. It does not train neural networks or replace a production monitoring
+platform.
+
+> Status: **alpha / experimental**. Core estimator interfaces are intended to
+> remain recognizable, but some APIs may change before 1.0.
+
+## Start from your problem
+
+| Your data or goal | Start with |
+|---|---|
+| A minority of complete rows are outliers and `n` is comfortably larger than `p` | `FastMCD`, `DetS`, or `DetMM` |
+| Broad heavy tails or an ill-conditioned/high-dimensional covariance | `RegularizedCauchy`, `StudentTScatter`, `RegularizedTyler`, or `MRCD` |
+| Isolated bad cells or missing entries | `CellMCD`, `CellRCov`, `CellPCA`, or `SparseCellPCA` |
+| Matrix-valued or multilinear observations | `MMCD` or `RobustMultilinearPCA` |
+| Robust dimensionality reduction or changing subspaces | `RobustPCA`, `DistributionallyRobustPCA`, `SubspaceStability`, or `RobustSubspaceMonitor` |
+| Sparse conditional-dependence structure | `RobustGraphicalLasso` or `SGLASSO` |
+| Learned features, embeddings, whitening, or robust kernels | `FeatureGeometry` |
+| Independent or temporally correlated latent sources | `TwoScatterICA`, `RobustSOBI`, or `RobustFactorModel` |
+
+See the [documentation](https://robustcov.readthedocs.io/en/latest/) for the
+task-oriented workflow map, estimator selection guide, examples, benchmarks,
+and API reference.
+
+## Method families
+
+- **Covariance and scatter:** `FastMCD`, `DetS`, `DetMM`, `MRCD`, `KMRCD`, regularized Cauchy, Student-t, and Tyler estimators.
+- **Cellwise and structured data:** `CellMCD`, `CellRCov`, `MMCD`, `RobustMultilinearPCA`, `CellPCA`, and `SparseCellPCA`.
+- **PCA and monitoring:** `RobustPCA`, `DensityPowerRobustPCA`, experimental `DistributionallyRobustPCA`, `SubspaceStability`, and `RobustSubspaceMonitor`.
+- **Sparse precision:** `RobustGraphicalLasso` and `SGLASSO`.
+- **Latent structure:** `TwoScatterICA`, `SOBI`, `RobustSOBI`, and `RobustFactorModel`.
+- **Reusable geometry:** robust distances, anomaly diagnostics, whitening, `FeatureGeometry`, full-matrix kernels, SPD utilities, and optional OpenMP acceleration.
 
 ## Installation
 
@@ -550,11 +563,12 @@ python -m sphinx -b html docs docs/_build/html
 
 Main documentation entry points:
 
-- **Use-case gallery**: runnable examples organized first by method family (ICA/SOBI, PCA/factors, robust estimators, anomaly monitoring) and second by application domain
-- **Benchmark gallery**: benchmark plots, tables, and interpretation
-- **Algorithms**: mathematical descriptions and references
-- **Robust statistics background**: influence functions, Gateaux derivatives, breakdown point, geodesic convexity, and small-sample issues
-- **External and Kaggle gallery**: optional external-data results
+- **What RobustCov does**: package scope, boundaries, and the reusable geometry model
+- **Workflows**: anomaly scoring, PCA and monitoring, feature geometry, structured data, sparse precision, and latent factors
+- **Choose an estimator**: recommendations by contamination model and dimensional regime
+- **Examples by task and domain**: runnable examples with source and generated figures
+- **Benchmarks and validation**: task-specific comparisons, failure cases, performance, and reviewed C-MAPSS snapshots
+- **Methods and API reference**: mathematical details, provenance, fitted attributes, and public interfaces
 
 Do not commit `docs/_build/`; it is generated by Sphinx.
 

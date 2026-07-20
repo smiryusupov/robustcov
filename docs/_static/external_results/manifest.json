@@ -1,4 +1,13 @@
 {
   "schema_version": 1,
-  "snapshots": []
+  "snapshots": [
+    {
+      "description": "FD002 contains six operating conditions and one fault mode, separating tolerated regime changes from progressive degradation.",
+      "generated_at": "2026-07-20T07:40:47+00:00",
+      "git_commit": "5f9696f95486b9d31f0e419da705e2961fddd03e",
+      "preview": "risk_over_engine_life.png",
+      "slug": "cmapss_fd002",
+      "title": "NASA C-MAPSS FD002"
+    }
+  ]
 }

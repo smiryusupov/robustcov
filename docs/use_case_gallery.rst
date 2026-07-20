@@ -1,5 +1,5 @@
-Use-case gallery
-================
+Examples by task and domain
+===========================
 
 The gallery is organized in two complementary ways:
 

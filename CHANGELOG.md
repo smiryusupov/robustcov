@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Reorganized the documentation and README around user goals, clarified the package
+  promise and boundaries, grouped method pages hierarchically, and focused the
+  public external benchmark gallery on reviewed C-MAPSS snapshots.
 - Add a reviewed C-MAPSS FD002/FD004 snapshot publisher, provenance manifest,
   Read the Docs validation, and a staged roadmap for public-dataset evidence.
 - Retain UCI Gas Sensor Drift as an explicit-cache loader and exploratory local

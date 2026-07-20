@@ -1,9 +1,11 @@
-Estimator guide
-===============
+Choose an estimator
+===================
 
-Which estimator should I use?
------------------------------
+Start from the failure mode
+---------------------------
 
+Choose the estimator from the structure of one observation, the way the data
+are contaminated, the ``n``-to-``p`` regime, and the fitted quantity you need.
 The short table below is a starting point.  See :doc:`method_comparison` for
 capability limits, methods that should not be compared directly, and
 reproducible cross-method benchmarks.

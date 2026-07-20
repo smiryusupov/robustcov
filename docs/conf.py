@@ -21,6 +21,8 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'benchmarks.rst', 'benchmark_report.rst', 'use_cases.rst']
 html_theme = 'furo'
+html_title = 'RobustCov documentation'
+html_short_title = 'RobustCov'
 html_static_path = ['_static']
 autodoc_typehints = 'description'
 
