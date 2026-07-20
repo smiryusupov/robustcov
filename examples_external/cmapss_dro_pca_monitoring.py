@@ -35,6 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from robustcov import ConformalAlertCalibrator
 from robustcov.datasets import DatasetNotFoundError, fetch_cmapss
 from robustcov.experimental import DistributionallyRobustPCA
 
@@ -43,7 +44,6 @@ from examples_external._dro_pca_utils import (
     empirical_pca,
     reconstruction_errors,
     robust_standardization,
-    upper_order_statistic,
 )
 
 
@@ -159,16 +159,21 @@ def run_analysis(
         ]
         if not calibration_scores[method]:
             raise ValueError("no calibration windows were produced; reduce window_size")
-    thresholds = {
-        method: upper_order_statistic(np.asarray(values), false_alarm_rate)
+    calibrators = {
+        method: ConformalAlertCalibrator(
+            alpha=false_alarm_rate,
+            tail="upper",
+        ).fit(np.asarray(values, dtype=float))
         for method, values in calibration_scores.items()
     }
 
     rows: list[dict[str, object]] = []
     for method, windows in all_windows.items():
-        threshold = thresholds[method]
+        calibrator = calibrators[method]
+        threshold = calibrator.threshold_
         for row in windows:
             risk = float(row["mean_value"])
+            p_value = float(calibrator.p_values(risk))
             rows.append(
                 {
                     "method": method,
@@ -176,9 +181,10 @@ def run_analysis(
                     "start_cycle": int(row["start_cycle"]),
                     "life_midpoint": float(row["life_midpoint"]),
                     "mean_reconstruction_risk": risk,
+                    "conformal_p_value": p_value,
                     "threshold": threshold,
                     "normalized_risk": risk / threshold,
-                    "alert": int(risk > threshold),
+                    "alert": int(p_value <= false_alarm_rate),
                 }
             )
 
@@ -217,7 +223,12 @@ def run_analysis(
         "radius": float(dro.radius_),
         "exact_worst_case_risk": float(dro.exact_worst_case_risk_),
         "transport_geometry": "healthy_operating_regime_mean_shift_diagonal",
-        "threshold": "finite_sample_calibration_window_order_statistic",
+        "threshold": "split_conformal_upper_tail_p_value",
+        "false_alarm_rate": float(false_alarm_rate),
+        "calibration_p_value_resolution": {
+            method: float(calibrator.min_p_value_)
+            for method, calibrator in calibrators.items()
+        },
     }
     return rows, summary, metadata, feature_contributions
 

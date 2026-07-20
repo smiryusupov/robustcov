@@ -120,6 +120,7 @@ __all__ = [
     "ClassConditionalFeatureGeometry",
     "RobustSubspaceMonitor",
     "SubspaceDriftResult",
+    "ConformalAlertCalibrator",
     "CellwiseRegularizedCovariance",
     "CellRCov",
     "CellwiseRobustCovariance",
@@ -217,6 +218,7 @@ from .features import FeatureGeometry, ClassConditionalFeatureGeometry
 from .pca import RobustPCA
 
 from .monitoring import RobustSubspaceMonitor, SubspaceDriftResult
+from .calibration import ConformalAlertCalibrator
 
 
 # Expose provenance on public estimator classes and numerical algorithms.

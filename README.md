@@ -18,6 +18,7 @@ shifting.
 Use it to:
 
 - fit robust covariance or scatter and compute Mahalanobis anomaly scores;
+- convert held-out anomaly or monitoring scores into conformal p-values and calibrated alert labels;
 - perform robust PCA, reconstruction diagnostics, and frozen-reference subspace monitoring;
 - build robust whitening transforms, kernels, and metrics for learned features or embeddings;
 - handle bad cells, missing values, matrix-valued observations, and multilinear low-rank structure;
@@ -39,6 +40,7 @@ platform.
 | Isolated bad cells or missing entries | `CellMCD`, `CellRCov`, `CellPCA`, or `SparseCellPCA` |
 | Matrix-valued or multilinear observations | `MMCD` or `RobustMultilinearPCA` |
 | Robust dimensionality reduction or changing subspaces | `RobustPCA`, `DistributionallyRobustPCA`, `SubspaceStability`, or `RobustSubspaceMonitor` |
+| Turn a held-out anomaly or monitoring score into a finite-sample alert | `ConformalAlertCalibrator` |
 | Sparse conditional-dependence structure | `RobustGraphicalLasso` or `SGLASSO` |
 | Learned features, embeddings, whitening, or robust kernels | `FeatureGeometry` |
 | Independent or temporally correlated latent sources | `TwoScatterICA`, `RobustSOBI`, or `RobustFactorModel` |
@@ -51,7 +53,7 @@ and API reference.
 
 - **Covariance and scatter:** `FastMCD`, `DetS`, `DetMM`, `MRCD`, `KMRCD`, regularized Cauchy, Student-t, and Tyler estimators.
 - **Cellwise and structured data:** `CellMCD`, `CellRCov`, `MMCD`, `RobustMultilinearPCA`, `CellPCA`, and `SparseCellPCA`.
-- **PCA and monitoring:** `RobustPCA`, `DensityPowerRobustPCA`, experimental `DistributionallyRobustPCA`, `SubspaceStability`, and `RobustSubspaceMonitor`.
+- **PCA and monitoring:** `RobustPCA`, `DensityPowerRobustPCA`, experimental `DistributionallyRobustPCA`, `SubspaceStability`, `RobustSubspaceMonitor`, and `ConformalAlertCalibrator`.
 - **Sparse precision:** `RobustGraphicalLasso` and `SGLASSO`.
 - **Latent structure:** `TwoScatterICA`, `SOBI`, `RobustSOBI`, and `RobustFactorModel`.
 - **Reusable geometry:** robust distances, anomaly diagnostics, whitening, `FeatureGeometry`, full-matrix kernels, SPD utilities, and optional OpenMP acceleration.
@@ -130,6 +132,20 @@ det = rc.RobustOutlierDetector(
 ).fit(X)
 print(det.labels_)
 ```
+
+Calibrate a separate held-out set of anomaly scores instead of choosing an
+operational alert threshold heuristically:
+
+```python
+calibrator = rc.ConformalAlertCalibrator(alpha=0.05).fit(
+    -det.score_samples(X_calibration)
+)
+p_values = calibrator.p_values(-det.score_samples(X_new))
+alerts = calibrator.predict_alerts(-det.score_samples(X_new))
+```
+
+The usual finite-sample marginal interpretation requires exchangeability between
+the held-out calibration scores and future inlier scores.
 
 For deterministic smooth high-breakdown scatter and an efficiency refinement:
 

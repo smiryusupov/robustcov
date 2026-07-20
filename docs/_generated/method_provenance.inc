@@ -340,6 +340,21 @@ Matrix-valued covariance
 Monitoring
 ~~~~~~~~~~
 
+.. _method-provenance-conformalalertcalibrator:
+
+``ConformalAlertCalibrator``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Status:** Literature-based adaptation
+
+**Method:** Split-conformal conversion of arbitrary anomaly scores into conservative finite-sample p-values and alert labels.
+
+**Primary references:** `Vovk et al. (2005) <https://doi.org/10.1007/b106715>`__, `Bashari et al. (2025) <https://proceedings.mlr.press/v267/bashari25a.html>`__
+
+**robustcov contribution:** Score-model-agnostic sklearn-style calibration, explicit p-value resolution diagnostics, deterministic tie handling, and monitoring-example integration.
+
+**Implementation notes:** The implementation provides ordinary split-conformal marginal calibration under exchangeability; it does not implement active cleaning, shift correction, online error control, or conditional guarantees.
+
 .. _method-provenance-robustsubspacemonitor:
 
 ``RobustSubspaceMonitor``

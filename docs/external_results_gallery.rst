@@ -17,7 +17,7 @@ How to interpret these results
 The C-MAPSS case studies validate the package's monitoring workflow:
 
 * fit a reference subspace on early-life observations;
-* calibrate alert thresholds on a separate healthy-life interval;
+* calibrate upper-tail conformal p-values on a separate healthy-life interval;
 * keep the fitted reference frozen;
 * score rolling windows over later engine life;
 * report risk and alert frequency by normalized-life interval;

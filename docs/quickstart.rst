@@ -22,6 +22,27 @@ with the diagnostic plotting helpers:
        det.estimator_, output_path="distance_panel.png", show=False
    )
 
+Calibrate anomaly alerts on held-out scores
+---------------------------------------------
+
+A robust distance is a ranking score, not automatically a calibrated alert.
+Fit the score model on training data and calibrate a separate reference split:
+
+.. code-block:: python
+
+   detector = rc.RobustOutlierDetector(
+       estimator=rc.RegularizedCauchy(alpha=0.10),
+       threshold="empirical",
+   ).fit(X_train)
+
+   calibrator = rc.ConformalAlertCalibrator(alpha=0.05).fit(
+       -detector.score_samples(X_calibration)
+   )
+   alerts = calibrator.predict_alerts(-detector.score_samples(X_new))
+
+See :doc:`conformal_alert_calibration` for the exchangeability assumption,
+finite-sample p-value resolution, and monitoring use.
+
 Small-sample heavy-tail scatter
 -------------------------------
 

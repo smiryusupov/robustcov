@@ -171,6 +171,11 @@ Benchmark coverage inventory
      - drift invariance / calibration
      - ``benchmarks/precision_geometry_monitoring_validation.py``
    * - monitoring
+     - ``ConformalAlertCalibrator``
+     - validation
+     - marginal false-alert rate / contaminated-reference conservativeness
+     - ``benchmarks/conformal_alert_calibration_validation.py``
+   * - monitoring
      - ``SubspaceStability``
      - workflow
      - bootstrap subspace stability

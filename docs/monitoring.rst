@@ -71,6 +71,26 @@ Use :meth:`~robustcov.RobustSubspaceMonitor.evaluate` when you want to inspect a
 batch without changing the rolling state.  ``partial_fit`` is an alias for the
 incremental workflow and stores the latest result in ``last_result_``.
 
+Conformal calibration of a scalar window score
+-----------------------------------------------
+
+``RobustSubspaceMonitor`` calibrates several decomposed metrics internally. If
+your deployment uses one pre-defined scalar risk statistic, use a held-out set
+of stable-window scores with :class:`~robustcov.ConformalAlertCalibrator`:
+
+.. code-block:: python
+
+   calibrator = rc.ConformalAlertCalibrator(alpha=0.01).fit(
+       stable_window_risks
+   )
+   current_p = calibrator.p_values(current_window_risk)
+   current_alert = calibrator.predict_alerts(current_window_risk)
+
+This gives the score threshold a finite-sample marginal interpretation under
+exchangeability. It does not solve temporal dependence, adaptive repeated
+testing, or regime-specific calibration. See
+:doc:`conformal_alert_calibration` for assumptions and resolution limits.
+
 Calibration and alarms
 ----------------------
 

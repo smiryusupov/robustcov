@@ -61,6 +61,12 @@ REFERENCE_CATALOG: Mapping[str, Reference] = {
         "A. Belouchrani, K. Abed-Meraim, J.-F. Cardoso, and E. Moulines. A blind source separation technique using second-order statistics. IEEE Transactions on Signal Processing 45(2), 434–444, 1997.",
         "https://ieeexplore.ieee.org/document/554307/",
     ),
+    "bashari_etal_2025": Reference(
+        "bashari_etal_2025",
+        "Bashari et al. (2025)",
+        "M. Bashari, M. Sesia, and Y. Romano. Robust conformal outlier detection under contaminated reference data. Proceedings of the 42nd International Conference on Machine Learning, PMLR 267, 3091–3141, 2025.",
+        "https://proceedings.mlr.press/v267/bashari25a.html",
+    ),
     "bhatia_2007": Reference(
         "bhatia_2007",
         "Bhatia (2007)",
@@ -282,6 +288,12 @@ REFERENCE_CATALOG: Mapping[str, Reference] = {
         "Wiesel (2012)",
         "A. Wiesel. Geodesic convexity and covariance estimation. IEEE Transactions on Signal Processing 60(12), 6182–6189, 2012.",
         "https://doi.org/10.1109/TSP.2012.2218241",
+    ),
+    "vovk_etal_2005": Reference(
+        "vovk_etal_2005",
+        "Vovk et al. (2005)",
+        "V. Vovk, A. Gammerman, and G. Shafer. Algorithmic Learning in a Random World. Springer, 2005.",
+        "https://doi.org/10.1007/b106715",
     ),
     "yu_etal_2019": Reference(
         "yu_etal_2019",
@@ -561,6 +573,13 @@ METHOD_PROVENANCE: Mapping[str, MethodProvenance] = {
         "Calibration, rolling comparison, scale/permutation invariance, drift summaries, and plotting integration.",
         "The monitoring workflow is package-specific and combines established robust PCA and matrix-geometry concepts.",
     ),
+    "ConformalAlertCalibrator": _entry(
+        "ConformalAlertCalibrator", "Monitoring", "literature_adaptation",
+        "Split-conformal conversion of arbitrary anomaly scores into conservative finite-sample p-values and alert labels.",
+        ("vovk_etal_2005", "bashari_etal_2025"),
+        "Score-model-agnostic sklearn-style calibration, explicit p-value resolution diagnostics, deterministic tie handling, and monitoring-example integration.",
+        "The implementation provides ordinary split-conformal marginal calibration under exchangeability; it does not implement active cleaning, shift correction, online error control, or conditional guarantees.",
+    ),
     "SubspaceStability": _entry(
         "SubspaceStability", "Uncertainty/stability", "robustcov_composite",
         "Bootstrap diagnostics for PCA loadings, eigenvalues, explained variance, and principal angles.",
@@ -640,7 +659,7 @@ PUBLIC_ESTIMATOR_PROVENANCE_NAMES = (
     "TwoScatterICA", "SOBI", "RobustSOBI", "RobustFactorModel",
     "RobustOutlierDetector", "AutoRobustAnomalyDetector",
     "ClusterRobustOutlierDetector", "AutoRobustScatter",
-    "RobustSubspaceMonitor", "SubspaceStability", "FeatureGeometry",
+    "RobustSubspaceMonitor", "ConformalAlertCalibrator", "SubspaceStability", "FeatureGeometry",
     "ClassConditionalFeatureGeometry", "RobustInputMetric",
     "RobustMedianImputer",
 )

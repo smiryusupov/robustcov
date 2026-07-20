@@ -86,6 +86,8 @@ def test_cmapss_external_analysis_runs_on_synthetic_run_to_failure_data():
     assert summary
     assert contributions.shape == (p,)
     assert metadata["n_operating_regimes"] >= 2
+    assert metadata["threshold"] == "split_conformal_upper_tail_p_value"
+    assert all(0.0 < float(row["conformal_p_value"]) <= 1.0 for row in rows)
     late_dro = next(
         row for row in summary if row["method"] == "DRO-PCA" and row["life_bin"] == "0.8-1.0"
     )

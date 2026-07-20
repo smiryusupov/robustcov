@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added ``ConformalAlertCalibrator`` for conservative split-conformal p-values and alert labels from arbitrary anomaly or monitoring scores, including finite-sample resolution diagnostics and C-MAPSS integration.
+- Added conformal-calibration validation, provenance, API documentation, and a task-oriented workflows page required by the documentation landing page.
+- Removed the optional Sphinx viewcode extension to keep strict Read the Docs builds within predictable resource limits; repository source links remain available through the Furo theme.
 - Simplified the example-gallery navigation so the sidebar exposes only method
   and application-domain landing pages; individual examples remain linked from
   those pages without expanding into a long global list.

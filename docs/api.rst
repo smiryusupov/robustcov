@@ -244,6 +244,14 @@ Robust rolling monitoring
    :undoc-members:
    :show-inheritance:
 
+Conformal alert calibration
+----------------------------
+
+.. autoclass:: robustcov.ConformalAlertCalibrator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Feature geometry
 ----------------
 

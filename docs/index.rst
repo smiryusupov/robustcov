@@ -62,7 +62,7 @@ Choose your starting point
      - Typical first object
    * - Flag unusual rows in tabular data
      - :doc:`quickstart`
-     - ``RobustOutlierDetector`` with ``FastMCD`` or ``RegularizedCauchy``
+     - ``RobustOutlierDetector`` with ``FastMCD`` or ``RegularizedCauchy``; add ``ConformalAlertCalibrator`` for held-out score calibration
    * - Select a covariance or scatter estimator
      - :doc:`estimator_guide`
      - Match the estimator to rowwise, cellwise, heavy-tail, or high-dimensional contamination
@@ -115,6 +115,7 @@ for project maturity.
    :caption: Workflows
 
    workflows
+   conformal_alert_calibration
    use_case_gallery
 
 .. toctree::

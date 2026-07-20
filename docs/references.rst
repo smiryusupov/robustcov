@@ -79,6 +79,12 @@ Robust anomaly diagnostics
 * D. N. Politis and H. White. 2004. Automatic block-length selection for the dependent bootstrap. *Econometric Reviews*.
 
 
+Conformal anomaly and alert calibration
+---------------------------------------
+
+* V. Vovk, A. Gammerman, and G. Shafer. 2005. *Algorithmic Learning in a Random World*. Springer.
+* M. Bashari, M. Sesia, and Y. Romano. 2025. Robust conformal outlier detection under contaminated reference data. *Proceedings of the 42nd International Conference on Machine Learning*, PMLR 267, 3091--3141.
+
 Robust clustering and mixtures
 ------------------------------
 

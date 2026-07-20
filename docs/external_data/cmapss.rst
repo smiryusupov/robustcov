@@ -55,17 +55,19 @@ Run:
 The script:
 
 1. uses the first 20% of each training trajectory as the reference period;
-2. uses the 20--35% life interval for independent alert calibration;
+2. uses the 20--35% life interval for independent split-conformal alert calibration;
 3. estimates transport geometry from healthy operating-regime mean shifts;
 4. scores rolling windows over normalized engine life;
-5. reports alert rates by life interval and late-life sensor contributions.
+5. converts window risk into conservative conformal p-values and reports alert rates by life interval and late-life sensor contributions.
 
 The fault-onset time is not supplied in the training data, so normalized-life
 bins are a transparent evaluation proxy rather than a claim of exact onset
 labels. Results are written under
-``results/external/cmapss_dro_pca_monitoring``; raw data remains in the cache.
+``results/external/cmapss_<subset-lowercase>`` when an explicit ``--outdir`` is supplied; raw data remains in the cache.
 
 FD002 and FD004 are the approved reviewed external snapshot profiles. After
 local review, publish their aggregate figures and summary table with
 ``scripts/publish_external_snapshot.py``. Read the Docs renders only those
-committed snapshots and never downloads or executes C-MAPSS.
+committed snapshots and never downloads or executes C-MAPSS. See
+:doc:`../conformal_alert_calibration` for calibration assumptions and p-value
+resolution.

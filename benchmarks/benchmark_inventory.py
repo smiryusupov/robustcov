@@ -58,6 +58,7 @@ COVERAGE = [
     Coverage("anomaly detection", "ClusterRobustOutlierDetector", "workflow", "examples/use_case_multimodal_anomaly.py", "cluster-conditioned anomaly diagnostics"),
     Coverage("selection", "AutoRobustScatter", "comparative", "benchmarks/auto_scatter_small_sample.py", "selection score / covariance error"),
     Coverage("monitoring", "RobustSubspaceMonitor", "validation", "benchmarks/precision_geometry_monitoring_validation.py", "drift invariance / calibration"),
+    Coverage("monitoring", "ConformalAlertCalibrator", "validation", "benchmarks/conformal_alert_calibration_validation.py", "marginal false-alert rate / contaminated-reference conservativeness"),
     Coverage("monitoring", "SubspaceStability", "workflow", "examples/plot_robust_pca_dependent_stability.py", "bootstrap subspace stability"),
     Coverage("geometry", "FeatureGeometry", "validation", "benchmarks/precision_geometry_monitoring_validation.py", "distance invariance"),
     Coverage("geometry", "ClassConditionalFeatureGeometry", "workflow", "examples/feature_geometry_class_conditional_ood.py", "class-conditional OOD ranking"),
@@ -143,7 +144,7 @@ def write_csv(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     rows = [asdict(entry) for entry in (*COVERAGE, *EXPERIMENTAL_COVERAGE)]
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
