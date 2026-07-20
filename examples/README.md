@@ -79,6 +79,7 @@ python examples/run_use_case_gallery.py --all
 ## Benchmarks and external data
 
 Benchmark plotting and contamination studies remain in `examples/`, while
-optional downloaded-data workflows live in `examples_external/`. External
-examples are intentionally excluded from the core test suite because their data
-may have separate licenses and network requirements.
+optional downloaded-data workflows live in `examples_external/`. Raw data is
+never committed: explicit loaders cache UCI gas-sensor and NASA C-MAPSS archives
+outside the repository. Core tests exercise the loaders and protocols with tiny
+local fixtures, while real-data runs remain optional and network-dependent.

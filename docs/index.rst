@@ -121,6 +121,7 @@ The main pieces are:
    methods_and_references
    project_contributions
    robust_statistics_background
+   external_data
    external_results_gallery
    references
 

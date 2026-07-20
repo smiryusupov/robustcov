@@ -129,18 +129,24 @@ external gallery.
 Run external examples
 ---------------------
 
-External examples are optional and dataset-dependent.  The recommended path is:
+External examples are optional and dataset-dependent.  The recommended paths are:
 
 .. code-block:: bash
 
+   # Explicit cache-only public dataset loaders
+   python examples_external/gas_sensor_drift_dro_pca.py --download
+   python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002
+
+   # Manually downloaded CSV/Kaggle datasets
    python examples_external/<script>.py --data path/to/data.csv --outdir results/external/<name>
+
    python examples_external/collect_external_results.py \
      --root results/external \
      --outdir results/external_registry
 
 The scripts, dataset notes, and notebook templates live under ``examples_external/``.
-They are intentionally outside the core test suite because Kaggle datasets have
-separate licenses, download steps, and file sizes.
+Raw datasets are not stored in the repository. See :doc:`external_data` for the
+cache, checksum, archive-safety, and offline-testing policy.
 
 .. toctree::
    :maxdepth: 1

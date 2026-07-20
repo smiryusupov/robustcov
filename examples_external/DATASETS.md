@@ -12,6 +12,8 @@ according to their licenses and run the matching script.
 | Medical screening | medical tabular CSV with diagnosis/outcome label | `kaggle_medical_screening.py` |
 | Market stress | asset price or return CSV, date + one column per asset | `finance_market_stress.py` |
 | Rolling market regimes | asset price or return CSV | `finance_rolling_window_anomaly.py` |
+| Temporal sensor drift | UCI Gas Sensor Array Drift at Different Concentrations | `gas_sensor_drift_dro_pca.py` |
+| Operating-regime and degradation shift | NASA C-MAPSS FD002/FD004 | `cmapss_dro_pca_monitoring.py` |
 
 Recommended result workflow:
 
@@ -32,3 +34,15 @@ The generated CSV has a `date` column and one price column per synthetic asset.
 It contains correlated heavy-tailed returns plus injected stress windows, so it
 is useful for testing the market-stress and rolling-window scripts before moving
 to Kaggle, Yahoo Finance, Bloomberg, or internal market data.
+
+## Cache-only loaders
+
+The UCI and NASA loaders do not store data in this repository:
+
+```bash
+export ROBUSTCOV_DATA_DIR="$HOME/data/robustcov"
+python -m robustcov.datasets fetch gas_sensor_drift
+python -m robustcov.datasets fetch cmapss --subset FD002
+```
+
+Use `python -m robustcov.datasets info <name>` to review the source, citation, and terms metadata before downloading.

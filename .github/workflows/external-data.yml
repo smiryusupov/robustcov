@@ -1,0 +1,55 @@
+name: External data validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      dataset:
+        description: External dataset workflow to run
+        required: true
+        default: gas_sensor_drift
+        type: choice
+        options:
+          - gas_sensor_drift
+          - cmapss_fd002
+          - all
+
+permissions:
+  contents: read
+
+jobs:
+  external-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ROBUSTCOV_DATA_DIR: ${{ runner.temp }}/robustcov-data
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install package and example dependencies
+        run: python -m pip install -e ".[examples]"
+      - name: Run gas-sensor DRO-PCA workflow
+        if: ${{ inputs.dataset == 'gas_sensor_drift' || inputs.dataset == 'all' }}
+        run: |
+          python examples_external/gas_sensor_drift_dro_pca.py \
+            --download \
+            --outdir results/external/gas_sensor_drift_dro_pca
+      - name: Run C-MAPSS FD002 DRO-PCA workflow
+        if: ${{ inputs.dataset == 'cmapss_fd002' || inputs.dataset == 'all' }}
+        run: |
+          python examples_external/cmapss_dro_pca_monitoring.py \
+            --download \
+            --subset FD002 \
+            --outdir results/external/cmapss_dro_pca_monitoring
+      - name: Upload result summaries and plots only
+        uses: actions/upload-artifact@v4
+        with:
+          name: robustcov-external-${{ inputs.dataset }}
+          path: results/external
+          if-no-files-found: error
+          retention-days: 14

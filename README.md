@@ -654,13 +654,28 @@ python -m sphinx -b html docs docs/_build/html
 
 ## External and Kaggle examples
 
-External examples live under `examples_external/`. They are optional and are not part of the test suite because they require manual dataset downloads and may have separate licenses.
+External examples live under `examples_external/`. Raw datasets are never bundled with the package or committed to the repository. Optional loaders cache explicit downloads under `ROBUSTCOV_DATA_DIR`, `XDG_CACHE_HOME/robustcov`, or `~/.cache/robustcov`.
 
-Example:
+List supported cached datasets:
+
+```bash
+python -m robustcov.datasets list
+python -m robustcov.datasets info gas_sensor_drift
+python -m robustcov.datasets info cmapss
+```
+
+Run the distribution-shift examples without storing data in the repository:
+
+```bash
+python examples_external/gas_sensor_drift_dro_pca.py --download
+python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002
+```
+
+Kaggle-style manual example:
 
 ```bash
 python examples_external/kaggle_credit_card_fraud.py \
-  --data examples_external/data/creditcard.csv \
+  --data /path/to/creditcard.csv \
   --outdir results/external/credit_card_fraud
 ```
 

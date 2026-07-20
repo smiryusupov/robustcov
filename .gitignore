@@ -83,3 +83,10 @@ conda-bld/
 
 /.quarto/
 **/*.quarto_ipynb
+/data/
+/.external-data/
+/examples_external/data/
+/results/external/
+/results/external_registry/
+*.partial
+*.download

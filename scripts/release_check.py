@@ -98,6 +98,26 @@ def _safe_archive_names(names: Iterable[str]) -> bool:
     return True
 
 
+def _forbidden_archive_names(names: Iterable[str]) -> list[str]:
+    """Return build caches, downloaded data, or partial downloads in an artifact."""
+
+    forbidden: list[str] = []
+    for name in names:
+        path = PurePosixPath(name)
+        parts = set(path.parts)
+        if (
+            "__pycache__" in parts
+            or ".pytest_cache" in parts
+            or ".external-data" in parts
+            or ("docs" in parts and "_build" in parts)
+            or ("examples_external" in parts and "data" in parts)
+            or ("results" in parts and "external" in parts)
+            or path.suffix in {".pyc", ".pyo", ".partial", ".download"}
+        ):
+            forbidden.append(name)
+    return forbidden
+
+
 def _check_core_metadata(checks: list[Check], metadata, *, label: str, project: dict) -> None:
     _check(checks, f"{label}: name", metadata.get("Name") == project["name"], str(metadata.get("Name")))
     _check(
@@ -148,6 +168,14 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         "docs/project_contributions.rst",
         "docs/references.bib",
         "robustcov/provenance.py",
+        "robustcov/datasets/__init__.py",
+        "robustcov/datasets/gas_sensor_drift.py",
+        "robustcov/datasets/cmapss.py",
+        "docs/external_data.rst",
+        "examples_external/gas_sensor_drift_dro_pca.py",
+        "examples_external/cmapss_dro_pca_monitoring.py",
+        ".github/workflows/external-data.yml",
+        ".gitignore",
     ]
     missing = [name for name in required_files if not (root / name).is_file()]
     _check(checks, "source: required files", not missing, f"missing={missing}")
@@ -268,6 +296,13 @@ def wheel_checks(path: Path, project: dict) -> list[Check]:
     with zipfile.ZipFile(path) as archive:
         names = archive.namelist()
         _check(checks, f"wheel {path.name}: safe paths", _safe_archive_names(names), "archive paths")
+        forbidden = _forbidden_archive_names(names)
+        _check(
+            checks,
+            f"wheel {path.name}: no caches or external data",
+            not forbidden,
+            repr(forbidden[:20]),
+        )
         metadata_names = [name for name in names if name.endswith(".dist-info/METADATA")]
         _check(checks, f"wheel {path.name}: one METADATA", len(metadata_names) == 1, repr(metadata_names))
         if len(metadata_names) != 1:
@@ -277,6 +312,10 @@ def wheel_checks(path: Path, project: dict) -> list[Check]:
         dist_info = metadata_names[0].rsplit("/", 1)[0]
         required_members = {
             "robustcov/__init__.py",
+            "robustcov/datasets/__init__.py",
+            "robustcov/datasets/_external.py",
+            "robustcov/datasets/gas_sensor_drift.py",
+            "robustcov/datasets/cmapss.py",
             f"{dist_info}/licenses/LICENSE",
             f"{dist_info}/licenses/NOTICE",
         }
@@ -290,6 +329,13 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
     with tarfile.open(path, "r:gz") as archive:
         names = archive.getnames()
         _check(checks, f"sdist {path.name}: safe paths", _safe_archive_names(names), "archive paths")
+        forbidden = _forbidden_archive_names(names)
+        _check(
+            checks,
+            f"sdist {path.name}: no caches or external data",
+            not forbidden,
+            repr(forbidden[:20]),
+        )
         top_levels = {PurePosixPath(name).parts[0] for name in names if PurePosixPath(name).parts}
         _check(checks, f"sdist {path.name}: one top-level directory", len(top_levels) == 1, repr(sorted(top_levels)))
         if len(top_levels) != 1:
@@ -310,6 +356,16 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
             f"{top}/scripts/package_smoke_test.py",
             f"{top}/scripts/release_check.py",
             f"{top}/requirements/minimum.txt",
+            f"{top}/robustcov/datasets/__init__.py",
+            f"{top}/robustcov/datasets/_external.py",
+            f"{top}/robustcov/datasets/gas_sensor_drift.py",
+            f"{top}/robustcov/datasets/cmapss.py",
+            f"{top}/examples_external/gas_sensor_drift_dro_pca.py",
+            f"{top}/examples_external/cmapss_dro_pca_monitoring.py",
+            f"{top}/docs/external_data.rst",
+            f"{top}/docs/external_data/gas_sensor_drift.rst",
+            f"{top}/docs/external_data/cmapss.rst",
+            f"{top}/.github/workflows/external-data.yml",
         }
         missing = sorted(required.difference(names))
         _check(checks, f"sdist {path.name}: required members", not missing, f"missing={missing}")

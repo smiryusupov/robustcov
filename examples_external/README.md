@@ -1,6 +1,6 @@
 # Optional Kaggle / external examples
 
-These examples are intentionally **not part of tests** and are not run during the normal Sphinx build. They require datasets that users download manually from Kaggle or another data source.
+These examples are not run during the normal Sphinx build. Large/raw datasets are never committed to the repository. Dataset-loader tests use tiny local archives and remain fully offline; real-data workflows run only after an explicit download or a manually supplied archive.
 
 Why keep them optional?
 
@@ -16,6 +16,20 @@ Why keep them optional?
 | `kaggle_ieee_cis_fraud.py` | IEEE-CIS Fraud Detection | transaction anomaly scores |
 | `kaggle_predictive_maintenance.py` | predictive-maintenance sensor tables | failure screening |
 | `kaggle_medical_screening.py` | medical tabular diagnosis datasets | patient-level screening |
+| `gas_sensor_drift_dro_pca.py` | UCI gas-sensor temporal batches | distribution-shift-aware PCA monitoring |
+| `cmapss_dro_pca_monitoring.py` | NASA C-MAPSS FD001--FD004 | operating-regime-aware degradation monitoring |
+
+
+## Cached external datasets
+
+```bash
+export ROBUSTCOV_DATA_DIR="$HOME/data/robustcov"
+python -m robustcov.datasets list
+python -m robustcov.datasets fetch gas_sensor_drift
+python -m robustcov.datasets fetch cmapss --subset FD002
+```
+
+Downloads are explicit, atomic, checksum/fingerprint validated, and safely extracted. A manually downloaded archive can be supplied with `--archive` to either DRO-PCA script. Raw archives and extracted files remain under the user cache; only result CSVs and figures are written under `results/external/`.
 
 ## Example
 

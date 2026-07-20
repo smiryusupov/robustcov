@@ -61,6 +61,29 @@ manually:
      --root results/external \
      --outdir results/external_registry
 
+
+Cached public research datasets
+-------------------------------
+
+The UCI gas-sensor drift and NASA C-MAPSS workflows use explicit cache-only
+loaders. Raw archives and extracted files remain outside the repository.
+
+.. code-block:: bash
+
+   export ROBUSTCOV_DATA_DIR="$HOME/data/robustcov"
+   python -m robustcov.datasets fetch gas_sensor_drift
+   python -m robustcov.datasets fetch cmapss --subset FD002
+
+Run the shift-aware examples:
+
+.. code-block:: bash
+
+   python examples_external/gas_sensor_drift_dro_pca.py
+   python examples_external/cmapss_dro_pca_monitoring.py --subset FD002
+
+See :doc:`external_data` for cache resolution, checksum behavior, archive
+safety, citations, and dataset-specific protocols.
+
 Kaggle examples
 ---------------
 

@@ -186,12 +186,27 @@ include = [
   "RELEASE.md",
 ]
 exclude = [
+  "**/__pycache__/**",
+  "**/*.py[cod]",
+  "**/*.so",
+  "**/*.pyd",
+  "docs/_build",
   "docs/_build/**",
+  "results",
   "results/**",
+  "build",
   "build/**",
+  "dist",
   "dist/**",
+  ".pytest_cache",
   ".pytest_cache/**",
+  ".venv",
   ".venv/**",
+  ".external-data",
+  ".external-data/**",
+  "data",
+  "data/**",
+  "examples_external/data",
   "examples_external/data/**",
 ]
 

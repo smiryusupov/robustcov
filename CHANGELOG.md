@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added cache-only external dataset loaders for UCI Gas Sensor Array Drift and NASA C-MAPSS, including atomic downloads, checksum/fingerprint validation, and safe nested-ZIP extraction.
+- Added real-data DRO-PCA protocols for temporal gas-sensor drift and operating-regime-aware C-MAPSS degradation monitoring without committing raw data.
+- Added offline fake-archive tests, external-data documentation, ignore rules, and a manually triggered external-data GitHub Actions workflow.
 - Added experimental ``DistributionallyRobustPCA`` with an exact weighted-Wasserstein scalar-dual risk, anisotropic transport geometries, identity-geometry PCA control, and a deterministic candidate-path optimizer.
 - Added held-out distribution-shift benchmarks, gallery plots, provenance metadata, and tests separating DRO-PCA from contamination-robust PCA.
 - Added a runtime method-provenance registry covering every canonical public estimator and core source-separation algorithms.
