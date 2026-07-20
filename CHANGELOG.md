@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-No changes yet.
+### Changed
+
+- Replaced the estimator-era FAQ with a task-oriented practical FAQ covering contamination models, high-dimensional choices, PCA and decomposition variants, monitoring and conformal calibration, structured data, API maturity, and deployment behavior.
 
 ## 0.1.0a1 - 2026-07-20
 
