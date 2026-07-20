@@ -16,38 +16,56 @@ In practice:
   and optional integration helpers, may evolve based on user feedback;
 * breaking changes and deprecations are recorded in ``CHANGELOG.md``.
 
-The goal is to be honest about project maturity without suggesting that the
-implemented algorithms are experimental toys.
+The stability tier for each public symbol is recorded explicitly so users can
+distinguish mature interfaces from provisional and experimental ones.
 
 Stability tiers
 ---------------
 
-Stable prototype
-~~~~~~~~~~~~~~~~
+The machine-readable contract is stored in ``robustcov/_public_api.json``. Every
+name exported from ``robustcov`` is classified in exactly one tier, and release
+checks fail when the manifest and the actual namespaces diverge.
 
-These APIs are intended to remain recognizable:
+Stable
+~~~~~~
 
-* ``FastMCD``
-* ``RegularizedCauchy``
-* ``StudentTScatter``
-* ``RobustOutlierDetector``
-* ``diagnostic_report``
-* robust distance plotting helpers
+Stable names are intended to remain available with recognizable constructor and
+fitted-attribute contracts. Changes follow the deprecation policy below. This
+tier currently contains the mature core covariance interfaces,
+``PrincipalComponentPursuit``, ``RobustOutlierDetector``, and native-thread
+control helpers.
+
+Provisional
+~~~~~~~~~~~
+
+Provisional names are supported public APIs, but details may evolve before 1.0.
+They still require changelog entries and a compatibility path when practical.
+Most structured estimators, workflow composites, plotting helpers, and newer PCA
+or precision APIs are currently provisional.
 
 Experimental
 ~~~~~~~~~~~~
 
-These may change significantly:
+Experimental names may change substantially and are normally exposed from
+``robustcov.experimental``. A small number remain available at the top level for
+compatibility; the manifest records those exceptions explicitly. Experimental
+methods must state which published guarantees do and do not carry over to the
+implementation.
 
-* ``AutoRobustScatter`` scoring internals
-* ``HellingerRegularizedTyler``
-* exact KL/Wiesel variants beyond current aliases/prototypes
-* ``MRCD`` search presets, initialization strategy, and diagnostic attribute names
-* ``KMRCD`` kernel defaults, initial-support search, and out-of-sample diagnostics
-* ``SpatialSignGraphicalLasso`` penalty selection, diagonal-penalty defaults, and shape-score diagnostics
-* ``MMCD`` initialization, numerical regularization, and contribution APIs
-* ``RobustPCA`` and ``RobustSubspaceMonitor`` calibration and monitoring APIs
-* benchmark script schemas
+Inspect the installed contract
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import importlib.resources
+   import json
+
+   manifest = json.loads(
+       importlib.resources.files("robustcov")
+       .joinpath("_public_api.json")
+       .read_text(encoding="utf-8")
+   )
+   print(manifest["stable_top_level"])
 
 Deprecation policy
 ------------------

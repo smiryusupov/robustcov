@@ -116,3 +116,21 @@ or ``wilds``, but the RobustCov protocol should consume a small, documented loca
 artifact such as ``.npz`` with arrays named ``X``, ``domain``, ``label``, and
 ``sample_id``. Embeddings themselves remain untracked; only aggregate plots and
 summary tables are published.
+
+Clean provenance
+----------------
+
+Publish reviewed snapshots from a committed implementation with a clean Git
+working tree. The publisher records both the commit and dirty-state flag, and
+registry validation rejects snapshots produced from uncommitted code.
+
+For release-candidate validation, require both reviewed C-MAPSS profiles:
+
+.. code-block:: bash
+
+   python scripts/publish_external_snapshot.py check \
+     --require cmapss_fd002 \
+     --require cmapss_fd004
+
+``--allow-dirty`` exists only for local preview generation; such snapshots cannot
+pass the registry check and must not be committed.

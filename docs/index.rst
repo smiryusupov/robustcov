@@ -146,12 +146,6 @@ for project maturity.
    robust_statistics_background
    references
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Project
-
-   project_contributions
-
 Project status
 --------------
 

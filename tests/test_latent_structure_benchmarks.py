@@ -120,4 +120,8 @@ def test_benchmark_inventory_is_complete_and_paths_exist():
     canonical = {entry.estimator for entry in INVENTORY.COVERAGE}
     experimental = {entry.estimator for entry in INVENTORY.EXPERIMENTAL_COVERAGE}
     assert {"TwoScatterICA", "RobustSOBI", "RobustPCA", "RobustFactorModel"} <= canonical
-    assert experimental == {"DistributionallyRobustPCA"}
+    assert experimental == {
+        "DistributionallyRobustPCA",
+        "OnlineRobustSubspaceTracker",
+        "SpectralFilteringCovariance",
+    }

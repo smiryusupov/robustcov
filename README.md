@@ -839,10 +839,9 @@ print(info.robustcov_contribution)
 ```
 
 The full registry is documented in
-[`docs/methods_and_references.rst`](docs/methods_and_references.rst), and the
-project's restrained claims policy is in
-[`docs/project_contributions.rst`](docs/project_contributions.rst). No current
-public estimator is claimed as an original statistical method.
+[`docs/methods_and_references.rst`](docs/methods_and_references.rst). Method
+pages cite the underlying literature and document implementation-specific
+behavior, assumptions, and limitations.
 
 When using `robustcov`, cite both:
 

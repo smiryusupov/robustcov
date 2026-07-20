@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed
+
+- Simplified public documentation by removing the defensive project-claims page; method provenance and evidence rules now live in contributor guidance and automated checks.
+- Added a machine-readable public API stability manifest and release checks that require every top-level and experimental export to be classified.
+- Split the pytest suite into explicit unit, integration, statistical, benchmark, native, and packaging groups for predictable CI execution.
+- Standardized source-tree subprocess environments so benchmark and example tests no longer require manually exporting `PYTHONPATH`.
+
 - Added ``PrincipalComponentPursuit`` / ``PCP`` for canonical low-rank-plus-sparse matrix decomposition, with inexact-ALM optimization, cell/row/column diagnostics, convergence history, validation, provenance, API documentation, and an example.
 
 - Added experimental ``SpectralFilteringCovariance`` for bounded adversarial whole-row contamination, with matrix-free quadratic filtering, diagnostics, validation, provenance, API documentation, and an example.

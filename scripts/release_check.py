@@ -165,9 +165,9 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         "CMakeLists.txt",
         "requirements/minimum.txt",
         "docs/methods_and_references.rst",
-        "docs/project_contributions.rst",
         "docs/references.bib",
         "robustcov/provenance.py",
+        "robustcov/_public_api.json",
         "robustcov/decomposition.py",
         "docs/principal_component_pursuit.rst",
         "tests/test_principal_component_pursuit.py",
@@ -191,6 +191,13 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
     ]
     missing = [name for name in required_files if not (root / name).is_file()]
     _check(checks, "source: required files", not missing, f"missing={missing}")
+    _check(
+        checks,
+        "source: contributor policy is not public navigation",
+        not (root / "docs" / "project_contributions.rst").exists()
+        and "project_contributions" not in (root / "docs" / "index.rst").read_text(encoding="utf-8"),
+        "docs/project_contributions.rst",
+    )
 
     runtime_version = _runtime_version(root / "robustcov" / "__init__.py")
     citation_version = _citation_version(root / "CITATION.cff")
@@ -300,6 +307,33 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
     _check(checks, "source: unique public exports", len(exported) == len(set(exported)), f"count={len(exported)}")
     _check(checks, "source: statically resolvable public exports", not missing_exports, f"missing={missing_exports}")
 
+    api_manifest_path = root / "robustcov" / "_public_api.json"
+    try:
+        api_manifest = json.loads(api_manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        _check(checks, "source: public API manifest", False, str(exc))
+    else:
+        tiers = (
+            "stable_top_level",
+            "provisional_top_level",
+            "experimental_top_level",
+        )
+        tier_values = [api_manifest.get(name, []) for name in tiers]
+        valid_tiers = all(
+            isinstance(values, list) and all(isinstance(item, str) for item in values)
+            for values in tier_values
+        )
+        flattened = [item for values in tier_values if isinstance(values, list) for item in values]
+        _check(checks, "source: public API manifest schema", api_manifest.get("schema_version") == 1 and valid_tiers, repr(api_manifest.get("schema_version")))
+        _check(checks, "source: public API manifest version", api_manifest.get("package_version") == project["version"], repr(api_manifest.get("package_version")))
+        _check(checks, "source: public API tier partition", len(flattened) == len(set(flattened)) and set(flattened) == set(exported), f"manifest={len(flattened)}, exports={len(exported)}")
+
+        experimental_path = root / "robustcov" / "experimental" / "__init__.py"
+        experimental_tree = ast.parse(experimental_path.read_text(encoding="utf-8"), filename=str(experimental_path))
+        experimental_exports = _literal_string_list(experimental_tree, "__all__")
+        manifest_experimental = api_manifest.get("experimental_namespace", [])
+        _check(checks, "source: experimental namespace manifest", isinstance(manifest_experimental, list) and set(manifest_experimental) == set(experimental_exports), f"manifest={manifest_experimental}, exports={experimental_exports}")
+
     return checks, config
 
 
@@ -324,6 +358,7 @@ def wheel_checks(path: Path, project: dict) -> list[Check]:
         dist_info = metadata_names[0].rsplit("/", 1)[0]
         required_members = {
             "robustcov/__init__.py",
+            "robustcov/_public_api.json",
             "robustcov/datasets/__init__.py",
             "robustcov/datasets/_external.py",
             "robustcov/datasets/gas_sensor_drift.py",
@@ -362,8 +397,8 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
             f"{top}/src/robustcov_cpp.cpp",
             f"{top}/robustcov/__init__.py",
             f"{top}/robustcov/provenance.py",
+            f"{top}/robustcov/_public_api.json",
             f"{top}/docs/methods_and_references.rst",
-            f"{top}/docs/project_contributions.rst",
             f"{top}/docs/references.bib",
             f"{top}/scripts/package_smoke_test.py",
             f"{top}/scripts/release_check.py",
@@ -392,15 +427,61 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
     return checks
 
 
+def release_candidate_checks(root: Path) -> list[Check]:
+    """Validate evidence required for a public release candidate."""
+
+    checks: list[Check] = []
+    manifest_path = root / "docs" / "_static" / "external_results" / "manifest.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        _check(checks, "release candidate: external snapshot manifest", False, str(exc))
+        return checks
+
+    snapshots = manifest.get("snapshots", [])
+    slugs = {str(item.get("slug")) for item in snapshots if isinstance(item, dict)}
+    required = {"cmapss_fd002", "cmapss_fd004"}
+    _check(
+        checks,
+        "release candidate: required C-MAPSS snapshots",
+        required.issubset(slugs),
+        f"present={sorted(slugs)}, required={sorted(required)}",
+    )
+
+    dirty: list[str] = []
+    unknown_commits: list[str] = []
+    for slug in sorted(required.intersection(slugs)):
+        snapshot_path = root / "docs" / "_static" / "external_results" / slug / "snapshot.json"
+        try:
+            snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            dirty.append(slug)
+            continue
+        if snapshot.get("git_dirty") is not False:
+            dirty.append(slug)
+        if snapshot.get("git_commit") in {None, "", "unknown"}:
+            unknown_commits.append(slug)
+    _check(checks, "release candidate: clean snapshot provenance", not dirty, f"invalid={dirty}")
+    _check(checks, "release candidate: snapshot commits recorded", not unknown_commits, f"invalid={unknown_commits}")
+    return checks
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("artifacts", nargs="*", type=Path, help="wheel or .tar.gz artifacts to inspect")
     parser.add_argument("--root", type=Path, default=ROOT, help="project source root")
     parser.add_argument("--json-output", type=Path, help="write machine-readable results")
+    parser.add_argument(
+        "--release-candidate",
+        action="store_true",
+        help="also require reviewed FD002/FD004 snapshots with clean provenance",
+    )
     args = parser.parse_args()
 
     root = args.root.resolve()
     checks, config = source_checks(root)
+    if args.release_candidate:
+        checks.extend(release_candidate_checks(root))
     project = config["project"]
     for artifact in args.artifacts:
         artifact = artifact.resolve()

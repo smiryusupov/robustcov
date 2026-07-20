@@ -40,9 +40,9 @@ jobs:
         run: |
           python scripts/release_check.py
 
-      - name: Run tests
+      - name: Run fast cross-platform suites
         run: |
-          python -m pytest -q
+          python -m pytest -q -m "unit or integration or native"
 
   minimum-dependencies:
     name: Minimum dependencies on Python ${{ matrix.python-version }}
@@ -82,6 +82,39 @@ jobs:
         run: |
           python -c "import sys, numpy, scipy, sklearn; print(sys.version); print('numpy=', numpy.__version__); print('scipy=', scipy.__version__); print('sklearn=', sklearn.__version__)"
 
-      - name: Run tests without plotting dependency
+      - name: Run fast suites without plotting dependency
         run: |
-          python -m pytest -q
+          python -m pytest -q -m "unit or integration or native"
+
+
+  release-test-groups:
+    name: ${{ matrix.group }} suite on Python 3.13
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [statistical, benchmark, packaging]
+
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "2"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+
+      - name: Run grouped release suite
+        run: |
+          python -m pytest -q -m "${{ matrix.group }}" --durations=20

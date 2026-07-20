@@ -115,13 +115,19 @@ def _read_metadata(path: Path) -> dict[str, str]:
     return result
 
 
-def _git_commit(root: Path) -> str:
+def _git_state(root: Path) -> tuple[str, bool]:
+    """Return the current commit and whether tracked or untracked files differ."""
+
     try:
-        return subprocess.check_output(
+        commit = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=root, text=True, stderr=subprocess.DEVNULL
         ).strip()
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"], cwd=root, text=True, stderr=subprocess.DEVNULL
+        )
     except (OSError, subprocess.CalledProcessError):
-        return "unknown"
+        return "unknown", False
+    return commit, bool(status.strip())
 
 
 def _validate_source_file(path: Path) -> None:
@@ -276,8 +282,15 @@ def publish(
     command: str,
     generated_at: str | None,
     replace: bool,
+    allow_dirty: bool = False,
 ) -> Path:
     results_dir = results_dir.expanduser().resolve()
+    git_commit, git_dirty = _git_state(root)
+    if git_dirty and not allow_dirty:
+        raise SnapshotError(
+            "refusing to publish from a dirty working tree; commit the implementation "
+            "or pass --allow-dirty for a local preview that will fail registry validation"
+        )
     for filename in profile.required_files:
         _validate_source_file(results_dir / filename)
     metadata = _read_metadata(results_dir / "run_metadata.csv")
@@ -311,7 +324,8 @@ def publish(
             "protocol": profile.protocol,
             "description": profile.description,
             "generated_at": timestamp,
-            "git_commit": _git_commit(root),
+            "git_commit": git_commit,
+            "git_dirty": git_dirty,
             "command": command,
             "metadata": metadata,
             "files": files,
@@ -370,13 +384,22 @@ def remove(root: Path, slug: str, *, missing_ok: bool = False) -> bool:
     return existed
 
 
-def check(root: Path, *, rewrite_generated: bool = False) -> None:
+def check(
+    root: Path,
+    *,
+    rewrite_generated: bool = False,
+    required: Iterable[str] = (),
+) -> None:
     manifest_path = root / "docs/_static/external_results/manifest.json"
     manifest = _load_manifest(manifest_path)
     errors: list[str] = []
     snapshots = manifest["snapshots"]
     assert isinstance(snapshots, list)
     seen: set[str] = set()
+    required_slugs = tuple(dict.fromkeys(required))
+    unknown_required = sorted(set(required_slugs).difference(PROFILES))
+    if unknown_required:
+        errors.append(f"unknown required snapshot profiles: {unknown_required}")
     for item in snapshots:
         slug = str(item.get("slug", ""))
         if not slug or slug in seen:
@@ -398,6 +421,8 @@ def check(root: Path, *, rewrite_generated: bool = False) -> None:
         except (OSError, json.JSONDecodeError) as exc:
             errors.append(f"invalid {snapshot_path}: {exc}")
             continue
+        if snapshot.get("git_dirty") is True:
+            errors.append(f"snapshot was generated from a dirty working tree: {slug}")
         for filename, details in snapshot.get("files", {}).items():
             path = directory / filename
             try:
@@ -411,6 +436,9 @@ def check(root: Path, *, rewrite_generated: bool = False) -> None:
         present = {path.name for path in directory.iterdir() if path.is_file()}
         if present & forbidden:
             errors.append(f"row-level or raw output found in {directory}: {sorted(present & forbidden)}")
+    missing_required = sorted(set(required_slugs).difference(seen))
+    if missing_required:
+        errors.append(f"required snapshots are missing: {missing_required}")
     cards, toctree = _render_includes(manifest)
     generated = {
         root / "docs/_generated/external_snapshot_cards.rst": cards,
@@ -446,6 +474,13 @@ def main(argv: Iterable[str] | None = None) -> int:
         action="store_true",
         help="refresh generated gallery cards and toctree from the manifest",
     )
+    check_parser.add_argument(
+        "--require",
+        action="append",
+        default=[],
+        choices=tuple(PROFILES),
+        help="require an approved snapshot slug; repeat for multiple profiles",
+    )
 
     publish_parser = subparsers.add_parser("publish", help="publish one reviewed result directory")
     publish_parser.add_argument("dataset", choices=tuple(PROFILES))
@@ -453,6 +488,11 @@ def main(argv: Iterable[str] | None = None) -> int:
     publish_parser.add_argument("--command", required=True, help="exact reproduction command")
     publish_parser.add_argument("--generated-at", help="ISO-8601 timestamp; defaults to current UTC")
     publish_parser.add_argument("--replace", action="store_true")
+    publish_parser.add_argument(
+        "--allow-dirty",
+        action="store_true",
+        help="allow a local preview from uncommitted code; registry check will reject it",
+    )
 
     remove_parser = subparsers.add_parser("remove", help="remove one published snapshot")
     remove_parser.add_argument("slug")
@@ -466,7 +506,11 @@ def main(argv: Iterable[str] | None = None) -> int:
                 print(f"{profile.slug}\t{profile.title}\t{profile.default_results}")
             return 0
         if args.action == "check":
-            check(root, rewrite_generated=args.rewrite_generated)
+            check(
+                root,
+                rewrite_generated=args.rewrite_generated,
+                required=args.require,
+            )
             print("external snapshot registry: OK")
             return 0
         if args.action == "remove":
@@ -482,6 +526,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             command=args.command,
             generated_at=args.generated_at,
             replace=args.replace,
+            allow_dirty=args.allow_dirty,
         )
         print(f"published,{destination}")
         return 0

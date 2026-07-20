@@ -100,10 +100,12 @@ def test_generated_provenance_document_is_current():
     assert generated.read_text(encoding="utf-8") == render()
 
 
-def test_current_release_makes_no_original_method_claim():
+def test_method_provenance_and_contributor_rules_scope_public_claims():
     assert all(entry.status != "original_method" for entry in METHOD_PROVENANCE.values())
-    contributions = (ROOT / "docs" / "project_contributions.rst").read_text(encoding="utf-8")
-    assert "No current public estimator is labelled as an original statistical method" in contributions
+    contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    assert "Keep benchmark claims scoped" in contributing
+    assert "robustcov/_public_api.json" in contributing
+    assert not (ROOT / "docs" / "project_contributions.rst").exists()
 
 
 def test_citation_and_documentation_point_users_to_method_references():
@@ -113,4 +115,4 @@ def test_citation_and_documentation_point_users_to_method_references():
 
     index = (ROOT / "docs" / "index.rst").read_text(encoding="utf-8")
     assert "methods_and_references" in index
-    assert "project_contributions" in index
+    assert "project_contributions" not in index

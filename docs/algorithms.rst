@@ -13,7 +13,7 @@ This page gives the shared notation and catalog overview.
 
 For a method-by-method distinction between published methodology, package
 adaptations, and robustcov-specific compositions, see
-:doc:`methods_and_references` and :doc:`project_contributions`.
+:doc:`methods_and_references` and :doc:`references`.
 
 
 Detailed method pages

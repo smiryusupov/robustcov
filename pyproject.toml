@@ -219,6 +219,15 @@ filterwarnings = [
   "ignore:.*covariance matrix associated to your dataset is not full rank.*:UserWarning",
   "ignore:.*Determinant has increased.*:RuntimeWarning",
 ]
+markers = [
+  "unit: fast focused estimator and numerical unit tests",
+  "integration: cross-module, documentation, external-data, and interoperability tests",
+  "statistical: repeated statistical validation and hardening tests",
+  "benchmark: benchmark-script contracts and deterministic benchmark validations",
+  "native: compiled-extension and OpenMP integration tests",
+  "packaging: release metadata, isolated import, and distribution-readiness tests",
+  "slow: tests intentionally excluded from the fast pull-request gate",
+]
 
 [tool.cibuildwheel]
 build = "cp312-* cp313-* cp314-*"

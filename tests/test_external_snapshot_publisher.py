@@ -130,3 +130,46 @@ def test_cmapss_profile_rejects_wrong_subset_metadata(tmp_path: Path) -> None:
             generated_at="2026-07-20T00:00:00+00:00",
             replace=False,
         )
+
+
+def test_check_can_require_release_snapshot_profiles(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    (root / "docs/_static/external_results").mkdir(parents=True)
+    (root / "docs/_generated").mkdir(parents=True)
+    (root / "docs/_static/external_results/manifest.json").write_text(
+        '{"schema_version": 1, "snapshots": []}\n', encoding="utf-8"
+    )
+    publisher.check(root, rewrite_generated=True)
+    with pytest.raises(publisher.SnapshotError, match="required snapshots are missing"):
+        publisher.check(root, required=("cmapss_fd002",))
+
+
+def test_publish_rejects_dirty_worktree_unless_explicitly_allowed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "repo"
+    results = tmp_path / "results"
+    _write_cmapss_results(results)
+    monkeypatch.setattr(publisher, "_git_state", lambda _root: ("deadbeef", True))
+
+    with pytest.raises(publisher.SnapshotError, match="dirty working tree"):
+        publisher.publish(
+            root,
+            publisher.PROFILES["cmapss_fd002"],
+            results,
+            command="python protocol.py --subset FD002",
+            generated_at="2026-07-20T00:00:00+00:00",
+            replace=False,
+        )
+
+    publisher.publish(
+        root,
+        publisher.PROFILES["cmapss_fd002"],
+        results,
+        command="python protocol.py --subset FD002",
+        generated_at="2026-07-20T00:00:00+00:00",
+        replace=False,
+        allow_dirty=True,
+    )
+    with pytest.raises(publisher.SnapshotError, match="dirty working tree"):
+        publisher.check(root)

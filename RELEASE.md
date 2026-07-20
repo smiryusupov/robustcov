@@ -19,10 +19,13 @@ Start from a clean checkout and an isolated environment:
 ```bash
 python -m pip install -U pip
 python -m pip install -e ".[dev,docs,examples]"
-python scripts/release_check.py
+python scripts/release_check.py --release-candidate
 python -m compileall -q robustcov tests examples benchmarks docs scripts
 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=2 \
-  python -m pytest -q
+  python -m pytest -q -m "unit or integration or native"
+python -m pytest -q -m statistical --durations=20
+python -m pytest -q -m benchmark --durations=20
+python -m pytest -q -m packaging --durations=20
 python -m sphinx -W --keep-going -b html docs docs/_build/html
 ```
 

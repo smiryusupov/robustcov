@@ -85,3 +85,16 @@ Before tagging, confirm that:
 * all GitHub Actions jobs are green;
 * artifacts were built from the intended commit and their checksums were saved;
 * installation was smoke-tested outside the repository source tree.
+
+Release-candidate evidence gate
+-------------------------------
+
+After reviewed FD002 and FD004 snapshots are committed, run:
+
+.. code-block:: bash
+
+   python scripts/release_check.py --release-candidate
+
+This adds the public API manifest checks and requires clean, commit-pinned
+C-MAPSS evidence. Ordinary source checks remain available without this flag
+during development.

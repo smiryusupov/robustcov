@@ -164,7 +164,7 @@ class OnlineRobustSubspaceTracker(EstimatorMixin):
 
     Parameters
     ----------
-    n_components : int
+    n_components : int, default=2
         Number of tracked components.  Must be smaller than the feature count.
     estimator : object, optional
         Scatter estimator passed to every robust PCA fit.  It is copied before
@@ -208,7 +208,7 @@ class OnlineRobustSubspaceTracker(EstimatorMixin):
     is required.
     """
 
-    n_components: int
+    n_components: int = 2
     estimator: Any | None = None
     update_interval: int = 64
     buffer_size: int = 256
