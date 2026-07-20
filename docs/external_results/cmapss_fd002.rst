@@ -13,6 +13,15 @@ Protocol
 
 DRO-PCA degradation monitoring across operating regimes.
 
+Interpretation
+--------------
+
+* **Empirical PCA:** alert rate changes from 3.9% in the first life interval to 93.5% in the final interval.
+* **DRO-PCA:** alert rate changes from 3.9% in the first life interval to 93.5% in the final interval.
+* The fitted DRO-PCA and empirical-PCA projectors are numerically equivalent (Frobenius distance 0); the curves may overlap.
+* DRO candidate selection: source ``path``, gamma ``0.0``.
+* This snapshot validates the monitoring workflow on this fixed protocol; it does not establish universal superiority of one PCA estimator.
+
 .. figure:: ../_static/external_results/cmapss_fd002/risk_over_engine_life.png
    :width: 92%
    :alt: Rolling residual risk over normalized engine life.
@@ -45,9 +54,9 @@ Provenance
    * - Field
      - Value
    * - Generated (UTC)
-     - 2026-07-20T10:27:09+00:00
+     - 2026-07-20T13:36:33+00:00
    * - Git commit
-     - ``d22bcb9b8fa8b8bd8293d03aeb49bda5d621e57f``
+     - ``fae669cb848b38733d737468f04aedcd06640bf9``
    * - Command
      - ``python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002 --outdir results/external/cmapss_fd002``
    * - Archive SHA-256
@@ -56,6 +65,14 @@ Provenance
      - A. Saxena and K. Goebel (2008). Turbofan Engine Degradation Simulation Data Set, NASA Ames Prognostics Data Repository, NASA Ames Research Center.
    * - Dataset homepage
      - https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data
+   * - Requested false-alarm rate
+     - 0.05
+   * - DRO candidate source
+     - ``path``
+   * - DRO selected gamma
+     - ``0.0``
+   * - Projector distance to empirical
+     - ``0.0``
 
 The full raw dataset, cache, row-level scores, and local filesystem paths are not
 included in this repository or its release artifacts.
