@@ -74,6 +74,17 @@ Honest secondary results
      </a>
    </div>
 
+Reviewed public-dataset snapshots
+---------------------------------
+
+These cards are generated from committed snapshot manifests. The underlying
+protocols are run locally; Read the Docs only renders the reviewed aggregate
+outputs. See :doc:`external_snapshot_policy`.
+
+.. include:: _generated/external_snapshot_cards.rst
+
+.. include:: _generated/external_snapshot_toctree.rst
+
 Current documented external results
 -----------------------------------
 

@@ -46,6 +46,24 @@ Each script writes:
 - `robust_score_profile.png`
 - `summary.md`
 
+## Publish reviewed documentation snapshots
+
+Real-data protocols write a complete local workspace under `results/external/`.
+After reviewing a run, publish only the approved aggregate figures and summary
+table into the documentation:
+
+```bash
+python scripts/publish_external_snapshot.py publish gas_sensor_drift \
+  --results results/external/gas_sensor_drift_dro_pca \
+  --command "python examples_external/gas_sensor_drift_dro_pca.py --download --outdir results/external/gas_sensor_drift_dro_pca"
+
+python scripts/publish_external_snapshot.py check
+```
+
+The publisher excludes `window_scores.csv`, local cache paths, raw data, and
+embeddings. It records file digests and creates the Sphinx result page and
+gallery card. See `docs/external_snapshot_policy.rst`.
+
 ## Notebook template
 
 A copyable notebook template is available at:

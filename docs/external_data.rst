@@ -54,3 +54,4 @@ access.  External examples write only result summaries and figures under
 
    external_data/gas_sensor_drift
    external_data/cmapss
+   external_snapshot_policy
