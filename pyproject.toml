@@ -234,13 +234,7 @@ markers = [
 [tool.cibuildwheel]
 build = "cp312-* cp313-* cp314-*"
 skip = "*-musllinux_* pp* *-win32 *-manylinux_i686"
-test-requires = [
-  "pytest>=8",
-  "scikit-learn>=1.5.0; python_version < '3.13'",
-  "scikit-learn>=1.6.0; python_version >= '3.13' and python_version < '3.14'",
-  "scikit-learn>=1.8.0; python_version >= '3.14'",
-]
-test-command = "python -c \"import robustcov as rc; print('version=', rc.__version__); print('openmp=', rc.has_openmp())\" && pytest {project}/tests && python -m compileall -q {project}/examples"
+test-command = "python \"{project}/scripts/installed_package_smoke.py\" --expect-native yes --forbid-root \"{project}\" && python -m compileall -q \"{project}/examples\""
 environment = "OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=2"
 
 [tool.cibuildwheel.linux]

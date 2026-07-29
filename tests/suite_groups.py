@@ -14,14 +14,9 @@ PRIMARY_MODULES: dict[str, frozenset[str]] = {
         {
             "test_estimator_protocol.py",
             "test_external_datasets.py",
-            "test_external_dro_pca_examples.py",
             "test_external_snapshot_publisher.py",
-            "test_faq_coverage.py",
-            "test_documentation_branding.py",
-            "test_method_provenance.py",
             "test_sklearn_interoperability.py",
             "test_public_api_contract.py",
-            "test_suite_grouping.py",
         }
     ),
     "statistical": frozenset(
@@ -39,7 +34,6 @@ PRIMARY_MODULES: dict[str, frozenset[str]] = {
             "test_distributionally_robust_pca_benchmark.py",
             "test_latent_structure_benchmarks.py",
             "test_method_comparison_benchmark.py",
-            "test_example_gallery_organization.py",
         }
     ),
     "native": frozenset({"test_native_kernels.py"}),
@@ -62,7 +56,6 @@ SLOW_MODULES = frozenset(
         "test_distributionally_robust_pca_benchmark.py",
         "test_latent_structure_benchmarks.py",
         "test_method_comparison_benchmark.py",
-        "test_example_gallery_organization.py",
     }
 )
 
