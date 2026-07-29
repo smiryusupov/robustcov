@@ -6,6 +6,26 @@ These examples focus on process monitoring: sensor streams, maintenance windows,
 .. raw:: html
 
    <div class="gallery-grid">
+     <a class="gallery-card" href="../gallery/mmcd_sensor_windows.html">
+       <img src="../_static/gallery/mmcd_sensor_windows/contribution_heatmap.png" alt="MMCD matrix-distance contributions">
+       <h3>Matrix-valued sensor windows</h3>
+       <p>Estimate separate sensor and within-window covariance factors without flattening each observation.</p>
+     </a>
+     <a class="gallery-card" href="../gallery/cellpca_process_spectra.html">
+       <img src="../_static/gallery/cellpca_process_spectra/residual_cellmap.png" alt="CellPCA residual cellmap">
+       <h3>Process spectra with bad cells</h3>
+       <p>Fit a low-rank process model while separating bad wavelengths from abnormal batches.</p>
+     </a>
+     <a class="gallery-card" href="../gallery/sparse_cellpca_spectra.html">
+       <img src="../_static/gallery/sparse_cellpca_spectra/sparse_loadings.png" alt="SparseCellPCA loading matrix">
+       <h3>Interpretable sparse spectra</h3>
+       <p>Retain cellwise robustness while selecting the wavelength bands that define each component.</p>
+     </a>
+     <a class="gallery-card" href="../gallery/robust_subspace_monitoring.html">
+       <img src="../_static/gallery/robust_subspace_monitoring/monitor_history.png" alt="Robust rolling subspace monitoring">
+       <h3>Rolling subspace monitoring</h3>
+       <p>Use a frozen robust reference to distinguish location, covariance, and factor drift.</p>
+     </a>
      <a class="gallery-card" href="../gallery/sensor_anomaly.html">
        <img src="../_static/gallery/sensor_anomaly/distance_panel.png" alt="Sensor anomaly detection">
        <h3>Sensor anomaly detection</h3>
@@ -21,6 +41,11 @@ These examples focus on process monitoring: sensor streams, maintenance windows,
        <h3>Quality control</h3>
        <p>Separate stable process variation from abnormal production runs.</p>
      </a>
+     <a class="gallery-card" href="../gallery/online_robust_subspace_tracking.html">
+       <div class="gallery-card-placeholder">Adaptive<br>tracking</div>
+       <h3>Online robust subspace tracking</h3>
+       <p>Track gradual sensor-geometry changes with bounded updates and corruption screening.</p>
+     </a>
    </div>
 
 How to use this topic
@@ -31,6 +56,11 @@ Start with the first card if you want the simplest demonstration.  Then move to 
 Detailed pages
 --------------
 
+- :doc:`Rolling subspace monitoring <../gallery/robust_subspace_monitoring>`
+- :doc:`Online robust subspace tracking <../gallery/online_robust_subspace_tracking>`
+- :doc:`Matrix-valued sensor windows <../gallery/mmcd_sensor_windows>`
+- :doc:`Process spectra with cellwise and casewise contamination <../gallery/cellpca_process_spectra>`
+- :doc:`Sparse robust process spectra <../gallery/sparse_cellpca_spectra>`
 - :doc:`Sensor anomaly <../gallery/sensor_anomaly>`
 - :doc:`Maintenance monitoring <../gallery/maintenance_monitoring>`
 - :doc:`Quality control <../gallery/quality_control>`

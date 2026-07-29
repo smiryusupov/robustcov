@@ -1,0 +1,10 @@
+data shape: (120, 48)
+cell contamination: 4.5%
+abnormal rows: 7
+missing cells: 2.7%
+subspace error, classical / CellPCA / SparseCellPCA:
+0.766 / 0.042 / 0.038
+cell-outlier AUROC, CellPCA / SparseCellPCA: 0.985 / 0.987
+clean missing-cell MAE, CellPCA / SparseCellPCA: 0.081 / 0.079
+loading support precision / recall / F1: 1.000 / 1.000 / 1.000
+exact-zero loading fraction: 85.4% (21 / 144 nonzero)

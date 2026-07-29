@@ -1,22 +1,20 @@
 Finance market-stress anomaly detection
 =======================================
 
-Why this result matters
------------------------
+Daily cross-asset stress scores
+-------------------------------
 
-Financial returns are heavy-tailed and correlated across assets.  A single
-large move in one asset is not always a market anomaly, but an unusual
-cross-asset return vector can indicate stress, regime change, a macro shock, or
-data-quality problems.  Robust covariance gives an interpretable score for each
-trading day: the robust Mahalanobis distance from the central market regime.
+The script assigns one robust Mahalanobis distance to each trading day.  A high
+score means that the joint return vector is unusual relative to the central
+cross-asset regime; it may reflect market stress, a regime change, or a data
+problem.
 
-What the data represent
------------------------
+Price table and injected stress periods
+---------------------------------------
 
-This documented run uses a reproducible synthetic price table with 899 return
-days and 8 assets.  The generator injects stress-like periods so that the script
-can be run without downloading Yahoo/Kaggle data while still producing a
-finance-shaped example.
+The documented run uses a synthetic price table with 899 return days and eight
+assets.  Stress periods are injected by the generator, which keeps the example
+reproducible and removes any dependency on an external market-data service.
 
 The input format is a CSV with one date column and one numeric price column per
 asset:
@@ -35,8 +33,8 @@ Command
      --prices examples_external/data/prices.csv \
      --outdir results/external/finance_market_stress
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/external_results/finance_market_stress/output.txt
    :language: text
@@ -86,8 +84,8 @@ Plots
    inspect the dates directly and compare them against known market events or
    injected stress periods.
 
-Interpretation
---------------
+Detected days
+-------------
 
 The estimator flags 23 of 899 days, about 2.6%, which is consistent with the
 ``alpha=0.975`` threshold.  The condition number is low (about 6.1), so the
@@ -95,21 +93,21 @@ robust covariance estimate is numerically stable.  The radial kurtosis is not
 extreme, meaning the robust fit has absorbed the central heavy-tailed behavior
 without becoming ill-conditioned.
 
-The top stress days cluster around stress-like periods, especially September
-2020 and September 2022 in this synthetic run.  This makes the result easy to
-explain: ``robustcov`` is not only returning a score, it is producing a ranked
-list of market days for review.
+The highest-scoring dates cluster around the injected stress periods,
+particularly September 2020 and September 2022.  The output is therefore a
+ranked list of dates that can be checked against events, data corrections, or
+other risk measures.
 
-Why this estimator
-------------------
+Estimator choice
+----------------
 
 Start with ``RegularizedCauchy`` for finance returns because it combines strong
 radial downweighting with shrinkage.  Use ``StudentTScatter`` as a smoother
 heavy-tail sensitivity check, and ``AutoRobustScatter`` if the data regime is
 unclear.
 
-Production notes
-----------------
+Using real market data
+----------------------
 
 For real data, run the same script on ETF or stock prices.  Review top days
 against market calendars, corporate actions, missing prices, and known stress

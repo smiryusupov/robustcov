@@ -1,0 +1,16 @@
+Production embedding monitoring with RobustPCA
+==============================================
+reference shape: (720, 48)
+production shape: (1080, 48)
+retained components: 6
+robust subspace error: 0.073
+empirical subspace error: 1.415
+robust/empirical error ratio: 0.052
+clean-score covariance off-diagonal norm, robust: 0.374
+clean-score covariance off-diagonal norm, empirical: 2.936
+median score distance, baseline batches: 4.746
+median score distance, drift batches: 5.481
+90th-percentile orthogonal distance, baseline batches: 0.737
+90th-percentile orthogonal distance, OOD-mixture batches: 4.511
+median orthogonal distance, OOD points: 4.524
+median orthogonal distance, non-OOD points: 0.656

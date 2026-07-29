@@ -1,0 +1,11 @@
+Robust rolling subspace monitoring
+==================================
+reference shape: (720, 20)
+rolling window: 120
+retained components: 4
+ready updates: 16 / 18
+persistent alarms: 13
+stable             location/threshold= 0.51, angle/threshold= 0.81, orthogonal/threshold= 0.32, outlier_fraction= 0.08
+location drift     location/threshold= 1.74, angle/threshold= 0.94, orthogonal/threshold= 0.63, outlier_fraction= 0.10
+subspace rotation  location/threshold= 0.71, angle/threshold=10.84, orthogonal/threshold= 6.53, outlier_fraction= 0.44
+OOD mixture        location/threshold= 4.74, angle/threshold=18.94, orthogonal/threshold= 1.51, outlier_fraction= 0.30

@@ -1,32 +1,16 @@
-Robust feature geometry
-=======================
+Robust geometry for feature vectors
+===================================
 
-``robustcov`` can be used as a robust geometry layer on top of learned
-representations.
+``FeatureGeometry`` fits a location and scatter model to a matrix of feature
+vectors, then uses that fit for distances, whitening, and kernels.  The feature
+vectors may come from an image encoder, a text embedding model, an autoencoder,
+a tabular pipeline, or any other model that produces a numeric representation.
 
-The package does not train representation models.  Instead, it operates on
-feature matrices produced by other systems: image encoders, text embedding
-models, autoencoders, penultimate neural-network layers, tabular feature
-pipelines, or other embedding methods.
+``robustcov`` does not train the representation model.  It starts from the
+feature matrix produced by that model.
 
-Motivation
-----------
-
-Many modern machine-learning workflows compute distances, similarities,
-retrieval scores, kernels, drift statistics, or out-of-distribution scores in
-feature space.  If the reference feature set is contaminated, heavy-tailed, or
-contains leverage points, then ordinary empirical covariance can distort that
-geometry.
-
-``FeatureGeometry`` wraps an existing robust scatter estimator and exposes:
-
-* robust Mahalanobis scores;
-* robust whitening;
-* pairwise squared distances in the fitted metric;
-* RBF-style kernels induced by the fitted robust feature metric.
-
-Basic usage
------------
+Global feature geometry
+-----------------------
 
 .. code-block:: python
 
@@ -36,19 +20,34 @@ Basic usage
        estimator=rc.FastMCD(n_init=40, random_state=0),
    ).fit(Z_train)
 
-   scores = geom.mahalanobis_scores(Z_test)
-   anomaly_scores = geom.decision_function(Z_test)
+   distances = geom.mahalanobis_scores(Z_test)
    Z_white = geom.transform(Z_test)
    K = geom.rbf_kernel(Z_test, Z_train, length_scale=1.0)
 
-The input arrays are ordinary NumPy-style feature matrices with shape
+The fitted scatter matrix defines which directions count as large or small.
+Using a robust estimator limits the influence of contaminated reference vectors
+on that geometry.  Singular fitted scatters are regularized with a relative
+eigenvalue floor; ``raw_covariance_`` keeps the estimator output and
+``covariance_`` stores the positive-definite matrix used by the geometry.
+Completely constant feature matrices are rejected because they define no
+meaningful metric.
+
+The class provides:
+
+* Mahalanobis distances from the fitted center;
+* whitening and inverse transformation;
+* pairwise squared distances under the fitted precision matrix;
+* RBF kernels based on those distances.
+
+Inputs are ordinary two-dimensional arrays with shape
 ``(n_samples, n_features)``.
 
 Class-conditional geometry
 --------------------------
 
-For labeled feature matrices, ``ClassConditionalFeatureGeometry`` fits one
-feature geometry per class and exposes nearest-class and OOD-style scores.
+``ClassConditionalFeatureGeometry`` fits one geometry per label.  It can return
+the nearest class, all class-wise distances, or the distance to the closest
+class model.
 
 .. code-block:: python
 
@@ -60,54 +59,45 @@ feature geometry per class and exposes nearest-class and OOD-style scores.
    ood_scores = geom.decision_function(Z_test)
    class_distances = geom.class_mahalanobis_scores(Z_test)
 
-This supports class-conditional Mahalanobis workflows on learned features while
-keeping the representation model outside ``robustcov``.
+This is a distance-based classifier and diagnostic.  It does not include class
+priors or covariance log-determinants, so it should not be interpreted as a
+Gaussian discriminant model.
 
-Score convention
+Score direction
+---------------
+
+``decision_function`` follows a distance convention: larger values are farther
+from the global fit or from every fitted class geometry.  This differs from
+some scikit-learn anomaly estimators, where larger decision values indicate
+more typical observations.
+
+Embedding drift example
+-----------------------
+
+The :doc:`embedding monitoring example
+<gallery/feature_geometry_embedding_monitoring>` fits empirical and robust
+geometries to the same contaminated reference window.  It then selects a
+central reference subset and compares new batches with an RBF-kernel MMD
+statistic.
+
+In that simulation, the empirical covariance includes several contaminated
+vectors in the reference anchor.  FastMCD excludes them, leaving a cleaner
+anchor and a stronger signal when the new batch shifts.
+
+Related examples
 ----------------
 
-``decision_function`` returns distance-style scores: larger values mean farther
-from the fitted global geometry or farther from all fitted class geometries.
-The API intentionally does not expose ``score_samples`` yet, because that name
-often follows the opposite convention in scikit-learn-style anomaly APIs.
+* :doc:`Synthetic global OOD scoring
+  <gallery/feature_geometry_synthetic_ood>`
+* :doc:`Class-conditional OOD scoring
+  <gallery/feature_geometry_class_conditional_ood>`
+* :doc:`Production embedding monitoring with RobustPCA
+  <gallery/robust_pca_embedding_monitoring>`
 
 Scope
 -----
 
-This API is intentionally small.  It does not replace deep-learning libraries,
-OOD-detection packages, Gaussian-process frameworks, or retrieval systems.
-Instead, it supplies robust covariance geometry for feature representations
-created elsewhere.
-
-Good starting examples
-----------------------
-
-See :doc:`gallery/feature_geometry_synthetic_ood` for a synthetic example where
-empirical feature covariance is distorted by leverage-like contamination, while
-robust feature geometry restores separation.
-
-See :doc:`gallery/feature_geometry_class_conditional_ood` for a labeled
-feature-space example where robust class-conditional geometry improves
-nearest-class OOD scoring under class-wise leverage contamination.
-
-
-Practical embedding monitoring
-------------------------------
-
-A practical use case is feature or embedding drift monitoring. A reference
-window of embeddings may contain corrupted or shifted observations, so fitting
-ordinary empirical covariance can distort the metric used by a drift detector.
-
-The gallery example :doc:`gallery/feature_geometry_embedding_monitoring` shows a
-simple workflow:
-
-* fit empirical and robust feature geometries on the reference window;
-* keep a central reference anchor under each fitted geometry;
-* calibrate an MMD-style threshold from reference splits;
-* compare a new batch against the reference anchor.
-
-In the example, empirical geometry keeps contaminated points in the reference
-anchor and loses most of the drift signal. Robust FastMCD geometry excludes the
-contaminated reference points from the anchor and preserves the MMD-style drift
-signal.
-
+These classes provide covariance-based geometry for features produced
+elsewhere.  They do not replace an embedding model, an OOD benchmark suite, a
+retrieval system, or a full drift-detection platform.  Their role is narrower:
+fit a robust metric and make it available to the rest of the application.

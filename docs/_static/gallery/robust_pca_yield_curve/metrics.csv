@@ -1,0 +1,3 @@
+metric,empirical,robust
+subspace_error,0.37519023,0.02168704
+clean_reconstruction_rmse,0.17316162,0.14463288

@@ -1,18 +1,21 @@
 [build-system]
 requires = [
-  "scikit-build-core>=0.11.3",
+  "scikit-build-core>=1.0.3",
   "pybind11>=3.0.1",
-  "numpy>=2.3.4",
+  "numpy>=2.0.0; python_version < '3.13'",
+  "numpy>=2.1.0; python_version >= '3.13' and python_version < '3.14'",
+  "numpy>=2.3.4; python_version >= '3.14'",
 ]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "robustcov"
-version = "0.0.2"
-description = "Robust scatter geometry for anomaly detection, kernels, and ML workflows in Python."
+version = "0.1.0a1"
+description = "Robust covariance, anomaly scoring, PCA, and monitoring for contaminated and heavy-tailed data."
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 
 authors = [
   { name = "Shohruh Miryusupov", email = "shohruh@miryusupov.com" },
@@ -23,9 +26,12 @@ maintainers = [
 ]
 
 dependencies = [
-  "numpy>=2.3.4",
-  "scipy>=1.16.1",
-  "matplotlib>=3.10.5",
+  "numpy>=2.0.0; python_version < '3.13'",
+  "numpy>=2.1.0; python_version >= '3.13' and python_version < '3.14'",
+  "numpy>=2.3.4; python_version >= '3.14'",
+  "scipy>=1.13.0; python_version < '3.13'",
+  "scipy>=1.14.1; python_version >= '3.13' and python_version < '3.14'",
+  "scipy>=1.16.1; python_version >= '3.14'",
 ]
 
 keywords = [
@@ -39,19 +45,39 @@ keywords = [
   "Mahalanobis distance",
   "SPD geometry",
   "kernel methods",
+  "drift monitoring",
+  "online subspace tracking",
+  "online robust PCA",
+  "robust PCA",
+  "distributionally robust PCA",
+  "Wasserstein DRO",
+  "independent component analysis",
+  "SOBI",
+  "blind source separation",
+  "robust factor model",
+  "density power divergence",
+  "cellwise covariance",
+  "cellwise robust PCA",
+  "sparse robust PCA",
+  "kernel MRCD",
+  "S-estimator",
+  "MM-estimator",
+  "nonlinear outlier detection",
+  "graphical lasso",
+  "sparse precision matrix",
 ]
 
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: Apache Software License",
   "Operating System :: MacOS",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: C++",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
@@ -69,8 +95,14 @@ Issues = "https://github.com/smiryusupov/robustcov/issues"
 Changelog = "https://github.com/smiryusupov/robustcov/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
+plot = [
+  "matplotlib>=3.10.5",
+]
+
 sklearn = [
-  "scikit-learn>=1.7.2",
+  "scikit-learn>=1.5.0; python_version < '3.13'",
+  "scikit-learn>=1.6.0; python_version >= '3.13' and python_version < '3.14'",
+  "scikit-learn>=1.8.0; python_version >= '3.14'",
 ]
 
 gpytorch = [
@@ -78,9 +110,20 @@ gpytorch = [
   "gpytorch>=1.11",
 ]
 
+test = [
+  "pytest>=8",
+  "matplotlib>=3.10.5",
+  "scikit-learn>=1.5.0; python_version < '3.13'",
+  "scikit-learn>=1.6.0; python_version >= '3.13' and python_version < '3.14'",
+  "scikit-learn>=1.8.0; python_version >= '3.14'",
+]
+
 dev = [
   "pytest>=8",
-  "scikit-learn>=1.7.2",
+  "matplotlib>=3.10.5",
+  "scikit-learn>=1.5.0; python_version < '3.13'",
+  "scikit-learn>=1.6.0; python_version >= '3.13' and python_version < '3.14'",
+  "scikit-learn>=1.8.0; python_version >= '3.14'",
   "sphinx>=8",
   "furo>=2025.1",
   "build>=1.2",
@@ -89,31 +132,41 @@ dev = [
 ]
 
 bench = [
-  "scikit-learn>=1.7.2",
+  "scikit-learn>=1.5.0; python_version < '3.13'",
+  "scikit-learn>=1.6.0; python_version >= '3.13' and python_version < '3.14'",
+  "scikit-learn>=1.8.0; python_version >= '3.14'",
   "pandas>=2.2",
+  "matplotlib>=3.10.5",
 ]
 
 docs = [
   "sphinx>=8",
+  "matplotlib>=3.10.5",
   "furo>=2025.1",
   "myst-parser>=4",
 ]
 
 examples = [
-  "scikit-learn>=1.7.2",
+  "scikit-learn>=1.5.0; python_version < '3.13'",
+  "scikit-learn>=1.6.0; python_version >= '3.13' and python_version < '3.14'",
+  "scikit-learn>=1.8.0; python_version >= '3.14'",
   "pandas>=2.2",
+  "matplotlib>=3.10.5",
 ]
 
 all = [
-  "robustcov[dev,bench,docs,examples,sklearn,gpytorch]",
+  "robustcov[dev,bench,docs,examples,plot,sklearn,gpytorch]",
 ]
 
 [tool.scikit-build]
+minimum-version = "build-system.requires"
 wheel.packages = ["robustcov"]
-cmake.minimum-version = "3.18"
+cmake.version = ">=3.18"
 
 [tool.scikit-build.sdist]
+inclusion-mode = "explicit"
 include = [
+  "pyproject.toml",
   "CMakeLists.txt",
   "src/**",
   "robustcov/**",
@@ -121,6 +174,8 @@ include = [
   "examples/**",
   "examples_external/**",
   "benchmarks/**",
+  "scripts/**",
+  "requirements/**",
   "docs/**",
   "notebooks/**",
   "conda/**",
@@ -135,12 +190,27 @@ include = [
   "RELEASE.md",
 ]
 exclude = [
+  "**/__pycache__/**",
+  "**/*.py[cod]",
+  "**/*.so",
+  "**/*.pyd",
+  "docs/_build",
   "docs/_build/**",
+  "results",
   "results/**",
+  "build",
   "build/**",
+  "dist",
   "dist/**",
+  ".pytest_cache",
   ".pytest_cache/**",
+  ".venv",
   ".venv/**",
+  ".external-data",
+  ".external-data/**",
+  "data",
+  "data/**",
+  "examples_external/data",
   "examples_external/data/**",
 ]
 
@@ -151,13 +221,27 @@ filterwarnings = [
   "ignore:.*covariance matrix associated to your dataset is not full rank.*:UserWarning",
   "ignore:.*Determinant has increased.*:RuntimeWarning",
 ]
+markers = [
+  "unit: fast focused estimator and numerical unit tests",
+  "integration: cross-module, documentation, external-data, and interoperability tests",
+  "statistical: repeated statistical validation and hardening tests",
+  "benchmark: benchmark-script contracts and deterministic benchmark validations",
+  "native: compiled-extension and OpenMP integration tests",
+  "packaging: release metadata, isolated import, and distribution-readiness tests",
+  "slow: tests intentionally excluded from the fast pull-request gate",
+]
 
 [tool.cibuildwheel]
 build = "cp312-* cp313-* cp314-*"
 skip = "*-musllinux_* pp* *-win32 *-manylinux_i686"
-test-requires = ["pytest>=8", "scikit-learn>=1.7.2"]
+test-requires = [
+  "pytest>=8",
+  "scikit-learn>=1.5.0; python_version < '3.13'",
+  "scikit-learn>=1.6.0; python_version >= '3.13' and python_version < '3.14'",
+  "scikit-learn>=1.8.0; python_version >= '3.14'",
+]
 test-command = "python -c \"import robustcov as rc; print('version=', rc.__version__); print('openmp=', rc.has_openmp())\" && pytest {project}/tests && python -m compileall -q {project}/examples"
-environment = "OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1"
+environment = "OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=2"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]

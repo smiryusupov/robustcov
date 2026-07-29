@@ -1,130 +1,103 @@
-Robust covariance geometry as a layer
-=====================================
+What RobustCov does
+===================
 
-``robustcov`` is a lightweight geometry layer for data matrices, feature
-matrices, and learned representations.
+``robustcov`` is a robust multivariate-geometry library. It estimates location,
+scale, covariance, scatter, precision, or low-rank structure when ordinary
+empirical covariance is too sensitive or too unstable.
 
-It is not a replacement for scikit-learn, PyTorch, GPyTorch, kernel libraries,
-or drift-detection frameworks. Instead, it provides robust covariance geometry
-that can plug into those workflows.
+The fitted geometry can then be reused for:
 
-The core chain is:
+* Mahalanobis anomaly scores and diagnostic plots;
+* whitening and full-matrix distance metrics;
+* principal components and reconstruction diagnostics;
+* rolling subspace and feature-distribution monitoring;
+* sparse precision and conditional-dependence estimation;
+* matrix-valued covariance, cellwise-robust models, and multilinear PCA;
+* robust ICA, SOBI, and latent-factor estimation.
+
+The package is useful when data contain a minority of abnormal rows, isolated
+bad cells, broad heavy tails, leverage points, missing entries, a difficult
+``p``-to-``n`` ratio, or a train-to-deployment covariance shift that can be
+stated explicitly.
+
+The geometry layer
+------------------
+
+Many downstream algorithms depend on a covariance matrix even when covariance
+estimation is not the final task. Mahalanobis distance, whitening, RBF kernels,
+Gaussian-process input metrics, PCA, and several monitoring statistics all need
+a notion of scale and direction.
+
+``robustcov`` supplies that notion from a robust fit:
 
 .. code-block:: text
 
-   data or features
-   -> robust scatter / covariance
-   -> robust precision matrix
-   -> Mahalanobis distance
-   -> whitening
-   -> robust kernels
-   -> GP input metrics
-   -> MMD-style drift diagnostics
-   -> anomaly, retrieval, OOD, finance, sensors, and monitoring workflows
+   observations, windows, or learned features
+       -> robust location and scatter or robust low-rank fit
+       -> covariance, precision, whitening, or principal subspace
+       -> scores, kernels, graphs, diagnostics, or monitoring
 
-Why a geometry layer?
+A vector-data example
 ---------------------
-
-Many machine-learning workflows depend on a reference geometry:
-
-* anomaly detectors score distance from a reference distribution;
-* OOD methods compare test features to training features;
-* kernels depend on a distance metric;
-* Gaussian processes depend on an input metric;
-* drift detectors compare reference and new-batch distributions;
-* retrieval systems compare embeddings.
-
-If the reference data or reference features are contaminated, ordinary empirical
-covariance can distort this geometry. A few leverage points can inflate
-variance in important directions and weaken the resulting distance, kernel, or
-drift signal.
-
-``robustcov`` addresses this by fitting robust covariance or scatter estimators
-and exposing the induced geometry.
-
-What robustcov provides
------------------------
-
-The package provides estimators and utilities for:
-
-* robust covariance and scatter estimation;
-* robust Mahalanobis distances;
-* whitening and precision matrices;
-* robust RBF-style kernels;
-* robust input metrics for Gaussian-process workflows;
-* sklearn-compatible anomaly detectors;
-* feature-space geometry through ``FeatureGeometry`` and
-  ``ClassConditionalFeatureGeometry``;
-* MMD-style distribution diagnostics using a robust feature-space metric.
-
-The MMD component is ordinary kernel MMD. The contribution is the robust metric
-used inside the kernel, not a new MMD estimator.
-
-Feature geometry
-----------------
-
-A typical learned-representation workflow looks like this:
 
 .. code-block:: python
 
    import robustcov as rc
 
+   estimator = rc.RegularizedCauchy(alpha=0.10).fit(X_reference)
+
+   scores = estimator.mahalanobis(X_new)
+   covariance = estimator.covariance_
+   precision = estimator.precision_
+
+The common fitted attributes make estimators composable with the rest of the
+package. The correct estimator still depends on the contamination model; see
+:doc:`estimator_guide` rather than treating the catalog as a universal ranking.
+
+A feature-geometry example
+--------------------------
+
+.. code-block:: python
+
    geom = rc.FeatureGeometry(
        estimator=rc.FastMCD(random_state=0),
-   ).fit(X_ref)
+   ).fit(X_reference)
 
-   scores = geom.decision_function(X_new)
+   distances = geom.mahalanobis_scores(X_new)
    K = geom.rbf_kernel(X_new, length_scale=1.0)
 
-Here ``X_ref`` may be embeddings from a model, latent vectors from an
-autoencoder, tabular features, or hidden-layer representations from a neural
-network.
+``X_reference`` may contain text embeddings, image features, sensor summaries,
+or latent vectors from an autoencoder. The encoder remains outside
+``robustcov``.
 
-Practical embedding monitoring
-------------------------------
+A subspace-monitoring example
+-----------------------------
 
-A practical use case is monitoring embedding drift when the reference window
-may be contaminated.
+.. code-block:: python
 
-The gallery example
-:doc:`gallery/feature_geometry_embedding_monitoring` demonstrates the workflow:
+   monitor = rc.RobustSubspaceMonitor(
+       n_components=0.95,
+       estimator=rc.RegularizedCauchy(alpha=0.10),
+       window_size=256,
+   ).fit(X_reference)
 
-.. code-block:: text
+   result = monitor.update(X_batch)
+   if result.ready:
+       print(result.summary())
+       print(result.exceeded)
 
-   reference embeddings
-   new-batch embeddings
-   contaminated reference window
-   central reference-anchor selection
-   MMD-style drift calibration
-   empirical metric vs robust metric
+The reference model stays fixed while later batches are scored. See
+:doc:`monitoring` for calibration and interpretation.
 
-In that example, empirical geometry keeps contaminated points inside the central
-reference anchor and loses most of the drift signal. Robust geometry excludes
-the contaminated reference points and preserves the drift signal.
+What the package does not do
+----------------------------
 
-Scope and non-claims
---------------------
+``robustcov`` does not train neural networks, provide a complete production
+monitoring service, infer causal graphs, or automatically determine whether the
+scientific contamination model is rowwise, cellwise, heavy-tailed, multimodal,
+or distributional. It provides numerical estimators, diagnostics, and reusable
+geometry that can be composed with scikit-learn, PyTorch, GPyTorch, and domain
+workflows.
 
-``robustcov`` is deliberately scoped.
-
-It is:
-
-* a robust covariance geometry package;
-* a tool for constructing distances, kernels, precision matrices, and
-  feature-space metrics;
-* useful for contaminated reference distributions and monitoring workflows.
-
-It is not:
-
-* a universal OOD detector;
-* an adversarial defense;
-* a replacement for deep-learning frameworks;
-* a replacement for scikit-learn;
-* a new MMD estimator;
-* a benchmark-driven claim of state-of-the-art performance.
-
-The safest way to think about the package is:
-
-.. code-block:: text
-
-   robustcov provides robust covariance geometry that other ML workflows can use.
+Start with :doc:`quickstart` for a runnable example, :doc:`workflows` for a
+task-oriented map, and :doc:`benchmark_gallery` for evidence and limitations.

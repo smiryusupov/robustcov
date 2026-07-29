@@ -1,12 +1,12 @@
 Credit-card fraud result
 ========================
 
-Why this result matters
------------------------
+Benchmark context
+-----------------
 
-Credit-card fraud is a popular imbalanced anomaly-detection benchmark.  It is a
-useful public example because users already understand the task, and because
-PR AUC and F1 are more informative than accuracy on rare fraud events.
+Credit-card fraud is a familiar imbalanced benchmark.  The table therefore
+reports PR AUC and F1 rather than accuracy, which can look high even when nearly
+all fraud cases are missed.
 
 Observed result
 ---------------
@@ -68,22 +68,21 @@ Plots
 
    Thresholded F1 comparison at the same detected-count level.
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/external_results/credit_card_fraud/output.txt
    :language: text
 
-Interpretation
---------------
+Reading the comparison
+----------------------
 
-``robustcov FastMCD`` was slower than ``IsolationForest`` in this run, but it
-produced a much stronger thresholded fraud-screening result and a much higher
-PR AUC.  This is a good Kaggle/notebook story because the robust-distance score
-is interpretable and the metric gap is large.
+``robustcov FastMCD`` is slower than ``IsolationForest`` in this run, but its
+thresholded result and PR AUC are substantially better.  The robust distance
+also gives a direct ranking of transactions for manual review.
 
-How to reproduce
-----------------
+Run the benchmark
+-----------------
 
 Download the credit-card fraud CSV manually, then run:
 
@@ -104,9 +103,9 @@ The script writes:
 * ``robust_score_profile.png``;
 * ``summary.md``.
 
-Production note
----------------
+Using the score in a fraud pipeline
+-----------------------------------
 
-This should be presented as an unsupervised screening score, not as a full
-competition-winning fraud pipeline.  In supervised Kaggle settings, the robust
-score can also be used as a feature for gradient boosting or other classifiers.
+Treat the result as an unsupervised screening score.  When labels are
+available, the robust distance can be added as a feature to a supervised fraud
+model rather than used as the whole pipeline.

@@ -1,0 +1,5 @@
+Minimum-distance index: 0.107146
+Amari index: 0.049421
+Relative reconstruction error: 3.422e-16
+Recovered source matrix: (2500, 3)
+Absolute source correlations: 0.996, 0.999, 0.993

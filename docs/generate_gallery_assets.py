@@ -6,9 +6,13 @@ Sphinx pages show real outputs instead of only instructions.
 
 Run from the repository root:
     python docs/generate_gallery_assets.py
+
+Generate selected pages only:
+    python docs/generate_gallery_assets.py --only robust_pca_yield_curve
 """
 from __future__ import annotations
 
+import argparse
 import shutil
 import subprocess
 import sys
@@ -26,6 +30,11 @@ class GalleryCase:
 
 
 CASES = [
+    GalleryCase("ica_two_scatter", "ica_two_scatter.py", "ica_two_scatter", ("source_recovery.png", "mixture_and_sources.png")),
+    GalleryCase("sobi_source_separation", "sobi_source_separation.py", "sobi_source_separation", ("source_recovery.png", "lag_signatures.png", "mdi_comparison.png")),
+    GalleryCase("robust_factor_model", "robust_factor_model.py", "robust_factor_model", ("loading_recovery.png", "factor_scores.png", "factor_selection.png")),
+    GalleryCase("distributionally_robust_pca", "distributionally_robust_pca.py", "distributionally_robust_pca", ("target_risk.png", "subspace_allocation.png", "ambiguity_path.png", "metrics.csv")),
+    GalleryCase("distributionally_robust_pca_drift_monitoring", "distributionally_robust_pca_drift_monitoring.py", "distributionally_robust_pca_drift_monitoring", ("drift_timeline.png", "alert_rates.png", "feature_contributions.png", "window_scores.csv", "summary.csv")),
     GalleryCase("finance_risk", "use_case_finance_risk.py", "finance", ("distance_panel.png", "covariance.png")),
     GalleryCase("portfolio_stress", "use_case_portfolio_stress.py", "portfolio_stress", ("distance_panel.png", "covariance.png")),
     GalleryCase("fraud_screening", "use_case_fraud_screening.py", "fraud", ("distance_panel.png", "distance_profile.png")),
@@ -41,17 +50,53 @@ CASES = [
     GalleryCase("wine_class_screening", "use_case_wine_class_screening.py", "wine_class", ("baseline_f1.png", "distance_panel.png", "score_profile.png")),
     GalleryCase("ml_preprocessing", "use_case_ml_preprocessing.py", "ml_preprocessing", ("accuracy_comparison.png", "distance_profile.png")),
     GalleryCase("gp_robust_input_metric", "gp_robust_input_metric.py", "gp_robust_input_metric", ("kernel_comparison.png",)),
+    GalleryCase("mrcd_high_dimensional_outliers", "plot_mrcd_high_dimensional_outliers.py", "mrcd_high_dimensional_outliers", ("distance_comparison.png", "covariance_spectrum.png", "distance_crossplot.png", "metrics.csv")),
+    GalleryCase("kmrcd_nonlinear_manifold", "plot_kmrcd_nonlinear_manifold.py", "kmrcd_nonlinear_manifold", ("linear_distance_contours.png", "kernel_distance_contours.png", "auc_comparison.png", "bandwidth_sensitivity.png", "metrics.csv")),
+    GalleryCase("dets_detmm_tradeoff", "plot_dets_detmm_tradeoff.py", "dets_detmm_tradeoff", ("robust_ellipses.png", "covariance_error.png", "weight_functions.png", "clean_efficiency.png", "metrics.csv")),
+    GalleryCase("robust_multilinear_pca", "plot_robust_multilinear_pca.py", "robust_multilinear_pca", ("mode_subspaces.png", "residual_map.png", "outlier_map.png", "reconstruction.png", "metrics.csv")),
+    GalleryCase("mmcd_sensor_windows", "plot_mmcd_sensor_windows.py", "mmcd_sensor_windows", ("distance_comparison.png", "contribution_heatmap.png", "covariance_factors.png", "metrics.csv")),
+    GalleryCase("cellmcd_market_data", "plot_cellmcd_market_data.py", "cellmcd_market_data", ("covariance_error.png", "cell_residual_map.png", "correlation_comparison.png", "metrics.csv")),
+    GalleryCase("cellpca_process_spectra", "plot_cellpca_process_spectra.py", "cellpca_process_spectra", ("subspace_recovery.png", "residual_cellmap.png", "outlier_map.png", "loading_curves.png", "metrics.csv")),
+    GalleryCase("sparse_cellpca_spectra", "plot_sparse_cellpca_spectra.py", "sparse_cellpca_spectra", ("loading_comparison.png", "performance_comparison.png", "sparse_loadings.png", "outlier_map.png", "metrics.csv")),
+    GalleryCase("cellrcov_high_dimensional", "plot_cellrcov_high_dimensional.py", "cellrcov_high_dimensional", ("covariance_error.png", "covariance_spectrum.png", "distance_decomposition.png", "cell_residual_map.png", "metrics.csv")),
+    GalleryCase("robust_graphical_lasso_market_network", "plot_robust_graphical_lasso_market_network.py", "robust_graphical_lasso_market_network", ("partial_correlation_comparison.png", "robust_network.png", "ebic_path.png", "metrics.csv")),
+    GalleryCase("spatial_sign_graphical_lasso", "plot_spatial_sign_graphical_lasso.py", "spatial_sign_graphical_lasso", ("partial_correlation_comparison.png", "spatial_sign_network.png", "graph_recovery.png", "radial_stability.png", "metrics.csv")),
+    GalleryCase("robust_pca_embedding_monitoring", "plot_robust_pca_embedding_monitoring.py", "robust_pca_embedding_monitoring", ("batch_monitoring.png", "outlier_map.png", "subspace_recovery.png")),
+    GalleryCase("density_power_pca", "plot_density_power_pca.py", "density_power_pca", ("subspace_comparison.png", "alpha_tradeoff.png", "cell_weight_map.png", "outlier_map.png", "metrics.csv")),
+    GalleryCase("robust_subspace_monitoring", "plot_robust_subspace_monitoring.py", "robust_subspace_monitoring", ("monitor_history.png", "drift_mechanism_map.png", "final_batch_outlier_map.png")),
+    GalleryCase("robust_pca_yield_curve", "plot_robust_pca_yield_curve.py", "robust_pca_yield_curve", ("factor_loadings.png", "factor_scores.png", "outlier_map.png", "metrics.csv")),
+    GalleryCase("robust_pca_subspace_stability", "plot_robust_pca_subspace_stability.py", "robust_pca_subspace_stability", ("loading_intervals.png", "principal_angle_distribution.png", "eigenvalue_intervals.png", "metrics.csv")),
+    GalleryCase("robust_pca_dependent_stability", "plot_robust_pca_dependent_stability.py", "robust_pca_dependent_stability", ("loading_intervals.png", "principal_angle_distribution.png", "eigenvalue_uncertainty.png", "metrics.csv")),
+    GalleryCase("robust_pca_market_risk", "plot_robust_pca_market_risk.py", "robust_pca_market_risk", ("asset_loadings.png", "explained_variance.png", "outlier_map.png", "reconstruction_residual.png")),
     GalleryCase("multimodal_anomaly", "use_case_multimodal_anomaly.py", "multimodal_anomaly", ("cluster_distance_panel.png", "global_distance_profile.png", "metrics.csv")),
 ]
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--only",
+        nargs="*",
+        metavar="SLUG",
+        help="Generate only the selected gallery slugs.",
+    )
+    args = parser.parse_args()
+
+    cases = CASES
+    if args.only:
+        requested = set(args.only)
+        known = {case.slug for case in CASES}
+        unknown = sorted(requested - known)
+        if unknown:
+            parser.error("unknown gallery slug(s): " + ", ".join(unknown))
+        cases = [case for case in CASES if case.slug in requested]
+
     root = Path(__file__).resolve().parents[1]
     out_root = root / "docs" / "_static" / "gallery"
     out_root.mkdir(parents=True, exist_ok=True)
     rows: list[tuple[str, int]] = []
 
-    for case in CASES:
+    for case in cases:
         script_path = root / "examples" / case.script
         case_out = out_root / case.slug
         case_out.mkdir(parents=True, exist_ok=True)
@@ -95,12 +140,29 @@ def main() -> int:
         (case_out / "manifest.txt").write_text("\n".join(copied) + ("\n" if copied else ""), encoding="utf-8")
         rows.append((case.script, returncode))
 
-    summary = ["script,status"]
+    summary_path = out_root / "summary.csv"
+    statuses: dict[str, str] = {}
+    if args.only and summary_path.exists():
+        for line in summary_path.read_text(encoding="utf-8").splitlines()[1:]:
+            if "," in line:
+                script, status = line.split(",", 1)
+                statuses[script] = status
     for script, code in rows:
-        summary.append(f"{script},{'ok' if code == 0 else f'failed({code})'}")
-    (out_root / "summary.csv").write_text("\n".join(summary) + "\n", encoding="utf-8")
+        statuses[script] = "ok" if code == 0 else f"failed({code})"
 
-    print("\n".join(summary))
+    ordered_scripts = [case.script for case in CASES if case.script in statuses]
+    ordered_scripts.extend(
+        script for script in statuses if script not in set(ordered_scripts)
+    )
+    summary = ["script,status"] + [
+        f"{script},{statuses[script]}" for script in ordered_scripts
+    ]
+    summary_path.write_text("\n".join(summary) + "\n", encoding="utf-8")
+
+    print("\n".join(["script,status"] + [
+        f"{script},{'ok' if code == 0 else f'failed({code})'}"
+        for script, code in rows
+    ]))
     return 1 if any(code != 0 for _, code in rows) else 0
 
 

@@ -1,0 +1,5 @@
+Selected factor count: 3
+Loading-subspace error: 0.026083
+Relative decomposition error: 6.983e-17
+Factor scores: (700, 3)
+Common component: (700, 18)

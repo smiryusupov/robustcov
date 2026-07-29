@@ -1,37 +1,39 @@
+:orphan:
+
 Predictive-maintenance monitoring
 =================================
 
 Predictive maintenance often starts with the same practical need: rank machine states by how unusual their multivariate sensor pattern looks.
 
-Result at a glance
-------------------
+Monitoring result
+-----------------
 
-The synthetic monitoring example reaches precision and recall around 0.786.  It is intentionally less perfect than the simple sensor example, which makes it a better reminder that faults may overlap with normal operating variation.
+Precision and recall are both about 0.786.  Several fault observations overlap the normal operating range, so the example produces the kind of ambiguous boundary seen in real maintenance data.
 
-What the data represent
------------------------
+Machine-state simulation
+------------------------
 
 The simulation creates time-like machine states with correlated sensor features and injected degradation/fault periods.
 
-Why this estimator
-------------------
+Turning distance into a health score
+------------------------------------
 
-``FastMCD`` or ``AutoRobustAnomalyDetector`` are reasonable first choices.  The robust distance becomes a health score that can be tracked over time.
+``FastMCD`` or ``AutoRobustAnomalyDetector`` can provide a scalar health score from the joint sensor vector.  The score is then tracked through time rather than interpreted only row by row.
 
-Reproduce the result
---------------------
+Run the example
+---------------
 
 .. code-block:: bash
 
    python examples/use_case_maintenance_monitoring.py
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/gallery/maintenance_monitoring/output.txt
    :language: text
 
-Figures and diagnostics
+Time-series diagnostics
 -----------------------
 
 .. image:: ../_static/gallery/maintenance_monitoring/time_profile.png
@@ -44,12 +46,12 @@ Figures and diagnostics
    :width: 760px
 
 
-How to read the result
-----------------------
+Look for sustained changes
+--------------------------
 
 The time profile is the most useful plot.  Look for sustained runs above threshold rather than isolated single-point spikes; sustained elevation is usually more actionable for maintenance.
 
-What this does not prove
-------------------------
+Deployment considerations
+-------------------------
 
 Production monitoring should include temporal smoothing, operating-mode segmentation, and feedback from maintenance events.

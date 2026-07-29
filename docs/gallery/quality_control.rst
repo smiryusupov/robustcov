@@ -1,38 +1,40 @@
+:orphan:
+
 Quality-control monitoring
 ==========================
 
 Quality-control problems often involve several measurements per item.  A part can look acceptable on every individual measurement but still be unusual in the joint feature space.
 
-Result at a glance
+Diagnostic summary
 ------------------
 
-The diagnostic report flags about 13.4% of observations at the chosen threshold and reports heavy-tail/QQ warnings.  This is an example where the recommendations are as important as the raw outlier labels.
+At the chosen threshold, 13.4% of observations are flagged.  The report also warns about heavy tails and QQ deviation, which changes how the cutoff should be interpreted.
 
-What the data represent
------------------------
+Production-process simulation
+-----------------------------
 
 The example simulates a small multivariate production process with abnormal items and heavy-tailed deviations.
 
-Why this estimator
-------------------
-
-``FastMCD`` plus ``DiagnosticReport``.  The estimator gives robust distances; the report explains whether the threshold and covariance geometry look trustworthy.
-
-Reproduce the result
+Estimator and report
 --------------------
+
+``FastMCD`` provides the robust distances.  ``DiagnosticReport`` summarizes the fitted geometry and highlights conditions under which a chi-square threshold may be misleading.
+
+Run the example
+---------------
 
 .. code-block:: bash
 
    python examples/use_case_quality_control.py
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/gallery/quality_control/output.txt
    :language: text
 
-Figures and diagnostics
------------------------
+Plots
+-----
 
 .. image:: ../_static/gallery/quality_control/distance_profile.png
    :alt: Quality-control monitoring — distance profile
@@ -44,12 +46,12 @@ Figures and diagnostics
    :width: 760px
 
 
-How to read the result
-----------------------
+Start with the warnings
+-----------------------
 
 Start with the recommendations.  Here the report says the detected fraction is large and the tail deviates from Gaussian behavior, so empirical thresholds or a contamination prior are preferable to blind chi-square cutoffs.
 
-What this does not prove
-------------------------
+Setting inspection limits
+-------------------------
 
 Quality-control thresholds should be tied to inspection capacity, scrap cost, and historical defect labels.  The robust distance is a ranking signal, not a substitute for process knowledge.

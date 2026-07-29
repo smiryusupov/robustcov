@@ -1,154 +1,75 @@
-External and Kaggle gallery
-===========================
+External benchmark case studies
+=================================
 
-This page is the single entry point for optional Kaggle and external-data
-examples.  These examples are **not part of tests** because they require manual
-downloads, dataset-specific licenses, or larger local files.
+This page contains reviewed aggregate snapshots from public datasets. The
+underlying datasets and full benchmark outputs are not stored in the repository.
+Protocols are run locally or through a manually triggered workflow; Read the
+Docs only renders committed plots, compact summaries, and provenance metadata.
 
-The goal is not to claim that ``robustcov`` wins everywhere.  The goal is to
-show where robust covariance gives a strong advantage, where it is competitive,
-where it is mainly diagnostic, and where another method is better.
+The current public external benchmark family is NASA C-MAPSS FD002/FD004. These
+subsets provide run-to-failure engine trajectories with multiple operating
+conditions, allowing the documentation to distinguish tolerated operating
+regimes from progressive degradation.
 
-How to read the cards
----------------------
+How to interpret these results
+------------------------------
 
-.. list-table:: Result labels
-   :header-rows: 1
+The C-MAPSS case studies validate the package's monitoring workflow:
 
-   * - Label
-     - Meaning
-   * - Strong win
-     - robustcov clearly improves the most relevant metric against common unsupervised baselines.
-   * - Competitive
-     - robustcov is close to the best method, or wins one metric but loses another.
-   * - Competitive, slow
-     - robustcov improves quality but runtime is currently a weakness.
-   * - Not best
-     - another baseline performs better; the robustcov result is still reported for transparency.
-   * - Diagnostic
-     - there are no ground-truth labels, but robust distances provide interpretable stress/anomaly rankings.
+* fit a reference subspace on early-life observations;
+* calibrate upper-tail conformal p-values on a separate healthy-life interval;
+* keep the fitted reference frozen;
+* score rolling windows over later engine life;
+* report risk and alert frequency by normalized-life interval;
+* inspect sensors contributing to late-life residual risk.
 
-Recommended result pages
-------------------------
+They do not imply that every robust estimator must outperform empirical PCA on
+every subset. When empirical PCA and DRO-PCA produce overlapping curves, the
+result is reported as evidence for the calibrated monitoring pipeline, not as a
+superiority claim.
 
-.. raw:: html
+Reviewed snapshots
+------------------
 
-   <div class="gallery-grid">
-     <a class="gallery-card" href="external_results/credit_card_fraud.html">
-       <img src="_static/external_results/credit_card_fraud/pr_auc.png" alt="Credit-card fraud PR-AUC comparison">
-       <h3>Credit-card fraud</h3>
-       <p><strong>Strong win.</strong> FastMCD PR-AUC 0.712 and F1 0.801 on a classic imbalanced fraud dataset.</p>
-     </a>
-     <a class="gallery-card" href="external_results/predictive_maintenance.html">
-       <img src="_static/external_results/predictive_maintenance/f1.png" alt="Predictive maintenance F1 comparison">
-       <h3>Predictive maintenance</h3>
-       <p><strong>Competitive.</strong> robustcov gives the best F1, while IsolationForest has stronger PR-AUC and speed.</p>
-     </a>
-     <a class="gallery-card" href="external_results/finance_market_stress.html">
-       <img src="_static/external_results/finance_market_stress/top_stress_days.png" alt="Top finance stress days">
-       <h3>Finance market stress</h3>
-       <p><strong>Diagnostic.</strong> RegularizedCauchy ranks unusual cross-asset return days.</p>
-     </a>
-     <a class="gallery-card" href="external_results/finance_rolling_window.html">
-       <img src="_static/external_results/finance_rolling_window/top_stress_windows.png" alt="Top anomalous rolling finance windows">
-       <h3>Rolling market regimes</h3>
-       <p><strong>Diagnostic.</strong> Window-level features identify abnormal volatility/correlation regimes.</p>
-     </a>
-   </div>
+The cards below are generated from the committed snapshot manifest. Every
+published snapshot records file hashes, the source commit, the reproduction
+command, dataset fingerprints, and aggregate outputs. See
+:doc:`external_snapshot_policy`.
 
-Honest secondary results
-------------------------
-
-.. raw:: html
-
-   <div class="gallery-grid compact-gallery-grid">
-     <a class="gallery-card" href="external_results/ieee_cis_fraud.html">
-       <img src="_static/external_results/ieee_cis_fraud/runtime.png" alt="IEEE-CIS runtime comparison">
-       <h3>IEEE-CIS fraud</h3>
-       <p><strong>Competitive, slow.</strong> Best tested unsupervised quality, but runtime is a major weakness.</p>
-     </a>
-     <a class="gallery-card" href="external_results/medical_screening.html">
-       <img src="_static/external_results/medical_screening/f1.png" alt="Medical screening F1 comparison">
-       <h3>Medical screening</h3>
-       <p><strong>Not best.</strong> Useful diagnostic result; EllipticEnvelope wins this benchmark.</p>
-     </a>
-   </div>
-
-Current documented external results
------------------------------------
-
-.. list-table:: External result registry
-   :header-rows: 1
-
-   * - Dataset / example
-     - Status
-     - Main method
-     - Headline result
-     - Notes
-   * - Credit-card fraud
-     - Strong win
-     - FastMCD
-     - PR-AUC 0.712, F1 0.801
-     - Large metric gap vs common sklearn anomaly baselines.
-   * - Predictive maintenance
-     - Competitive
-     - Auto(StudentTScatter)
-     - F1 0.947 vs IsolationForest 0.944
-     - IsolationForest is faster and has better PR-AUC.
-   * - IEEE-CIS fraud
-     - Competitive, slow
-     - RegularizedCauchy
-     - PR-AUC 0.093 vs IsolationForest 0.084
-     - Best tested unsupervised quality, but much slower.
-   * - Medical screening
-     - Not best
-     - Auto(StudentTScatter)
-     - PR-AUC 0.567 vs EllipticEnvelope 0.629
-     - Honest negative/diagnostic result.
-   * - Finance market stress
-     - Diagnostic
-     - RegularizedCauchy
-     - 23 / 899 days detected
-     - Top days cluster around stress-like periods.
-   * - Rolling-window finance
-     - Diagnostic
-     - RegularizedCauchy
-     - 5 / 176 windows detected
-     - Top windows cluster around September stress regimes.
-
-Why UNSW-NB15 is not highlighted
---------------------------------
-
-The commonly used UNSW-NB15 training split can contain a very high attack
-fraction.  That makes it less like rare-anomaly detection and more like
-unsupervised or semi-supervised classification.  ``robustcov`` may still be
-useful there as a risk-ranking diagnostic, but it is not a clean headline
-anomaly benchmark for this package.  We therefore do not highlight it in the
-external gallery.
-
-Run external examples
----------------------
-
-External examples are optional and dataset-dependent.  The recommended path is:
+Refresh the generated cards and page tree after changing the publisher or
+manifest:
 
 .. code-block:: bash
 
-   python examples_external/<script>.py --data path/to/data.csv --outdir results/external/<name>
-   python examples_external/collect_external_results.py \
-     --root results/external \
-     --outdir results/external_registry
+   python scripts/publish_external_snapshot.py check --rewrite-generated
 
-The scripts, dataset notes, and notebook templates live under ``examples_external/``.
-They are intentionally outside the core test suite because Kaggle datasets have
-separate licenses, download steps, and file sizes.
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
+.. include:: _generated/external_snapshot_cards.rst
 
-   external_results/credit_card_fraud
-   external_results/predictive_maintenance
-   external_results/ieee_cis_fraud
-   external_results/medical_screening
-   external_results/finance_market_stress
-   external_results/finance_rolling_window
+.. include:: _generated/external_snapshot_toctree.rst
+
+Reproduce locally
+-----------------
+
+.. code-block:: bash
+
+   python examples_external/cmapss_dro_pca_monitoring.py \
+     --download \
+     --subset FD002 \
+     --outdir results/external/cmapss_fd002
+
+   python scripts/publish_external_snapshot.py publish cmapss_fd002 \
+     --results results/external/cmapss_fd002 \
+     --command "python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002 --outdir results/external/cmapss_fd002"
+
+Run FD004 with the same protocol after the archive is present locally:
+
+.. code-block:: bash
+
+   python examples_external/cmapss_dro_pca_monitoring.py \
+     --subset FD004 \
+     --outdir results/external/cmapss_fd004
+
+The UCI Gas Sensor Drift loader and exploratory analysis remain available under
+:doc:`external_data`, but they are not part of the reviewed public benchmark
+gallery.

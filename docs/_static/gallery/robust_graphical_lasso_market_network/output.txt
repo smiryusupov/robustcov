@@ -1,0 +1,15 @@
+data shape: (280, 12)
+corrupted cells: 5.4%
+rows containing a corrupted cell: 50.4%
+missing cells: 1.0%
+selected penalty, empirical / robust: 0.1481 / 0.1824
+selected edges, empirical / robust: 0 / 9
+edge F1, empirical / robust: 0.000 / 0.609
+partial-correlation Frobenius error, empirical / robust: 0.889 / 0.563
+strongest robust edges:
+  Tech B -- Tech C: +0.273
+  Bank B -- Bank C: +0.230
+  Bank A -- Bank B: +0.221
+  Energy A -- Energy B: +0.143
+  Tech A -- Tech B: +0.122
+  Bank C -- Energy C: +0.066

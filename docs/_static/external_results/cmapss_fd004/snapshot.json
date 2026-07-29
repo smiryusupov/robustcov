@@ -1,0 +1,81 @@
+{
+  "command": "python examples_external/cmapss_dro_pca_monitoring.py --subset FD004 --outdir results/external/cmapss_fd004",
+  "description": "FD004 contains six operating conditions and two fault modes, providing the harder anticipated-regime-versus-degradation benchmark.",
+  "files": {
+    "alert_rate_by_life.png": {
+      "sha256": "8f89458cbda6fc7733139c25bbda6d1872d980056a9cdbf3e8515eec09395a28",
+      "size_bytes": 45189
+    },
+    "late_life_sensor_contributions.png": {
+      "sha256": "d463124827cc50533f4934597cb5162cead7aed2f8745df335f914b194bb5fee",
+      "size_bytes": 59607
+    },
+    "risk_over_engine_life.png": {
+      "sha256": "e157948da17e17f895be9883f2f6226770197d045b73d71743303a71d492402b",
+      "size_bytes": 88740
+    },
+    "summary.csv": {
+      "sha256": "c4d96e140f64039e6f0ddc41334e96d890cd82fcab7a6334677e773fc32bc07c",
+      "size_bytes": 686
+    }
+  },
+  "generated_at": "2026-07-20T13:37:22+00:00",
+  "git_commit": "6f93e1d3c6c53e85a2fcbd38f9e44c2e03c5dbfd",
+  "git_dirty": false,
+  "metadata": {
+    "archive_sha256": "c9c5dec12a945a82e8bb4446589d7fb3cc057b5e5d81fa1a12e25ee9912ad3b2",
+    "calibration_life_fraction": "(0.20,0.35]",
+    "calibration_p_value_resolution": "{'Empirical PCA': 0.0010834236186348862, 'DRO-PCA': 0.0010834236186348862}",
+    "calibration_window_counts": "{'Empirical PCA': 922, 'DRO-PCA': 922}",
+    "dataset_citation": "A. Saxena and K. Goebel (2008). Turbofan Engine Degradation Simulation Data Set, NASA Ames Prognostics Data Repository, NASA Ames Research Center.",
+    "dataset_homepage": "https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data",
+    "dataset_subset": "FD004",
+    "dro_selected_candidate_source": "path",
+    "dro_selected_gamma": "0.0",
+    "exact_worst_case_risk": "0.6559555213937637",
+    "false_alarm_rate": "0.05",
+    "n_components": "6",
+    "n_operating_regimes": "9",
+    "n_sensors_retained": "21",
+    "projector_distance_to_empirical": "0.0",
+    "radius": "3.740988245312568",
+    "reference_life_fraction": "<=0.20",
+    "threshold": "split_conformal_upper_tail_p_value",
+    "transport_geometry": "healthy_operating_regime_mean_shift_diagonal"
+  },
+  "protocol": "DRO-PCA degradation monitoring across operating regimes",
+  "schema_version": 2,
+  "slug": "cmapss_fd004",
+  "summary_metrics": {
+    "life_bins": [
+      "0.0-0.2",
+      "0.2-0.4",
+      "0.4-0.6",
+      "0.6-0.8",
+      "0.8-1.0"
+    ],
+    "methods": {
+      "DRO-PCA": {
+        "alert_rate_change": 0.7408817901059134,
+        "alert_rates_monotone": true,
+        "early_alert_rate": 0.03423236514522822,
+        "early_mean_risk": 0.011339861449947563,
+        "late_alert_rate": 0.7751141552511416,
+        "late_mean_risk": 0.14186633987070418,
+        "risk_ratio_late_to_early": 12.510412097791564,
+        "total_windows": 5516
+      },
+      "Empirical PCA": {
+        "alert_rate_change": 0.7408817901059134,
+        "alert_rates_monotone": true,
+        "early_alert_rate": 0.03423236514522822,
+        "early_mean_risk": 0.011339861449947563,
+        "late_alert_rate": 0.7751141552511416,
+        "late_mean_risk": 0.1418663398707042,
+        "risk_ratio_late_to_early": 12.510412097791567,
+        "total_windows": 5516
+      }
+    }
+  },
+  "title": "NASA C-MAPSS FD004"
+}

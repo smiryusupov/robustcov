@@ -1,0 +1,13 @@
+Robust yield-curve factor extraction
+====================================
+observations: 520
+maturities: 10
+retained components: 3
+robust explained variance: 0.985
+robust subspace error: 0.022
+empirical subspace error: 0.375
+median score distance, ordinary days: 1.538
+median score distance, large factor moves: 4.493
+median orthogonal distance, ordinary days: 0.457
+median orthogonal distance, quote dislocations: 7.994
+median score/orthogonal distance, mixed stress: 5.485 / 6.308

@@ -6,6 +6,8 @@ from __future__ import annotations
 import numpy as np
 from scipy.stats import chi2
 
+from ._native import mahalanobis_squared_batch
+
 
 def check_array(X, *, allow_nan: bool = False) -> np.ndarray:
     X = np.asarray(X, dtype=np.float64, order="C")
@@ -95,9 +97,14 @@ def radial_kurtosis(distances: np.ndarray, p: int, method: str = "winsorized", t
     return float(val / (p * (p + 2)))
 
 
-def mahalanobis_squared(X, location, precision, *, allow_nan: bool = False, impute_values=None):
+def mahalanobis_squared(X, location, precision, *, allow_nan: bool = False, impute_values=None, backend="auto"):
     X = check_array(X, allow_nan=allow_nan)
     if allow_nan and np.isnan(X).any():
         X, _ = median_impute(X, impute_values)
-    centered = X - np.asarray(location, dtype=np.float64)
-    return np.einsum("ij,jk,ik->i", centered, precision, centered)
+    location = np.asarray(location, dtype=np.float64, order="C")
+    precision = np.asarray(precision, dtype=np.float64, order="C")
+    if location.shape != (X.shape[1],):
+        raise ValueError("location must have shape (n_features,)")
+    if precision.shape != (X.shape[1], X.shape[1]):
+        raise ValueError("precision must have shape (n_features, n_features)")
+    return mahalanobis_squared_batch(X, location, precision, backend=backend)

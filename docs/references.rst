@@ -7,6 +7,10 @@ The implementation is intentionally pragmatic and experimental; these references
 mathematical context rather than a claim that every estimator is a line-by-line reproduction of a
 specific paper.
 
+The canonical estimator-to-reference mapping, including implementation differences
+and package-specific contributions, is maintained in :doc:`methods_and_references`.
+A machine-readable BibTeX catalog is available at ``docs/references.bib``.
+
 Robust covariance and MCD
 -------------------------
 
@@ -14,6 +18,13 @@ Robust covariance and MCD
 * P. J. Rousseeuw. 1985. Multivariate estimation with high breakdown point. In *Mathematical Statistics and Applications*.
 * P. J. Rousseeuw and K. Van Driessen. 1999. A fast algorithm for the minimum covariance determinant estimator. *Technometrics*.
 * M. Hubert, M. Debruyne, and P. J. Rousseeuw. 2018. Minimum covariance determinant and extensions. *WIREs Computational Statistics*.
+* M. Hubert, P. J. Rousseeuw, D. Vanpaemel, and T. Verdonck. 2015. The DetS and DetMM estimators for multivariate location and scatter. *Computational Statistics & Data Analysis*.
+* K. Boudt, P. J. Rousseeuw, S. Vanduffel, and T. Verdonck. 2020. The minimum regularized covariance determinant estimator. *Statistics and Computing*.
+* J. Schreurs, I. Vranckx, M. Hubert, J. A. K. Suykens, and P. J. Rousseeuw. 2021. Outlier detection in non-elliptical data by kernel MRCD. *Statistics and Computing*, 31:66.
+* M. Mayrhofer, U. Radojičić, and P. Filzmoser. 2025. Robust covariance estimation and explainable outlier detection for matrix-valued data. *Technometrics*.
+* J. Raymaekers and P. J. Rousseeuw. 2024. The cellwise minimum covariance determinant estimator. *Journal of the American Statistical Association*, 119(548), 2610–2621.
+* F. Centofanti, M. Hubert, and P. J. Rousseeuw. 2026. Cellwise and casewise robust covariance in high dimensions. arXiv:2505.19925.
+* P. Dutilleul. 1999. The MLE algorithm for the matrix normal distribution. *Journal of Statistical Computation and Simulation*.
 
 Tyler and robust scatter M-estimation
 -------------------------------------
@@ -30,6 +41,13 @@ Regularization and shrinkage
 * A. Wiesel. 2012. Unified framework to regularized covariance estimation in scaled Gaussian models. *IEEE Transactions on Signal Processing*.
 * Y. Sun, P. Babu, and D. P. Palomar. 2014. Regularized Tyler's scatter estimator: existence, uniqueness, and algorithms. *IEEE Transactions on Signal Processing*.
 
+
+
+Sparse precision and graphical models
+-------------------------------------
+
+* Z. Lu and L. Feng. 2025. Robust sparse precision matrix estimation and its applications. arXiv:2503.03575.
+* J. Friedman, T. Hastie, and R. Tibshirani. 2008. Sparse inverse covariance estimation with the graphical lasso. *Biostatistics*.
 
 Matrix geometry and geodesic convexity
 --------------------------------------
@@ -50,7 +68,29 @@ Robust anomaly diagnostics
 
 * P. J. Rousseeuw and A. M. Leroy. 1987. *Robust Regression and Outlier Detection*. Wiley.
 * M. Hubert, P. J. Rousseeuw, and K. Vanden Branden. 2005. ROBPCA: a new approach to robust principal component analysis. *Technometrics*.
+* M. Hirari, F. Centofanti, M. Hubert, and S. Van Aelst. 2026. Casewise and cellwise robust multilinear principal component analysis. *Journal of Computational and Graphical Statistics*.
+* S. Roy, A. Basu, and A. Ghosh. 2024. Robust principal component analysis using density power divergence. *Journal of Machine Learning Research*, 25(324), 1–40.
+* F. Centofanti, M. Hubert, and P. J. Rousseeuw. 2026. Robust principal components by casewise and cellwise weighting. *Technometrics*.
+* P. Pfeiffer, L. Vana-Gür, and P. Filzmoser. 2025. Cellwise robust and sparse principal component analysis. *Advances in Data Analysis and Classification*.
+* M. E. Timmerman, E. Kiers, and A. C. Smilde. 2007. Estimating confidence intervals for principal component loadings: a comparison between the bootstrap and asymptotic results. *British Journal of Mathematical and Statistical Psychology*.
+* R. H. Abul Naga and G. Antille. 1990. Stability of robust and non-robust principal components analysis. *Computational Statistics & Data Analysis*.
+* H. R. Künsch. 1989. The jackknife and the bootstrap for general stationary observations. *The Annals of Statistics*.
+* D. N. Politis and J. P. Romano. 1994. The stationary bootstrap. *Journal of the American Statistical Association*.
+* D. N. Politis and H. White. 2004. Automatic block-length selection for the dependent bootstrap. *Econometric Reviews*.
 
+
+
+Online robust subspace tracking
+-------------------------------
+
+* P. Narayanamurthy and N. Vaswani. 2018. Nearly Optimal Robust Subspace Tracking. *Proceedings of the 35th International Conference on Machine Learning*, PMLR 80, 3701--3709.
+* T. Zhu and J. Shen. 2022. Residual-Based Sampling for Online Outlier-Robust PCA. *Proceedings of the 39th International Conference on Machine Learning*, PMLR 162, 27591--27611.
+
+Conformal anomaly and alert calibration
+---------------------------------------
+
+* V. Vovk, A. Gammerman, and G. Shafer. 2005. *Algorithmic Learning in a Random World*. Springer.
+* M. Bashari, M. Sesia, and Y. Romano. 2025. Robust conformal outlier detection under contaminated reference data. *Proceedings of the 42nd International Conference on Machine Learning*, PMLR 267, 3091--3141.
 
 Robust clustering and mixtures
 ------------------------------
@@ -59,3 +99,28 @@ Robust clustering and mixtures
 * A. García-Escudero, A. Gordaliza, C. Matrán, and A. Mayo-Iscar. 2008. A general trimming approach to robust cluster analysis. *The Annals of Statistics*.
 * G. J. McLachlan and D. Peel. 2000. *Finite Mixture Models*. Wiley.
 * G. J. McLachlan and D. Peel. 1998/2000. Robust cluster analysis via mixtures of multivariate t-distributions. Related robust mixture-model literature.
+
+
+Independent components, SOBI, and factor models
+------------------------------------------------
+
+* J.-F. Cardoso and A. Souloumiac. 1996. Jacobi angles for simultaneous diagonalization. *SIAM Journal on Matrix Analysis and Applications*.
+* A. Belouchrani, K. Abed-Meraim, J.-F. Cardoso, and E. Moulines. 1997. A blind source separation technique using second-order statistics. *IEEE Transactions on Signal Processing*.
+* H. Oja, S. Sirkiä, and J. Eriksson. 2006. Scatter matrices and independent component analysis. *Austrian Journal of Statistics*.
+* S. Taskinen, A. Kankainen, and H. Oja. 2007. Independent component analysis based on symmetrised scatter matrices. *Computational Statistics & Data Analysis*.
+* K. Nordhausen. 2014. On robustifying some second order blind source separation methods for nonstationary time series. *Statistical Papers*.
+* J. Fan, H. Liu, and W. Wang. 2018. Large covariance estimation through elliptical factor models. *The Annals of Statistics*.
+* L. Yu, Y. He, and X. Zhang. 2019. Robust factor number specification for large-dimensional elliptical factor models. *Journal of Multivariate Analysis*.
+
+Algorithmic robust covariance filtering
+----------------------------------------
+
+* I. Diakonikolas, G. Kamath, D. M. Kane, J. Li, A. Moitra, and A. Stewart. 2017. Being Robust (in High Dimensions) Can Be Practical. *Proceedings of the 34th International Conference on Machine Learning*, PMLR 70, 999--1008.
+* Y. Cheng, I. Diakonikolas, R. Ge, and D. P. Woodruff. 2019. Faster Algorithms for High-Dimensional Robust Covariance Estimation. *Proceedings of the Thirty-Second Conference on Learning Theory*, PMLR 99, 727--757.
+* G. Novikov. 2025. Robust Scatter Matrix Estimation for Elliptical Distributions in Polynomial Time. arXiv:2502.06564.
+
+Low-rank plus sparse matrix decomposition
+-----------------------------------------
+
+* E. J. Candès, X. Li, Y. Ma, and J. Wright. 2011. Robust Principal Component Analysis? *Journal of the ACM*, 58(3), Article 11.
+* Z. Lin, M. Chen, and Y. Ma. 2010. The Augmented Lagrange Multiplier Method for Exact Recovery of Corrupted Low-Rank Matrices. arXiv:1009.5055.

@@ -10,10 +10,11 @@ build:
       - python -m compileall -q examples
       - python -m compileall -q benchmarks
       - python -m compileall -q docs
+      - python scripts/publish_external_snapshot.py check
 
 sphinx:
   configuration: docs/conf.py
-  fail_on_warning: false
+  fail_on_warning: true
 
 python:
   install:

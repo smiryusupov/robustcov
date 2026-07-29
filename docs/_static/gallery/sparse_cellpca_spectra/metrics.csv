@@ -1,0 +1,14 @@
+metric,value
+classical_subspace_error,0.7664895805483519
+cellpca_subspace_error,0.04180915151958112
+sparse_cellpca_subspace_error,0.03799312924354926
+cellpca_cell_auc,0.9851021894435068
+sparse_cellpca_cell_auc,0.987401162925115
+cellpca_missing_mae,0.08111677499337357
+sparse_cellpca_missing_mae,0.07887702965889831
+support_precision,1.0
+support_recall,1.0
+support_f1,1.0
+loading_sparsity,0.8541666666666666
+nonzero_loadings,21
+total_loadings,144

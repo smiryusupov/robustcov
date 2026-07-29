@@ -1,0 +1,11 @@
+MRCD for high-dimensional row contamination
+===========================================
+observations / features: 80 / 120
+outlying rows: 12
+raw support size: 64
+outlying rows retained in support: 0
+automatic target weight rho: 0.2865
+target-relative condition number: 35.14
+outlier AUROC, Ledoit-Wolf / MRCD: 0.610 / 1.000
+relative covariance error, Ledoit-Wolf / MRCD: 0.820 / 0.528
+six-factor subspace error, Ledoit-Wolf / MRCD: 1.703 / 1.504

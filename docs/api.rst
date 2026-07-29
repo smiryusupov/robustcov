@@ -1,12 +1,83 @@
 API reference
 =============
 
+Method provenance
+-----------------
+
+.. automodule:: robustcov.provenance
+   :members:
+   :undoc-members:
+
 Covariance estimators
 ---------------------
 
 .. automodule:: robustcov.covariance
    :members:
    :undoc-members:
+
+Minimum regularized covariance determinant
+------------------------------------------
+
+.. automodule:: robustcov.mrcd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Kernel minimum regularized covariance determinant
+-------------------------------------------------
+
+.. automodule:: robustcov.kernel_mrcd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Deterministic S and MM estimators
+---------------------------------
+
+.. automodule:: robustcov.s_estimators
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Matrix minimum covariance determinant
+-------------------------------------
+
+.. automodule:: robustcov.mmcd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Cellwise minimum covariance determinant
+---------------------------------------
+
+.. automodule:: robustcov.cellmcd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Cellwise regularized covariance
+-------------------------------
+
+.. automodule:: robustcov.cellrcov
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Sparse cellwise robust PCA
+---------------------------
+
+.. automodule:: robustcov.sparse_cellpca
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Robust sparse precision matrices
+--------------------------------
+
+.. automodule:: robustcov.sparse_precision
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 M-estimators
 ------------
@@ -84,92 +155,161 @@ Geometry utilities
    :undoc-members:
    :show-inheritance:
 
-Feature geometry
-----------------
+Blind source separation
+-----------------------
 
-.. autoclass:: robustcov.FeatureGeometry
+.. automodule:: robustcov.ica
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: robustcov.ClassConditionalFeatureGeometry
+.. automodule:: robustcov.sobi
    :members:
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: robustcov.joint_diagonalization
+   :members:
+   :undoc-members:
 
-Detailed API reference
-======================
+Robust factor models
+--------------------
 
-Robust covariance estimators
-----------------------------
-
-.. autoclass:: robustcov.FastMCD
+.. automodule:: robustcov.factor_models
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: robustcov.MinCovDet
+Low-rank plus sparse decomposition
+----------------------------------
+
+.. automodule:: robustcov.decomposition
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: robustcov.RegularizedCauchy
+Robust principal component analysis
+-----------------------------------
+
+.. autoclass:: robustcov.RobustPCA
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: robustcov.StudentTScatter
+Experimental adversarial covariance filtering
+---------------------------------------------
+
+The filtering estimator is available only from ``robustcov.experimental``.
+
+.. autoclass:: robustcov.experimental.SpectralFilteringCovariance
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: robustcov.RegularizedTyler
+Experimental distributionally robust PCA
+-----------------------------------------
+
+The distributionally robust estimator is intentionally available only from
+``robustcov.experimental`` while its geometry and radius defaults are validated.
+
+.. autoclass:: robustcov.experimental.DistributionallyRobustPCA
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: robustcov.AutoRobustScatter
+Density-power robust PCA
+------------------------
+
+.. automodule:: robustcov.dpd_pca
    :members:
    :undoc-members:
    :show-inheritance:
 
-Outlier detectors
------------------
+Bootstrap PCA stability
+-----------------------
 
-.. autoclass:: robustcov.RobustOutlierDetector
+.. automodule:: robustcov.stability
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: robustcov.ClusterRobustOutlierDetector
+Robust multilinear PCA
+----------------------
+
+.. automodule:: robustcov.multilinear_pca
    :members:
    :undoc-members:
    :show-inheritance:
 
-Feature geometry
-----------------
-
-.. autoclass:: robustcov.FeatureGeometry
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: robustcov.ClassConditionalFeatureGeometry
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Robust input metrics and kernels
+Cellwise and casewise robust PCA
 --------------------------------
 
-.. autoclass:: robustcov.RobustInputMetric
+.. automodule:: robustcov.cellpca
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autofunction:: robustcov.robust_rbf_kernel
+Robust rolling monitoring
+-------------------------
+
+.. autoclass:: robustcov.RobustSubspaceMonitor
    :members:
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: robustcov.SubspaceDriftResult
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Online robust subspace tracking
+-------------------------------
+
+.. autoclass:: robustcov.OnlineRobustSubspaceTracker
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.OnlineSubspaceUpdate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Conformal alert calibration
+----------------------------
+
+.. autoclass:: robustcov.ConformalAlertCalibrator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Feature geometry
+----------------
+
+.. autoclass:: robustcov.FeatureGeometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: robustcov.ClassConditionalFeatureGeometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Optional external dataset loaders
+---------------------------------
+
+These loaders never download during import.  Raw data is stored in a user cache
+outside the repository; see :doc:`external_data`.
+
+.. autofunction:: robustcov.datasets.fetch_gas_sensor_drift
+
+.. autoclass:: robustcov.datasets.GasSensorDriftDataset
+   :members:
+
+.. autofunction:: robustcov.datasets.fetch_cmapss
+
+.. autoclass:: robustcov.datasets.CMapssDataset
+   :members:
+
+.. autofunction:: robustcov.datasets.get_data_home

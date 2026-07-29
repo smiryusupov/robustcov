@@ -6,11 +6,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 
+from ._estimator import EstimatorMixin
 from ._utils import check_array, median_impute
 
 
-@dataclass
-class RobustMedianImputer:
+@dataclass(repr=False)
+class RobustMedianImputer(EstimatorMixin):
     """Small sklearn-like column-median imputer for examples and pipelines."""
 
     def fit(self, X, y=None):

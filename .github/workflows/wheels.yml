@@ -1,10 +1,26 @@
-name: wheels
+name: release distributions
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_target:
+        description: Optional package index for a manual release rehearsal
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - testpypi
   push:
     tags:
       - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-distributions-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   sdist:
@@ -25,19 +41,43 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install build twine
 
-      - name: Build sdist
+      - name: Check release version
+        shell: bash
         run: |
-          python -m build --sdist
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            python scripts/check_release_version.py --tag "${GITHUB_REF_NAME}"
+          else
+            python scripts/check_release_version.py --require-prerelease
+          fi
+
+      - name: Build sdist
+        run: python -m build --sdist
 
       - name: Check sdist
         run: |
           python -m twine check dist/*
+          python -m pip install -e .
+          python scripts/release_check.py dist/*
+
+      - name: Smoke-test sdist installation
+        run: python scripts/package_smoke_test.py --expect-native yes dist/*.tar.gz
+
+      - name: Build and smoke-test native-free wheel
+        run: |
+          python -m build --wheel \
+            -Ccmake.define.ROBUSTCOV_BUILD_NATIVE=OFF \
+            --outdir native-free-wheel
+          python scripts/package_smoke_test.py \
+            --expect-native no \
+            native-free-wheel/*.whl
+          python scripts/release_check.py native-free-wheel/*.whl
 
       - name: Upload sdist artifact
         uses: actions/upload-artifact@v4
         with:
           name: sdist
           path: dist/*
+          if-no-files-found: error
 
   wheels:
     name: Build wheels on ${{ matrix.os }} / ${{ matrix.archs }}
@@ -75,25 +115,29 @@ jobs:
           CIBW_BUILD: "cp312-* cp313-* cp314-*"
           CIBW_SKIP: "*-musllinux_* *-win32"
           CIBW_ARCHS: ${{ matrix.archs }}
-          CIBW_TEST_COMMAND: "python -c \"import robustcov; print('robustcov import ok')\""
           MACOSX_DEPLOYMENT_TARGET: "11.0"
-        run: |
-          python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Upload wheel artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.archs }}
           path: wheelhouse/*.whl
+          if-no-files-found: error
 
   check:
-    name: Check distributions
+    name: Check release candidate distributions
     needs: [sdist, wheels]
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out repository with snapshot history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           path: dist
           merge-multiple: true
@@ -103,29 +147,137 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Check metadata
+      - name: Check source evidence and archive contents
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           python -m pip install twine
+          python -m pip install -e .
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            python scripts/check_release_version.py --tag "${GITHUB_REF_NAME}"
+          else
+            python scripts/check_release_version.py --require-prerelease
+          fi
+          python scripts/release_check.py --release-candidate
           python -m twine check dist/*
+          python scripts/release_check.py dist/*
 
-  publish:
-    name: Publish to PyPI
+      - name: Write artifact checksums
+        run: |
+          mkdir -p release-metadata
+          python scripts/write_artifact_checksums.py \
+            dist/* \
+            --output release-metadata/SHA256SUMS
+          cat release-metadata/SHA256SUMS
+
+      - name: Upload release metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-metadata
+          path: release-metadata/SHA256SUMS
+          if-no-files-found: error
+
+  publish-testpypi:
+    name: Publish to TestPyPI
     needs: [check]
     runs-on: ubuntu-latest
-
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_target == 'testpypi'
 
     environment:
-      name: pypi
+      name: testpypi
+      url: https://test.pypi.org/p/robustcov
 
     permissions:
       id-token: write
 
     steps:
-      - name: Download distributions
-        uses: actions/download-artifact@v4
+      - name: Download source distribution
+        uses: actions/download-artifact@v6
         with:
+          name: sdist
+          path: dist
+
+      - name: Download wheels
+        uses: actions/download-artifact@v6
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          repository-url: https://test.pypi.org/legacy/
+
+  smoke-test-testpypi:
+    name: Smoke-test TestPyPI installation
+    needs: [publish-testpypi]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the published package
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "numpy==2.0.0" "scipy==1.13.0"
+          version="$(python scripts/check_release_version.py --print-version)"
+          installed=false
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if python -m pip install \
+              --no-deps \
+              --index-url https://test.pypi.org/simple/ \
+              "robustcov==${version}"; then
+              installed=true
+              break
+            fi
+            echo "TestPyPI package not visible yet; retry ${attempt}/8"
+            sleep 15
+          done
+          [[ "${installed}" == "true" ]]
+
+      - name: Run installed-package smoke test outside the checkout
+        shell: bash
+        run: |
+          version="$(python scripts/check_release_version.py --print-version)"
+          cd "${RUNNER_TEMP}"
+          python "${GITHUB_WORKSPACE}/scripts/installed_package_smoke.py" \
+            --expected-version "${version}" \
+            --expect-native yes \
+            --forbid-root "${GITHUB_WORKSPACE}"
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [check]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/robustcov
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download source distribution
+        uses: actions/download-artifact@v6
+        with:
+          name: sdist
+          path: dist
+
+      - name: Download wheels
+        uses: actions/download-artifact@v6
+        with:
+          pattern: wheels-*
           path: dist
           merge-multiple: true
 

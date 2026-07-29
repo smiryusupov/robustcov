@@ -1,0 +1,17 @@
+data shape: (90, 120)
+p / n ratio: 1.33
+corrupted cells: 486 (4.5%)
+casewise outliers: 10 (11.1%)
+missing cells: 540 (5.0%)
+selected residual shrinkage: 0.75
+relative covariance error:
+  Ledoit-Wolf: 3.086
+  Regularized Cauchy: 2.862
+  MRCD: 2.602
+  CellRCov: 0.427
+case-outlier AUROC:
+  Ledoit-Wolf: 0.543
+  Regularized Cauchy: 0.506
+  MRCD: 0.544
+  CellRCov: 1.000
+CellRCov cell-outlier AUROC: 1.000

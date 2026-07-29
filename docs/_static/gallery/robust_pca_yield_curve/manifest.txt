@@ -1,0 +1,4 @@
+factor_loadings.png
+factor_scores.png
+outlier_map.png
+metrics.csv

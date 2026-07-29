@@ -1,0 +1,11 @@
+metric,value
+covariance_error_ledoit-wolf,3.08628959
+covariance_error_regularized_cauchy,2.86159553
+covariance_error_mrcd,2.60189592
+covariance_error_cellrcov,0.42684182
+case_auc_ledoit-wolf,0.54250000
+case_auc_regularized_cauchy,0.50625000
+case_auc_mrcd,0.54375000
+case_auc_cellrcov,1.00000000
+cell_auc_cellrcov,1.00000000
+residual_shrinkage,0.75000000

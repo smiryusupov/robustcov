@@ -1,0 +1,9 @@
+metric,value
+n_samples,290
+n_features,2
+outlier_fraction,0.1724137931034483
+linear_mrcd_auc,0.34425
+rbf_kmrcd_auc,0.9666666666666667
+rbf_gamma,2.0
+regularization,0.003951421854980608
+outliers_in_support,11

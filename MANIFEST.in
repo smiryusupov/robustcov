@@ -10,13 +10,15 @@ include CMakeLists.txt
 include .readthedocs.yaml
 include .gitignore
 
-recursive-include robustcov *.py
+recursive-include robustcov *.py *.json
 recursive-include src *.cpp *.hpp *.h CMakeLists.txt
 recursive-include tests *.py
 recursive-include examples *.py
 recursive-include examples_external *.py *.md
 recursive-include benchmarks *.py *.md
-recursive-include docs *.rst *.py *.md *.css *.png *.csv
+recursive-include scripts *.py *.md
+recursive-include requirements *.txt *.md
+recursive-include docs *.rst *.py *.md *.css *.png *.csv *.bib *.inc
 recursive-include notebooks *.ipynb *.md
 recursive-include conda *.md *.yaml *.yml
 recursive-include .github/workflows *.yml *.yaml

@@ -1,28 +1,64 @@
 Quickstart
 ==========
 
-Robust covariance under contamination
--------------------------------------
+Robust covariance and outlier detection
+---------------------------------------
 
-This example creates a dataset with a contaminated tail and fits ``FastMCD``.
-When outliers pull empirical covariance away from the central data cloud,
-``FastMCD`` estimates a more stable covariance structure and gives robust
-Mahalanobis distances for anomaly screening.
+This example creates heavy-tailed data with a contaminated subset, fits
+``FastMCD``, and flags the largest 7.5% of robust distances.  Pass an unfitted
+estimator to ``RobustOutlierDetector``; the detector clones and fits it without
+mutating the original object.
+
+.. literalinclude:: _snippets/quickstart_outlier_detection.py
+   :language: python
+   :linenos:
+
+The fitted scatter estimator is available as ``det.estimator_`` and can be used
+with the diagnostic plotting helpers:
 
 .. code-block:: python
 
-   import numpy as np
-   import robustcov as rc
+   rc.plot_robust_distance_panel(
+       det.estimator_, output_path="distance_panel.png", show=False
+   )
 
-   rng = np.random.default_rng(0)
-   X = rng.normal(size=(500, 5))
-   X[:40] += 8.0
+Calibrate anomaly alerts on held-out scores
+---------------------------------------------
 
-   est = rc.FastMCD(quality="balanced", random_state=0).fit(X)
-   print(est.location_)
-   print(est.radial_kurtosis_)
+A robust distance is a ranking score, not automatically a calibrated alert.
+Fit the score model on training data and calibrate a separate reference split:
 
-   rc.plot_robust_distance_panel(est, output_path="distance_panel.png", show=False)
+.. code-block:: python
+
+   detector = rc.RobustOutlierDetector(
+       estimator=rc.RegularizedCauchy(alpha=0.10),
+       threshold="empirical",
+   ).fit(X_train)
+
+   calibrator = rc.ConformalAlertCalibrator(alpha=0.05).fit(
+       -detector.score_samples(X_calibration)
+   )
+   alerts = calibrator.predict_alerts(-detector.score_samples(X_new))
+
+See :doc:`conformal_alert_calibration` for the exchangeability assumption,
+finite-sample p-value resolution, and monitoring use.
+
+Low-rank plus sparse decomposition
+----------------------------------
+
+When one matrix is the sum of a low-rank signal and sparse, arbitrarily large
+cell corruption, use Principal Component Pursuit rather than a scatter-based
+PCA estimator:
+
+.. code-block:: python
+
+   pcp = rc.PrincipalComponentPursuit(tol=1e-7).fit(X)
+   low_rank = pcp.low_rank_
+   sparse_corruption = pcp.sparse_
+   print(pcp.decomposition_summary())
+
+See :doc:`principal_component_pursuit` for the incoherence/sparsity assumptions
+and the distinction from :class:`robustcov.RobustPCA`.
 
 Small-sample heavy-tail scatter
 -------------------------------
@@ -37,6 +73,28 @@ variation.
    est = rc.RegularizedCauchy(alpha=0.10).fit(X)
    report = rc.diagnostic_report(est)
    print(report.summary())
+
+Rolling production monitoring
+-----------------------------
+
+Use a frozen robust reference when batches arrive over time and the type of
+drift matters operationally.
+
+.. code-block:: python
+
+   monitor = rc.RobustSubspaceMonitor(
+       n_components=0.95,
+       estimator=rc.RegularizedCauchy(alpha=0.10),
+       window_size=100,
+       alarm_patience=2,
+   ).fit(X_reference)
+
+   result = monitor.update(X_new_batch)
+   if result.ready:
+       print(result.summary())
+       print(result.exceeded)
+
+See :doc:`monitoring` for calibration and interpretation details.
 
 Automatic estimator selection
 -----------------------------
@@ -58,5 +116,28 @@ Where to go next
 
 After the quickstart, see :doc:`estimator_guide` for estimator selection,
 :doc:`use_case_gallery` for application examples, :doc:`benchmark_gallery` for
-evidence and comparisons, and :doc:`geometry` for robust SPD geometry utilities.
+evidence and comparisons, and :doc:`geometry` for robust SPD geometry utilities, and :doc:`monitoring` for frozen-reference rolling drift diagnostics.
 
+
+
+Track a slowly changing subspace
+--------------------------------
+
+When a fixed baseline is too restrictive, initialize an experimental online
+tracker on an acceptable reference block and update it with micro-batches:
+
+.. code-block:: python
+
+   tracker = rc.OnlineRobustSubspaceTracker(
+       n_components=4,
+       update_interval=64,
+       buffer_size=256,
+       adaptation_rate=0.5,
+   ).fit(X_initial)
+
+   result = tracker.update(X_next)
+   print(result.n_accepted, result.change_detected)
+
+The tracker repairs isolated projected-residual cells, rejects dense row
+outliers, and adapts only through bounded robust mini-batch updates. See
+:doc:`online_subspace_tracking` for assumptions and limitations.

@@ -1,0 +1,17 @@
+data shape: (220, 14)
+Student-t degrees of freedom: 1.5
+additional radial-shock rows: 32
+Empirical: edges=53, precision=0.226, recall=0.750, F1=0.348, partial error=0.538
+Cauchy scatter: edges=15, precision=0.800, recall=0.750, F1=0.774, partial error=0.201
+Spatial sign: edges=14, precision=0.857, recall=0.750, F1=0.800, partial error=0.210
+relative graph change after pairwise radial rescaling:
+  Empirical: 4.588e-01
+  Cauchy scatter: 7.710e-02
+  Spatial sign: 1.274e-15
+strongest spatial-sign edges:
+  Rates 4 -- Rates 5: +0.148
+  Equity 4 -- Equity 5: +0.135
+  Equity 1 -- Equity 2: +0.104
+  Commodity -- Volatility: +0.081
+  Equity 2 -- Equity 3: +0.059
+  Equity 3 -- Equity 4: +0.057

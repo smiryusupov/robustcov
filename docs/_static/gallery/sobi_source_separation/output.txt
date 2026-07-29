@@ -1,0 +1,5 @@
+Classical SOBI MDI: 0.552870
+Robust SOBI MDI: 0.092960
+Classical off-diagonal energy: 0.014251
+Robust off-diagonal energy: 0.047737
+Temporal signatures: (3,)

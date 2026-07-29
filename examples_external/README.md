@@ -1,6 +1,6 @@
 # Optional Kaggle / external examples
 
-These examples are intentionally **not part of tests** and are not run during the normal Sphinx build. They require datasets that users download manually from Kaggle or another data source.
+These examples are not run during the normal Sphinx build. Large/raw datasets are never committed to the repository. Dataset-loader tests use tiny local archives and remain fully offline; real-data workflows run only after an explicit download or a manually supplied archive.
 
 Why keep them optional?
 
@@ -16,6 +16,20 @@ Why keep them optional?
 | `kaggle_ieee_cis_fraud.py` | IEEE-CIS Fraud Detection | transaction anomaly scores |
 | `kaggle_predictive_maintenance.py` | predictive-maintenance sensor tables | failure screening |
 | `kaggle_medical_screening.py` | medical tabular diagnosis datasets | patient-level screening |
+| `gas_sensor_drift_dro_pca.py` | UCI gas-sensor temporal batches | exploratory batch-level drift analysis; not a reviewed snapshot |
+| `cmapss_dro_pca_monitoring.py` | NASA C-MAPSS FD001--FD004 | operating-regime-aware degradation monitoring |
+
+
+## Cached external datasets
+
+```bash
+export ROBUSTCOV_DATA_DIR="$HOME/data/robustcov"
+python -m robustcov.datasets list
+python -m robustcov.datasets fetch gas_sensor_drift
+python -m robustcov.datasets fetch cmapss --subset FD002
+```
+
+Downloads are explicit, atomic, checksum/fingerprint validated, and safely extracted. A manually downloaded archive can be supplied with `--archive` to either DRO-PCA script. Raw archives and extracted files remain under the user cache; only result CSVs and figures are written under `results/external/`.
 
 ## Example
 
@@ -31,6 +45,26 @@ Each script writes:
 - metric plots such as `pr_auc.png`, `roc_auc.png`, or `f1.png`
 - `robust_score_profile.png`
 - `summary.md`
+
+## Publish reviewed documentation snapshots
+
+Real-data protocols write a complete local workspace under `results/external/`.
+After reviewing a run, publish only the approved aggregate figures and summary
+table into the documentation:
+
+```bash
+python scripts/publish_external_snapshot.py publish cmapss_fd002 \
+  --results results/external/cmapss_fd002 \
+  --command "python examples_external/cmapss_dro_pca_monitoring.py --download --subset FD002 --outdir results/external/cmapss_fd002"
+
+python scripts/publish_external_snapshot.py check
+```
+
+The publisher currently accepts only the reviewed C-MAPSS FD002 and FD004
+profiles. It excludes `window_scores.csv`, local cache paths, raw data, and
+embeddings, records file digests, and creates the Sphinx result page and gallery
+card. The gas-sensor script remains exploratory and is not published as a
+reference snapshot. See `docs/external_snapshot_policy.rst`.
 
 ## Notebook template
 

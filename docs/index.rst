@@ -1,127 +1,212 @@
-robustcov documentation
-=======================
-
-
-Why robustcov?
---------------
-
-Many machine-learning workflows use covariance geometry implicitly: anomaly
-scores, whitening, Mahalanobis distances, kernel similarities, Gaussian models,
-portfolio risk, and embedding retrieval. Empirical covariance is fast and
-useful, but it can be strongly distorted by outliers, heavy tails, leverage
-points, and small contaminated subsets of the data.
-
-``robustcov`` provides robust covariance and scatter estimators together with
-practical machine-learning workflows around them: anomaly detection,
-diagnostics, benchmark galleries, robust kernel/input metrics, and SPD geometry
-utilities.
-
-The typical workflow is:
-
-.. code-block:: text
-
-   contaminated data
-        -> robust scatter estimate
-        -> robust precision / Mahalanobis geometry
-        -> anomaly score, whitening, similarity, kernel, or diagnostic
-
-When should I use this?
------------------------
-
-Use ``robustcov`` when covariance geometry matters and the data may contain
-outliers, heavy tails, small contaminated subsets, leverage points, or unstable
-directions. Typical use cases include tabular anomaly detection, sensor
-monitoring, financial features, embeddings, robust preprocessing, and kernel
-methods.
-
-Project status
---------------
-
-``robustcov`` is under active development. The implemented estimators, examples,
-and diagnostics are tested and documented, but some APIs may evolve as the
-package matures. See :doc:`api_stability` for the current stability policy.
-
-
-
-``robustcov`` is a Python/C++ package for robust covariance and scatter estimation, SPD geometry, anomaly diagnostics, and robust kernel, similarity, and feature-geometry workflows.
-
-The project is organized around two reader-friendly entry points:
+.. title:: RobustCov
+.. meta::
+   :description: Robust covariance, anomaly scoring, PCA, decomposition, and monitoring for difficult multivariate data.
 
 .. raw:: html
 
-   <div class="gallery-grid">
-     <a class="gallery-card" href="use_case_gallery.html">
-       <div class="gallery-card-placeholder">Use-case<br>gallery</div>
-       <h3>Start from your application</h3>
-       <p>Topic-based gallery: finance/risk, fraud/security, sensors/quality, biomedical/images/embeddings, real ML datasets, and preprocessing.</p>
+   <section class="robustcov-hero" aria-labelledby="robustcov-hero-title">
+     <div class="robustcov-hero-brand">
+       <img src="_static/brand/robustcov-mark.png" alt="RobustCov covariance ellipse and outlier mark">
+       <div class="robustcov-hero-copy">
+         <h1 id="robustcov-hero-title" class="robustcov-wordmark"><span class="robustcov-wordmark-robust">robust</span><span class="robustcov-wordmark-cov">cov</span></h1>
+         <p class="robustcov-tagline">Robust multivariate geometry for difficult data.</p>
+       </div>
+     </div>
+     <p class="robustcov-hero-summary">
+       Estimate covariance and precision, score anomalies, decompose corrupted matrices,
+       learn robust subspaces, and monitor distribution change when ordinary covariance
+       is unreliable.
+     </p>
+     <div class="robustcov-hero-actions">
+       <a class="robustcov-button robustcov-button-primary" href="quickstart.html">Start with the quickstart</a>
+       <a class="robustcov-button" href="estimator_guide.html">Choose a method</a>
+       <a class="robustcov-button" href="use_case_gallery.html">Browse examples</a>
+     </div>
+     <div class="robustcov-hero-proof" aria-label="Package characteristics">
+       <span>sklearn-style APIs</span>
+       <span>NumPy / SciPy</span>
+       <span>optional C++ / OpenMP</span>
+       <span>explicit assumptions and evidence</span>
+     </div>
+   </section>
+
+Choose a path
+-------------
+
+.. raw:: html
+
+   <div class="robustcov-path-grid">
+     <a class="robustcov-path-card" href="quickstart.html">
+       <span class="robustcov-card-number">01</span>
+       <h3>Use the package</h3>
+       <p>Fit a robust geometry, score observations, and inspect the fitted diagnostics in a few lines.</p>
+       <strong>Quickstart →</strong>
      </a>
-     <a class="gallery-card" href="benchmark_gallery.html">
-       <img src="_static/benchmarks/small_sample_rank.png" alt="Benchmark ranking plot">
-       <h3>Start from the evidence</h3>
-       <p>Small-sample heavy-tail ranking, speed comparisons, OpenMP scaling, anomaly baselines, and hard contamination scenarios.</p>
+     <a class="robustcov-path-card" href="estimator_guide.html">
+       <span class="robustcov-card-number">02</span>
+       <h3>Choose the right model</h3>
+       <p>Start from row outliers, bad cells, heavy tails, high dimensions, matrices, or a changing stream.</p>
+       <strong>Estimator guide →</strong>
      </a>
-     <a class="gallery-card" href="algorithms.html">
-       <div class="gallery-card-placeholder">Math<br>and API</div>
-       <h3>Understand the estimators</h3>
-       <p>FastMCD, Tyler shape, Regularized Tyler, Student-t scatter, Cauchy scatter, diagnostics, and references.</p>
+     <a class="robustcov-path-card" href="benchmark_gallery.html">
+       <span class="robustcov-card-number">03</span>
+       <h3>Inspect the evidence</h3>
+       <p>Review task-specific benchmarks, known limitations, performance checks, and C-MAPSS case studies.</p>
+       <strong>Benchmarks →</strong>
      </a>
    </div>
 
-Core ideas
-----------
+What RobustCov provides
+-----------------------
 
-Core ideas
-----------
+.. raw:: html
 
-Core ideas
-----------
+   <div class="robustcov-capability-grid">
+     <a class="robustcov-capability" href="workflows.html#covariance-scatter-and-anomaly-scores">
+       <span class="robustcov-capability-icon">Σ</span>
+       <h3>Estimate geometry</h3>
+       <p>Robust location, covariance, scatter, precision, Mahalanobis scores, whitening, and kernels.</p>
+     </a>
+     <a class="robustcov-capability" href="workflows.html#pca-subspaces-and-monitoring">
+       <span class="robustcov-capability-icon">L + S</span>
+       <h3>Decompose and reduce</h3>
+       <p>Robust PCA, low-rank-plus-sparse decomposition, cellwise PCA, stability, and latent factors.</p>
+     </a>
+     <a class="robustcov-capability" href="monitoring.html">
+       <span class="robustcov-capability-icon">p ≤ α</span>
+       <h3>Detect and monitor</h3>
+       <p>Anomaly diagnostics, conformal alert calibration, frozen references, and adaptive subspace tracking.</p>
+     </a>
+     <a class="robustcov-capability" href="workflows.html#structured-and-cellwise-data">
+       <span class="robustcov-capability-icon">X₁…Xₙ</span>
+       <h3>Handle difficult structure</h3>
+       <p>Bad cells, missing entries, high-dimensional tables, matrices, tensors, embeddings, and sparse graphs.</p>
+     </a>
+   </div>
 
-* ``FastMCD`` gives efficient classical robust covariance for separable contamination when ``n`` is comfortably larger than ``p``.
-* ``RegularizedCauchy`` and ``StudentTScatter`` target small-sample, high-dimensional, heavy-tailed covariance problems.
-* Robust-distance diagnostics turn fitted estimators into interpretable anomaly scores, profiles, QQ plots, and reports.
-* SPD geometry utilities compare covariance and scatter matrices with affine-invariant and log-Euclidean distances.
-* ``FeatureGeometry`` uses robust scatter estimates as a geometry layer for learned representations, kernels, similarities, and OOD-style diagnostics.
-* Optional OpenMP acceleration improves larger workloads and benchmark/report generation.
+A 60-second start
+-----------------
+
+.. code-block:: python
+
+   import numpy as np
+   import robustcov as rc
+
+   rng = np.random.default_rng(0)
+   X = rng.standard_t(df=3, size=(400, 5))
+   X[:30] += 8.0
+
+   detector = rc.RobustOutlierDetector(
+       estimator=rc.FastMCD(quality="balanced", random_state=42),
+       contamination=0.075,
+   ).fit(X)
+
+   unusual_rows = np.flatnonzero(detector.labels_ == -1)
+   robust_distances = detector.mahalanobis(X)
+
+See :doc:`quickstart` for held-out conformal calibration, native availability,
+and a complete fitted-object walkthrough.
+
+Choose by data problem
+----------------------
+
+.. list-table:: A practical first choice
+   :header-rows: 1
+   :widths: 31 35 34
+
+   * - Data problem
+     - Start with
+     - Read next
+   * - A minority of complete rows are outliers
+     - ``FastMCD``, ``DetS``, or ``DetMM``
+     - :doc:`estimator_guide`
+   * - Heavy tails or an ill-conditioned / high-dimensional covariance
+     - ``RegularizedCauchy``, ``StudentTScatter``, ``RegularizedTyler``, or ``MRCD``
+     - :doc:`method_comparison`
+   * - Isolated bad cells or missing entries
+     - ``CellMCD``, ``CellRCov``, ``CellPCA``, or ``SparseCellPCA``
+     - :doc:`workflows`
+   * - One matrix is low rank plus sparse gross corruption
+     - ``PrincipalComponentPursuit`` / ``PCP``
+     - :doc:`principal_component_pursuit`
+   * - A reference geometry must be monitored over time
+     - ``RobustSubspaceMonitor``, ``ConformalAlertCalibrator``, or experimental ``OnlineRobustSubspaceTracker``
+     - :doc:`monitoring`
+   * - Observations are matrices, tensors, or learned embeddings
+     - ``MMCD``, ``RobustMultilinearPCA``, or ``FeatureGeometry``
+     - :doc:`use_case_gallery`
+
+.. raw:: html
+
+   <div class="robustcov-scope-note">
+     <strong>Scope.</strong> RobustCov is a numerical methods library, not a complete
+     production anomaly platform. It does not train neural networks, operate data
+     pipelines, or select a scientifically meaningful contamination model for you.
+     The method pages state assumptions, API maturity, and evidence boundaries.
+   </div>
 
 .. toctree::
    :maxdepth: 2
-   :caption: User guide
+   :caption: Get started
 
    robust_geometry_layer
    installation
    quickstart
    estimator_guide
-   use_case_gallery
-   benchmark_gallery
-   algorithms
-   geometry
-   feature_geometry
-   diagnostics
-   openmp
+   method_comparison
+   api_stability
    faq
 
 .. toctree::
    :maxdepth: 2
-   :caption: Reference and evidence
+   :caption: Workflows
+
+   workflows
+   conformal_alert_calibration
+   online_subspace_tracking
+   use_case_gallery
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Methods
+
+   algorithms
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Examples and evidence
+
+   benchmark_gallery
+   external_data
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference
 
    api
-   api_stability
+   diagnostics
+   openmp
+   methods_and_references
    robust_statistics_background
-   external_results_gallery
    references
 
-Why not focus on MVE?
----------------------
+Project status
+--------------
 
-Minimum-volume ellipsoid estimators are historically important, but the benchmark evidence in this project points to a stronger niche: efficient MCD for separable outliers and regularized heavy-tail scatter for small samples. MVE may become an experimental add-on later, but it is not currently the core differentiator.
+The project is in active alpha development. Core estimator interfaces and
+fitted attributes are intended to remain recognizable, while newer monitoring,
+geometry, and integration APIs may evolve before 1.0. Breaking changes and
+deprecations are documented explicitly.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Extended material
+   :caption: Maintainer and extended material
    :hidden:
 
    notebooks
    kaggle_roadmap
    kaggle_examples
    external_demo_workflow
+   legacy_external_examples
    release_readiness
+   _generated/monte_carlo_summary

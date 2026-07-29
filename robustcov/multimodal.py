@@ -8,6 +8,7 @@ import copy
 import numpy as np
 from scipy.spatial.distance import cdist
 
+from ._estimator import EstimatorMixin
 from ._utils import check_array
 from .m_estimators import RegularizedCauchy
 
@@ -57,7 +58,7 @@ def _simple_kmeans(X: np.ndarray, n_clusters: int, random_state: int = 0, max_it
     return labels, centers
 
 
-class ClusterRobustOutlierDetector:
+class ClusterRobustOutlierDetector(EstimatorMixin):
     """Cluster-aware robust distance detector for multimodal data.
 
     A single robust covariance estimator is appropriate for one central elliptical
@@ -87,14 +88,31 @@ class ClusterRobustOutlierDetector:
         cluster_tol: float = 1e-4,
     ):
         self.base_estimator = base_estimator
-        self.n_clusters = int(n_clusters)
+        self.n_clusters = n_clusters
         self.threshold = threshold
-        self.alpha = float(alpha)
+        self.alpha = alpha
         self.contamination = contamination
         self.min_cluster_size = min_cluster_size
-        self.random_state = int(random_state)
-        self.max_iter = int(max_iter)
-        self.cluster_tol = float(cluster_tol)
+        self.random_state = random_state
+        self.max_iter = max_iter
+        self.cluster_tol = cluster_tol
+
+    def _validate_parameters(self) -> None:
+        if int(self.n_clusters) < 1:
+            raise ValueError("n_clusters must be >= 1")
+        if int(self.max_iter) < 1:
+            raise ValueError("max_iter must be >= 1")
+        if float(self.cluster_tol) <= 0.0:
+            raise ValueError("cluster_tol must be positive")
+        if self.contamination is not None and not (
+            0.0 < float(self.contamination) < 1.0
+        ):
+            raise ValueError("contamination must be in (0, 1)")
+        if self.contamination is None and self.threshold in {"empirical", "tail_calibrated"}:
+            if not (0.0 < float(self.alpha) < 1.0):
+                raise ValueError("alpha must be in (0, 1)")
+        if self.min_cluster_size is not None and int(self.min_cluster_size) < 2:
+            raise ValueError("min_cluster_size must be at least 2")
 
     def _make_estimator(self):
         if self.base_estimator is None:
@@ -102,6 +120,7 @@ class ClusterRobustOutlierDetector:
         return copy.deepcopy(self.base_estimator)
 
     def fit(self, X, y=None):
+        self._validate_parameters()
         X = check_array(X, allow_nan=False)
         self.n_samples_in_, self.n_features_in_ = X.shape
         if self.n_clusters > self.n_samples_in_:

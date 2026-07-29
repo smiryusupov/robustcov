@@ -16,6 +16,21 @@ This topic is for users who do not want anomaly detection as the final task, but
        <h3>Robust GP kernel / input metric</h3>
        <p>Use robust covariance as input-space geometry for existing GP kernels.</p>
      </a>
+     <a class="gallery-card" href="../gallery/mrcd_high_dimensional_outliers.html">
+       <img src="../_static/gallery/mrcd_high_dimensional_outliers/distance_crossplot.png" alt="MRCD high-dimensional row outliers">
+       <h3>High-dimensional row contamination</h3>
+       <p>Estimate a well-conditioned covariance when the feature count exceeds the sample size.</p>
+     </a>
+     <a class="gallery-card" href="../gallery/kmrcd_nonlinear_manifold.html">
+       <img src="../_static/gallery/kmrcd_nonlinear_manifold/kernel_distance_contours.png" alt="Kernel MRCD curved-manifold outlier detection">
+       <h3>Nonlinear robust distances</h3>
+       <p>Compare linear MRCD with an RBF kernel on a curved majority structure.</p>
+     </a>
+     <a class="gallery-card" href="../gallery/density_power_pca.html">
+       <img src="../_static/gallery/density_power_pca/alpha_tradeoff.png" alt="Density-power robust PCA alpha tradeoff">
+       <h3>Direct robust low-rank fitting</h3>
+       <p>Fit scores and loadings with density-power residual weights and inspect the alpha tradeoff.</p>
+     </a>
    </div>
 
 How to use this topic
@@ -27,4 +42,5 @@ Detailed pages
 --------------
 
 - :doc:`ML preprocessing <../gallery/ml_preprocessing>`
+- :doc:`Density-power robust PCA <../gallery/density_power_pca>`
 - :doc:`Embedding reranking with robust geometry <../gallery/embedding_reranking_robust_geometry>`

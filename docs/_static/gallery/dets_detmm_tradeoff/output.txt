@@ -1,0 +1,8 @@
+observations: 260
+injected radial outliers: 26
+DetS tuning constant: 2.661
+DetMM tuning constant: 5.123
+DetS covariance error: 0.121
+DetMM covariance error: 0.114
+DetS / DetMM outlier AUROC: 0.955 / 0.953
+clean-sample DetS / DetMM covariance error: 0.103 / 0.034

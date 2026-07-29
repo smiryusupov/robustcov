@@ -9,7 +9,8 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.stats import chi2
 
-from . import _robustcov_cpp as _cpp
+from ._native import require_native
+from ._estimator import EstimatorMixin
 from ._utils import check_array, mahalanobis_squared, median_impute, radial_kurtosis, robust_radial_scale
 from .parallel import thread_limit
 
@@ -18,8 +19,8 @@ class ConvergenceWarning(UserWarning):
     pass
 
 
-@dataclass
-class BaseRobustCovariance:
+@dataclass(repr=False)
+class BaseRobustCovariance(EstimatorMixin):
     assume_centered: bool = False
     store_precision: bool = True
     scale_correction: str = "none"
@@ -85,25 +86,17 @@ class FastMCD(BaseRobustCovariance):
         super().__init__(assume_centered=False, scale_correction=scale_correction, tail_diagnostics=tail_diagnostics, missing_values=missing_values)
         if quality not in self._QUALITY_PRESETS:
             raise ValueError("quality must be one of 'fast', 'balanced', or 'high'")
-        preset = self._QUALITY_PRESETS[quality]
-        if contamination is not None:
-            contamination = float(contamination)
-            if not (0.0 <= contamination < 0.5):
-                raise ValueError("contamination must be in [0, 0.5)")
-            if support_fraction is not None:
-                raise ValueError("Specify either support_fraction or contamination, not both")
-        if support_fraction is not None:
-            support_fraction = float(support_fraction)
-            if not (0.0 < support_fraction <= 1.0):
-                raise ValueError("support_fraction must be in (0, 1]")
-
+        if contamination is not None and support_fraction is not None:
+            raise ValueError("Specify either support_fraction or contamination, not both")
         self.support_fraction = support_fraction
         self.contamination = contamination
         self.quality = quality
-        self.n_init = preset["n_init"] if n_init is None else n_init
-        self.max_iter = preset["max_iter"] if max_iter is None else max_iter
-        self.n_best = preset["n_best"] if n_best is None else n_best
-        self.initial_c_steps = preset["initial_c_steps"] if initial_c_steps is None else initial_c_steps
+        # Preserve constructor parameters exactly. Quality defaults are resolved in
+        # fit(), which keeps sklearn cloning and set_params(quality=...) predictable.
+        self.n_init = n_init
+        self.max_iter = max_iter
+        self.n_best = n_best
+        self.initial_c_steps = initial_c_steps
         self.tol = tol
         self.reweight = reweight
         self.random_state = random_state
@@ -111,7 +104,38 @@ class FastMCD(BaseRobustCovariance):
         self.reweight_alpha = reweight_alpha
         self.n_jobs = n_jobs
 
+    def _resolved_fit_params(self):
+        if self.quality not in self._QUALITY_PRESETS:
+            raise ValueError("quality must be one of 'fast', 'balanced', or 'high'")
+        if self.contamination is not None:
+            contamination = float(self.contamination)
+            if not (0.0 <= contamination < 0.5):
+                raise ValueError("contamination must be in [0, 0.5)")
+            if self.support_fraction is not None:
+                raise ValueError("Specify either support_fraction or contamination, not both")
+        if self.support_fraction is not None:
+            support_fraction = float(self.support_fraction)
+            if not (0.0 < support_fraction <= 1.0):
+                raise ValueError("support_fraction must be in (0, 1]")
+        preset = self._QUALITY_PRESETS[self.quality]
+        values = {
+            "n_init": preset["n_init"] if self.n_init is None else int(self.n_init),
+            "max_iter": preset["max_iter"] if self.max_iter is None else int(self.max_iter),
+            "n_best": preset["n_best"] if self.n_best is None else int(self.n_best),
+            "initial_c_steps": preset["initial_c_steps"] if self.initial_c_steps is None else int(self.initial_c_steps),
+        }
+        if values["n_init"] < 1 or values["max_iter"] < 1 or values["n_best"] < 1:
+            raise ValueError("n_init, max_iter, and n_best must be positive")
+        if values["initial_c_steps"] < 0:
+            raise ValueError("initial_c_steps must be non-negative")
+        return values
+
     def fit(self, X, y=None):
+        params = self._resolved_fit_params()
+        self.effective_n_init_ = params["n_init"]
+        self.effective_max_iter_ = params["max_iter"]
+        self.effective_n_best_ = params["n_best"]
+        self.effective_initial_c_steps_ = params["initial_c_steps"]
         X = check_array(X, allow_nan=self.missing_values == "median")
         if self.missing_values == "median":
             X, self.impute_values_ = median_impute(X)
@@ -122,17 +146,18 @@ class FastMCD(BaseRobustCovariance):
             sf = 1.0 - float(self.contamination)
         else:
             sf = -1.0 if self.support_fraction is None else float(self.support_fraction)
+        cpp = require_native("FastMCD.fit")
         with thread_limit(self.n_jobs):
-            result = _cpp.fit_fast_mcd(
+            result = cpp.fit_fast_mcd(
                 X,
                 support_fraction=sf,
-                n_init=int(self.n_init),
-                max_iter=int(self.max_iter),
+                n_init=self.effective_n_init_,
+                max_iter=self.effective_max_iter_,
                 tol=float(self.tol),
                 reweight=bool(self.reweight),
                 random_state=int(self.random_state),
-                n_best=int(self.n_best),
-                initial_c_steps=int(self.initial_c_steps),
+                n_best=self.effective_n_best_,
+                initial_c_steps=self.effective_initial_c_steps_,
                 reweight_alpha=float(self.reweight_alpha),
             )
         self._load_result(result)
@@ -202,8 +227,16 @@ class TylerShape(BaseRobustCovariance):
         elif self.missing_values != "raise":
             raise ValueError("missing_values must be 'raise' or 'median'")
         self.n_features_in_ = X.shape[1]
+        if self.regularization <= 0.0:
+            centered = X if self.assume_centered else X - np.mean(X, axis=0)
+            if np.linalg.matrix_rank(centered) < self.n_features_in_:
+                raise ValueError(
+                    "Unregularized Tyler requires full column rank after centering; "
+                    "use RegularizedTyler for singular or collinear data"
+                )
+        cpp = require_native(f"{type(self).__name__}.fit")
         with thread_limit(self.n_jobs):
-            result = _cpp.fit_tyler(
+            result = cpp.fit_tyler(
                 X,
                 max_iter=int(self.max_iter),
                 tol=float(self.tol),
@@ -215,7 +248,17 @@ class TylerShape(BaseRobustCovariance):
 
     def _load_result(self, X, result):
         self.location_ = result["location"]
-        self.shape_ = result["shape"]
+        self.shape_ = 0.5 * (result["shape"] + result["shape"].T)
+        shape_values = np.linalg.eigvalsh(self.shape_)
+        if not np.all(np.isfinite(shape_values)) or shape_values[-1] <= 0.0:
+            raise np.linalg.LinAlgError("Tyler shape estimate is not finite and positive")
+        if self.regularization <= 0.0:
+            relative_floor = np.sqrt(np.finfo(float).eps) * shape_values[-1]
+            if shape_values[0] <= relative_floor:
+                raise ValueError(
+                    "Unregularized Tyler produced a numerically singular shape; "
+                    "use RegularizedTyler for concentrated or nearly collinear data"
+                )
         self.scale_ = robust_radial_scale(result["distances"], self.n_features_in_, self.scale_correction)
         self.covariance_ = self.scale_ * self.shape_
         self.precision_ = np.linalg.pinv(self.covariance_)

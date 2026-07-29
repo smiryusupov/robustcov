@@ -1,0 +1,11 @@
+metric,value
+n_samples,260
+outlier_fraction,0.1
+dets_breakdown,0.5
+detmm_nominal_location_efficiency,0.9500000000000182
+dets_covariance_error,0.12105727988586822
+detmm_covariance_error,0.11404297625146809
+dets_outlier_auc,0.9546351084812623
+detmm_outlier_auc,0.9533201840894149
+clean_dets_covariance_error,0.10286439801031423
+clean_detmm_covariance_error,0.034093221554964734

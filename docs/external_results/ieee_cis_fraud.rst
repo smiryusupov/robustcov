@@ -12,14 +12,13 @@ Status
    ``IsolationForest``.  This should be reported as a quality/interpretability
    result, not as a speed win.
 
-Why this matters
-----------------
+Why this is a difficult benchmark
+---------------------------------
 
-IEEE-CIS is a large heterogeneous tabular fraud dataset.  It contains mixed
-numeric/categorical behavior, missingness, and fraud signals that are often
-better handled by supervised gradient boosting.  This makes it a good stress
-case for honest reporting: robust covariance can help, but it is not a magic
-solution for all tabular fraud problems.
+IEEE-CIS is large, heterogeneous, and contains missing values together with
+mixed numeric and categorical structure.  Supervised boosting methods are often
+a better fit for this setting, so the benchmark is mainly a test of how far an
+unsupervised covariance score can go.
 
 Result summary
 --------------
@@ -73,23 +72,22 @@ Result summary
    Runtime comparison on a log scale.  The large runtime gap is the main reason
    this result is classified as ``competitive/slow`` rather than a strong win.
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/external_results/ieee_cis_fraud/output.txt
    :language: text
 
-Interpretation
---------------
+Quality and runtime tradeoff
+----------------------------
 
-This benchmark is useful but should be framed carefully.  ``RegularizedCauchy``
-improves unsupervised quality metrics, but the dataset is large and heterogeneous
-and the runtime is not yet competitive with ``IsolationForest``.  In practice,
-this robust anomaly score is most useful as an additional feature for a larger
-fraud pipeline, or as an interpretable unsupervised diagnostic.
+``RegularizedCauchy`` has the best quality metrics among the methods shown, but
+its runtime is far above ``IsolationForest``.  On this dataset, the robust score
+is better suited to sampled analysis, model diagnostics, or use as an extra
+feature in a larger fraud system.
 
-Engineering follow-up
----------------------
+A practical scaling path
+------------------------
 
 The next improvement for large Kaggle-style tabular data is a sampled-fit/full-
 score mode, for example fitting the robust scatter on 50k representative rows

@@ -1,38 +1,40 @@
+:orphan:
+
 Robust preprocessing before classification
 ==========================================
 
 Sometimes robust covariance is not the final model.  It can be a preprocessing step that identifies suspicious training rows before fitting a standard classifier.
 
-Result at a glance
-------------------
+What happened after filtering
+-----------------------------
 
-In this run, filtering removes 39 training rows.  The filtered classifier is slightly worse than the raw classifier, which is an important honest result: robust filtering is not automatically beneficial.
+Filtering removes 39 training rows, but the refitted classifier is slightly worse.  The high-distance rows are therefore not simply bad data; some carry information that the classifier needs.
 
-What the data represent
------------------------
+Training-data setup
+-------------------
 
 The example uses a noisy supervised classification problem.  robustcov scores are computed on the training features and high-distance rows are removed before refitting the classifier.
 
-Why this estimator
-------------------
+Using distance as an influence check
+------------------------------------
 
-``RegularizedCauchy`` or ``AutoRobustScatter`` is useful when the training set may contain heavy-tailed contamination.  The goal is not to win every classifier benchmark, but to diagnose influential or suspicious rows.
+``RegularizedCauchy`` or ``AutoRobustScatter`` can identify rows that strongly affect the feature geometry.  Whether those rows should be removed is a separate question that must be answered by cross-validation.
 
-Reproduce the result
---------------------
+Run the example
+---------------
 
 .. code-block:: bash
 
    python examples/use_case_ml_preprocessing.py
 
-Output from the run
--------------------
+Console output
+--------------
 
 .. literalinclude:: ../_static/gallery/ml_preprocessing/output.txt
    :language: text
 
-Figures and diagnostics
------------------------
+Before-and-after plots
+----------------------
 
 .. image:: ../_static/gallery/ml_preprocessing/accuracy_comparison.png
    :alt: Robust preprocessing before classification — accuracy comparison
@@ -44,12 +46,12 @@ Figures and diagnostics
    :width: 760px
 
 
-How to read the result
-----------------------
+When filtering hurts
+--------------------
 
 Compare the accuracy plot before and after filtering.  If performance drops, the removed rows may be hard-but-valid training examples rather than harmful contamination.
 
-What this does not prove
-------------------------
+Validation rules
+----------------
 
 Use this workflow with cross-validation.  Never filter using test labels, and do not assume that every outlier is an error.

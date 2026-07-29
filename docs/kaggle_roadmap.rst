@@ -43,8 +43,10 @@ External examples should follow this pattern:
 
    python examples_external/kaggle_credit_card_fraud.py --data /path/to/creditcard.csv
 
-The script should never download data silently.  It should print the expected schema, save metrics,
-create plots, and write a short Markdown summary into ``results/external/``.
+The script should never download data silently. Public loaders may download only after an explicit
+``--download``/``download=True`` request and must use the user cache described in :doc:`external_data`.
+Scripts should print the expected schema, save metrics, create plots, and write a short Markdown
+summary into ``results/external/``.
 
 Documentation strategy
 ----------------------

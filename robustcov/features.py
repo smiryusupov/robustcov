@@ -11,6 +11,8 @@ from typing import Any
 
 import numpy as np
 
+from ._estimator import EstimatorMixin
+
 
 def _as_2d_array(X: np.ndarray, *, name: str = "X") -> np.ndarray:
     X = np.asarray(X, dtype=float)
@@ -29,22 +31,38 @@ def _spd_inverse_and_invsqrt(
     covariance: np.ndarray,
     *,
     ridge: float = 1e-10,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Return precision and inverse square root with eigenvalue clipping."""
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """Return a regularized covariance, precision, and inverse square root."""
     covariance = _symmetrize(np.asarray(covariance, dtype=float))
 
     if covariance.ndim != 2 or covariance.shape[0] != covariance.shape[1]:
         raise ValueError("covariance must be a square matrix")
+    if not np.all(np.isfinite(covariance)):
+        raise ValueError("covariance must contain only finite values")
+    if not np.isscalar(ridge) or not np.isfinite(ridge) or ridge <= 0:
+        raise ValueError("ridge must be a positive finite number")
 
     evals, evecs = np.linalg.eigh(covariance)
-    scale = max(float(np.max(evals)), 1.0)
-    floor = ridge * scale
-    evals = np.maximum(evals, floor)
+    raw_scale = float(np.max(np.abs(evals)))
+    if raw_scale <= np.finfo(float).tiny:
+        raise ValueError("covariance has no positive feature variation")
+    negative_tolerance = 1000.0 * np.finfo(float).eps * raw_scale
+    if float(np.min(evals)) < -negative_tolerance:
+        raise ValueError("covariance must be positive semidefinite")
+    scale = max(raw_scale, np.finfo(float).tiny)
+    floor = max(ridge * scale, np.finfo(float).tiny)
+    regularized_evals = np.maximum(evals, floor)
 
-    precision = (evecs * (1.0 / evals)) @ evecs.T
-    invsqrt = (evecs * (1.0 / np.sqrt(evals))) @ evecs.T
+    regularized = (evecs * regularized_evals) @ evecs.T
+    precision = (evecs * (1.0 / regularized_evals)) @ evecs.T
+    invsqrt = (evecs * (1.0 / np.sqrt(regularized_evals))) @ evecs.T
 
-    return _symmetrize(precision), _symmetrize(invsqrt)
+    return (
+        _symmetrize(regularized),
+        _symmetrize(precision),
+        _symmetrize(invsqrt),
+        float(floor),
+    )
 
 
 def _default_estimator() -> Any:
@@ -55,7 +73,7 @@ def _default_estimator() -> Any:
 
 
 @dataclass
-class FeatureGeometry:
+class FeatureGeometry(EstimatorMixin):
     """Robust geometry layer for learned feature matrices.
 
     ``FeatureGeometry`` is a light wrapper around existing robust scatter
@@ -73,8 +91,9 @@ class FeatureGeometry:
         ``covariance_`` after fitting and may expose ``location_``.  If omitted,
         ``RegularizedCauchy(alpha=0.10)`` is used.
     ridge : float, default=1e-10
-        Relative eigenvalue floor used when forming the precision and whitening
-        matrices.
+        Relative eigenvalue floor used when forming the regularized covariance,
+        precision, and whitening matrices. The original fitted scatter is kept
+        in ``raw_covariance_`` and the regularized matrix in ``covariance_``.
     """
 
     estimator: Any | None = None
@@ -100,6 +119,14 @@ class FeatureGeometry:
             raise AttributeError("estimator must expose covariance_ after fit")
 
         covariance = _symmetrize(np.asarray(estimator.covariance_, dtype=float))
+        expected_shape = (X.shape[1], X.shape[1])
+        if covariance.shape != expected_shape:
+            raise ValueError(
+                "estimator covariance_ has incompatible shape: "
+                f"got {covariance.shape}, expected {expected_shape}"
+            )
+        if not np.all(np.isfinite(covariance)):
+            raise ValueError("estimator covariance_ must contain only finite values")
 
         if hasattr(estimator, "location_"):
             location = np.asarray(estimator.location_, dtype=float)
@@ -108,14 +135,20 @@ class FeatureGeometry:
 
         if location.shape != (X.shape[1],):
             raise ValueError("estimator location_ has incompatible shape")
+        if not np.all(np.isfinite(location)):
+            raise ValueError("estimator location_ must contain only finite values")
 
-        precision, invsqrt = _spd_inverse_and_invsqrt(covariance, ridge=self.ridge)
+        regularized, precision, invsqrt, floor = _spd_inverse_and_invsqrt(
+            covariance, ridge=self.ridge
+        )
 
         self.estimator_ = estimator
         self.location_ = location
-        self.covariance_ = covariance
+        self.raw_covariance_ = covariance
+        self.covariance_ = regularized
         self.precision_ = precision
         self.whitening_ = invsqrt
+        self.eigenvalue_floor_ = floor
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -204,7 +237,7 @@ class FeatureGeometry:
 
 
 @dataclass
-class ClassConditionalFeatureGeometry:
+class ClassConditionalFeatureGeometry(EstimatorMixin):
     """Robust class-conditional geometry for labeled feature matrices.
 
     This class fits one ``FeatureGeometry`` object per class.  It is useful for

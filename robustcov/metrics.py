@@ -8,6 +8,7 @@ from typing import Any
 
 import numpy as np
 
+from ._estimator import EstimatorMixin
 from ._utils import check_array
 
 
@@ -101,7 +102,7 @@ def pairwise_mahalanobis_squared(
     return np.maximum(D2, 0.0)
 
 
-class RobustInputMetric:
+class RobustInputMetric(EstimatorMixin):
     """Fit and reuse a robust full-matrix input metric.
 
     This class is intentionally smaller than a GP/KRR model. It only learns a

@@ -26,14 +26,44 @@ def _trace_normalize(S: np.ndarray, p: int) -> np.ndarray:
 
 
 def _safe_pinv(S: np.ndarray) -> np.ndarray:
-    return np.linalg.pinv(0.5 * (S + S.T), hermitian=True)
+    """Return a precision matrix, using the fast exact inverse when possible.
+
+    Iterative M-scatter adds a positive ridge before every call, so the common
+    path is symmetric positive definite.  The pseudoinverse remains as a
+    defensive fallback for externally supplied or numerically singular inputs.
+    """
+
+    symmetric = 0.5 * (S + S.T)
+    try:
+        return np.linalg.inv(symmetric)
+    except np.linalg.LinAlgError:
+        return np.linalg.pinv(symmetric, hermitian=True)
+
+
+def _mahalanobis_from_precision(
+    centered: np.ndarray, precision: np.ndarray
+) -> np.ndarray:
+    """Squared Mahalanobis distances without ``einsum`` path planning."""
+
+    return np.sum((centered @ precision) * centered, axis=1)
+
+
+def _relative_ridge_amount(matrix: np.ndarray, ridge: float) -> float:
+    """Scale a dimensionless ridge by the matrix's average variance."""
+
+    matrix = np.asarray(matrix, dtype=np.float64)
+    scale = abs(float(np.trace(matrix) / max(1, matrix.shape[0])))
+    if not np.isfinite(scale) or scale <= np.finfo(float).tiny:
+        scale = 1.0
+    return max(float(ridge) * scale, np.finfo(float).tiny)
 
 
 def _empirical_initial_shape(X: np.ndarray, location: np.ndarray, ridge: float = 1e-6) -> np.ndarray:
     p = X.shape[1]
     Xc = X - location
     S = (Xc.T @ Xc) / max(1, X.shape[0])
-    S = 0.5 * (S + S.T) + ridge * np.eye(p)
+    S = 0.5 * (S + S.T)
+    S = S + _relative_ridge_amount(S, ridge) * np.eye(p)
     return _trace_normalize(S, p)
 
 
@@ -45,9 +75,27 @@ def _target_matrix(target: str, X: np.ndarray, location: np.ndarray) -> np.ndarr
     if target == "diagonal":
         Xc = X - location
         diag = np.var(Xc, axis=0)
-        diag = np.where(np.isfinite(diag) & (diag > 1e-12), diag, 1.0)
+        positive = diag[np.isfinite(diag) & (diag > 0.0)]
+        reference = float(np.median(positive)) if positive.size else 1.0
+        floor = max(np.sqrt(np.finfo(float).eps) * reference, np.finfo(float).tiny)
+        diag = np.where(np.isfinite(diag) & (diag > floor), diag, reference)
         return _trace_normalize(np.diag(diag), p)
     raise ValueError("target must be 'identity' or 'diagonal'")
+
+
+def _weight_distance_scale(distances: np.ndarray, p: int) -> float:
+    """Return a positive homogeneous scale for radial weight arguments."""
+
+    distances = np.asarray(distances, dtype=np.float64)
+    scale = float(robust_radial_scale(distances, p, "radial_median"))
+    if np.isfinite(scale) and scale > np.finfo(float).tiny:
+        return scale
+    positive = distances[np.isfinite(distances) & (distances > 0.0)]
+    if positive.size:
+        scale = float(robust_radial_scale(positive, p, "radial_median"))
+        if np.isfinite(scale) and scale > np.finfo(float).tiny:
+            return scale
+    return 1.0
 
 
 def _sqrt_shrink(S: np.ndarray, T: np.ndarray, alpha: float, p: int) -> np.ndarray:
@@ -141,10 +189,19 @@ class IterativeMScatter(BaseRobustCovariance):
         converged = False
         last_diff = np.inf
         for it in range(1, self.max_iter + 1):
-            precision = _safe_pinv(S + self.ridge * np.eye(p))
+            precision = _safe_pinv(
+                S + _relative_ridge_amount(S, self.ridge) * np.eye(p)
+            )
             Xc = X - location
-            d2 = np.einsum("ij,jk,ik->i", Xc, precision, Xc)
-            w = self._weights(d2, p)
+            d2 = _mahalanobis_from_precision(Xc, precision)
+            # Student-t and Cauchy radial weights require dimensionless
+            # distances.  S is trace-normalized shape, so raw d2 scales with
+            # the square of the measurement units.  Dividing by a robust
+            # radial scale keeps the iteration equivariant under global
+            # rescaling while preserving Tyler's homogeneous weights.
+            weight_scale = _weight_distance_scale(d2, p)
+            standardized_d2 = d2 / weight_scale
+            w = self._weights(standardized_d2, p)
             w = np.where(np.isfinite(w), w, 0.0)
             sw = float(np.sum(w))
             if sw <= 1e-12:
@@ -156,7 +213,8 @@ class IterativeMScatter(BaseRobustCovariance):
                 new_location = location
             Xc_new = X - new_location
             scatter = (Xc_new.T * w) @ Xc_new / max(1, n)
-            scatter = 0.5 * (scatter + scatter.T) + self.ridge * np.eye(p)
+            scatter = 0.5 * (scatter + scatter.T)
+            scatter = scatter + _relative_ridge_amount(scatter, self.ridge) * np.eye(p)
             scatter = _trace_normalize(scatter, p)
             if self.alpha > 0:
                 if self.shrinkage in {"linear", "kl", "wiesel"}:
@@ -184,13 +242,30 @@ class IterativeMScatter(BaseRobustCovariance):
 
         self.location_ = location
         self.shape_ = _trace_normalize(S, p)
-        raw_precision = _safe_pinv(self.shape_ + self.ridge * np.eye(p))
+        raw_precision = _safe_pinv(
+            self.shape_ + _relative_ridge_amount(self.shape_, self.ridge) * np.eye(p)
+        )
         raw_distances = mahalanobis_squared(X, self.location_, raw_precision)
-        self.scale_ = robust_radial_scale(raw_distances, p, self.scale_correction)
+        requested_scale = float(
+            robust_radial_scale(raw_distances, p, self.scale_correction)
+        )
+        data_scale = float(np.mean(np.var(X, axis=0)))
+        if not np.isfinite(data_scale) or data_scale <= 0.0:
+            data_scale = 1.0
+        self.scale_floor_ = max(
+            self.ridge * data_scale, np.finfo(float).tiny
+        )
+        self.scale_ = max(requested_scale, self.scale_floor_)
         self.covariance_ = self.scale_ * self.shape_
-        self.precision_ = _safe_pinv(self.covariance_ + self.ridge * np.eye(p))
+        self.precision_ = _safe_pinv(
+            self.covariance_
+            + _relative_ridge_amount(self.covariance_, self.ridge) * np.eye(p)
+        )
         self.distances_ = mahalanobis_squared(X, self.location_, self.precision_)
-        self.weights_ = self._weights(np.maximum(raw_distances, 1e-12), p)
+        self.weight_scale_ = _weight_distance_scale(raw_distances, p)
+        self.weights_ = self._weights(
+            np.maximum(raw_distances / self.weight_scale_, 1e-12), p
+        )
         self.n_iter_ = int(it)
         self.converged_ = bool(converged)
         self.objective_value_ = float(last_diff)

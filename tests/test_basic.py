@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import robustcov as rc
 
 
@@ -90,6 +91,7 @@ def test_fast_mcd_contamination_conflicts_with_support_fraction():
 
 
 def test_plotting_helpers(tmp_path):
+    pytest.importorskip("matplotlib")
     rng = np.random.default_rng(8)
     X = rng.normal(size=(80, 3))
     X[:8] += 6
@@ -101,6 +103,7 @@ def test_plotting_helpers(tmp_path):
 
 
 def test_2d_plotting_helpers(tmp_path):
+    pytest.importorskip("matplotlib")
     rng = np.random.default_rng(9)
     X = rng.normal(size=(90, 2))
     X[:9] += 5
@@ -211,6 +214,7 @@ def test_auto_robust_scatter_diagnostic_mode():
 
 
 def test_distance_profile_plot_helpers(tmp_path):
+    pytest.importorskip("matplotlib")
     rng = np.random.default_rng(10)
     X = rng.normal(size=(90, 4))
     X[:9] += 5
@@ -245,3 +249,73 @@ def test_thread_limit_context_restores_threads():
         assert rc.get_num_threads() == old
     finally:
         rc.set_num_threads(old)
+
+
+def test_detector_contamination_api_matches_requested_fraction():
+    rng = np.random.default_rng(18)
+    X = rng.normal(size=(200, 4))
+    X[:20] += 7.0
+    det = rc.RobustOutlierDetector(
+        estimator=rc.FastMCD(n_init=20, random_state=0),
+        contamination=0.10,
+    ).fit(X)
+    assert (det.labels_ == -1).sum() == 20
+    assert np.all((det.decision_function(X) >= 0.0) == (det.predict(X) == 1))
+
+
+def test_core_estimators_follow_sklearn_parameter_protocol():
+    from sklearn.base import clone
+
+    est = rc.FastMCD(quality="balanced", n_init=25, random_state=7)
+    cloned = clone(est)
+    assert cloned is not est
+    assert cloned.get_params(deep=False) == est.get_params(deep=False)
+    assert "quality='balanced'" in repr(est)
+
+    detector = rc.RobustOutlierDetector(
+        estimator=est,
+        contamination=0.1,
+    )
+    cloned_detector = clone(detector)
+    assert cloned_detector.contamination == 0.1
+    assert cloned_detector.estimator is not detector.estimator
+    assert cloned_detector.estimator.get_params(deep=False) == est.get_params(deep=False)
+
+
+def test_nested_set_params_updates_detector_estimator():
+    detector = rc.RobustOutlierDetector(estimator=rc.FastMCD())
+    detector.set_params(estimator__quality="high", estimator__random_state=11)
+    assert detector.estimator.quality == "high"
+    assert detector.estimator.random_state == 11
+
+
+def test_fast_mcd_quality_defaults_resolve_at_fit_time():
+    rng = np.random.default_rng(19)
+    X = rng.normal(size=(80, 3))
+    est = rc.FastMCD()
+    assert est.n_init is None
+    est.set_params(quality="balanced", n_init=12, n_best=3).fit(X)
+    assert est.effective_n_init_ == 12
+    assert est.effective_n_best_ == 3
+    assert est.effective_max_iter_ == 100
+
+
+def test_m_estimator_uses_optimized_mahalanobis_contraction(monkeypatch):
+    import robustcov.m_estimators as module
+
+    calls = []
+    original = module._mahalanobis_from_precision
+
+    def wrapped(centered, precision):
+        calls.append(centered.shape)
+        return original(centered, precision)
+
+    monkeypatch.setattr(module, "_mahalanobis_from_precision", wrapped)
+    X = np.random.default_rng(17).normal(size=(80, 12))
+    rc.RegularizedCauchy(
+        alpha=0.1,
+        max_iter=5,
+        warn_on_nonconvergence=False,
+    ).fit(X)
+    assert calls
+    assert all(shape == X.shape for shape in calls)

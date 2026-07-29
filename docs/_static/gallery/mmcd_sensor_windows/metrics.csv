@@ -1,0 +1,5 @@
+metric,value
+classical_auc,0.894156
+mmcd_auc,0.967208
+raw_support,107
+outliers_in_raw_support,3
