@@ -425,7 +425,7 @@ def _render_includes(manifest: dict[str, object]) -> tuple[str, str]:
                     "     </a>",
                 ]
             )
-            toctree.append(f"   external_results/{slug}")
+            toctree.append(f"   ../external_results/{slug}")
         cards.extend(["   </div>", ""])
     return "\n".join(cards), "\n".join(toctree) + "\n"
 
