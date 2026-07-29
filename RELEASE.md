@@ -28,7 +28,7 @@ Import the repository on Read the Docs; it uses `.readthedocs.yaml`.
 The alpha release version is declared in four places and checked automatically:
 
 ```bash
-python scripts/check_release_version.py --expected 0.1.0a3
+python scripts/check_release_version.py --expected 0.1.0
 ```
 
 Before generating public benchmark snapshots, commit the implementation so the
@@ -142,9 +142,9 @@ repeated after publication.
 After the TestPyPI rehearsal succeeds and all required CI jobs are green:
 
 ```bash
-python scripts/check_release_version.py --tag v0.1.0a3
-git tag -a v0.1.0a3 -m "robustcov 0.1.0a3"
-git push origin v0.1.0a3
+python scripts/check_release_version.py --tag v0.1.0
+git tag -a v0.1.0 -m "robustcov 0.1.0"
+git push origin v0.1.0
 ```
 
 The tag-triggered workflow verifies that the tag matches the package version,

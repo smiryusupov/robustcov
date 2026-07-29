@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+## 0.1.0 - 2026-07-29
+
+### Highlights
+
+- First normal `0.1` release of RobustCov.
+- Added MRCD and kernel MRCD for high-dimensional and nonlinear robust geometry.
+- Added robust PCA, structured-data, cellwise-contamination, monitoring, calibration, sparse-precision, and latent-structure workflows.
+- Added platform wheels for CPython 3.12–3.14 on Linux, macOS, and Windows.
+- Added task-oriented documentation, examples, benchmarks, method provenance, and reviewed external validation.
+- Hardened release automation, installed-wheel smoke testing, Read the Docs builds, and Trusted Publishing.
 
 ## 0.1.0a3 - 2026-07-29
 

@@ -25,16 +25,15 @@ def _load_script(name: str, path: Path):
     return module
 
 
-def test_release_version_declarations_agree_with_alpha_version() -> None:
+def test_release_version_declarations_agree_with_release_version() -> None:
     checker = _load_script("check_release_version_test", VERSION_SCRIPT)
     assert checker.check_versions(
         ROOT,
-        expected="0.1.0a3",
-        require_prerelease=True,
-    ) == "0.1.0a3"
-    assert checker.check_versions(ROOT, tag="v0.1.0a3") == "0.1.0a3"
+        expected="0.1.0",
+    ) == "0.1.0"
+    assert checker.check_versions(ROOT, tag="v0.1.0") == "0.1.0"
     with pytest.raises(checker.VersionError, match="does not match"):
-        checker.check_versions(ROOT, tag="v0.1.0a4")
+        checker.check_versions(ROOT, tag="v0.1.1")
 
 
 def test_release_version_cli_prints_only_the_version() -> None:
@@ -45,7 +44,7 @@ def test_release_version_cli_prints_only_the_version() -> None:
         capture_output=True,
         check=True,
     )
-    assert completed.stdout.strip() == "0.1.0a3"
+    assert completed.stdout.strip() == "0.1.0"
 
 
 def test_checksum_writer_is_deterministic(tmp_path: Path) -> None:
@@ -110,7 +109,7 @@ def test_installed_smoke_helper_has_no_source_tree_import_side_effects() -> None
 
 def test_public_api_manifest_uses_release_candidate_version() -> None:
     payload = json.loads((ROOT / "robustcov/_public_api.json").read_text(encoding="utf-8"))
-    assert payload["package_version"] == "0.1.0a3"
+    assert payload["package_version"] == "0.1.0"
 
 
 def test_sdist_uses_explicit_allowlist_with_effective_exclusions() -> None:

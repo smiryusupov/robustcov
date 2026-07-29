@@ -47,7 +47,7 @@ jobs:
           if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
             python scripts/check_release_version.py --tag "${GITHUB_REF_NAME}"
           else
-            python scripts/check_release_version.py --require-prerelease
+            python scripts/check_release_version.py
           fi
 
       - name: Build sdist
@@ -156,7 +156,7 @@ jobs:
           if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
             python scripts/check_release_version.py --tag "${GITHUB_REF_NAME}"
           else
-            python scripts/check_release_version.py --require-prerelease
+            python scripts/check_release_version.py
           fi
           python scripts/release_check.py --release-candidate
           python -m twine check dist/*

@@ -22,7 +22,7 @@ API manifest agree:
 
 .. code-block:: bash
 
-   python scripts/check_release_version.py --require-prerelease
+   python scripts/check_release_version.py
 
 Run the source metadata and public-export audit:
 
@@ -140,9 +140,9 @@ The tag must match the declared package version exactly:
 
 .. code-block:: bash
 
-   python scripts/check_release_version.py --tag v0.1.0a3
+   python scripts/check_release_version.py --tag v0.1.0
 
-Pushing that signed tag triggers the same distribution build and evidence gate,
+Pushing that annotated tag triggers the same distribution build and evidence gate,
 then publishes through the protected ``pypi`` environment. The PyPI publishing
 action creates PEP 740-compatible attestations by default when Trusted
 Publishing is used.
