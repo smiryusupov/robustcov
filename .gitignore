@@ -93,3 +93,8 @@ conda-bld/
 /results/external_registry/
 *.partial
 *.download
+
+# Python virtual environments
+.venv/
+.venv-*/
+venv/
