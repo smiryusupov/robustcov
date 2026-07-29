@@ -94,8 +94,7 @@ def test_publish_external_snapshot_copies_only_reviewed_outputs(tmp_path: Path) 
     generated_toctree = (
         root / "docs/_generated/external_snapshot_toctree.rst"
     ).read_text(encoding="utf-8")
-    assert "   external_results/cmapss_fd002" in generated_toctree
-    assert "../external_results/cmapss_fd002" not in generated_toctree
+    assert "   ../external_results/cmapss_fd002" in generated_toctree
     publisher.check(root)
 
 

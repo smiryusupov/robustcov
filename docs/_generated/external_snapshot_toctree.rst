@@ -4,5 +4,5 @@
    :maxdepth: 1
    :hidden:
 
-   external_results/cmapss_fd002
-   external_results/cmapss_fd004
+   ../external_results/cmapss_fd002
+   ../external_results/cmapss_fd004
