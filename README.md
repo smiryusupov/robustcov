@@ -1,7 +1,7 @@
 # RobustCov
 
 <p align="center">
-  <img src="docs/_static/brand/robustcov-lockup.png" alt="RobustCov — robust multivariate geometry" width="680">
+  <img src="https://raw.githubusercontent.com/smiryusupov/robustcov/main/docs/_static/brand/robustcov-lockup.png" alt="RobustCov — robust multivariate geometry" width="680">
 </p>
 
 [![PyPI](https://img.shields.io/pypi/v/robustcov.svg)](https://pypi.org/project/robustcov/)
