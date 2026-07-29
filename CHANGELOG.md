@@ -1,5 +1,15 @@
 # Changelog
 
+
+## 0.1.0a3 - 2026-07-29
+
+### Changed
+
+- Include the logo URL correction
+- wheel-test cleanup
+- external workflow fix
+- test cleanup.
+
 ## Unreleased
 
 ### Changed

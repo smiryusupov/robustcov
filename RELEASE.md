@@ -28,7 +28,7 @@ Import the repository on Read the Docs; it uses `.readthedocs.yaml`.
 The alpha release version is declared in four places and checked automatically:
 
 ```bash
-python scripts/check_release_version.py --expected 0.1.0a1
+python scripts/check_release_version.py --expected 0.1.0a3
 ```
 
 Before generating public benchmark snapshots, commit the implementation so the
@@ -134,7 +134,7 @@ The workflow:
 6. runs covariance, PCA, PCP, conformal-calibration, and native smoke tests.
 
 Do not reuse the same version for repeated TestPyPI uploads. Increment the alpha
-serial, for example from `0.1.0a1` to `0.1.0a2`, when a rehearsal must be
+serial, for example from `0.1.0a2` to `0.1.0a3`, when a rehearsal must be
 repeated after publication.
 
 ## Production tag and publish
@@ -142,9 +142,9 @@ repeated after publication.
 After the TestPyPI rehearsal succeeds and all required CI jobs are green:
 
 ```bash
-python scripts/check_release_version.py --tag v0.1.0a1
-git tag -s v0.1.0a1 -m "robustcov 0.1.0a1"
-git push origin v0.1.0a1
+python scripts/check_release_version.py --tag v0.1.0a3
+git tag -a v0.1.0a3 -m "robustcov 0.1.0a3"
+git push origin v0.1.0a3
 ```
 
 The tag-triggered workflow verifies that the tag matches the package version,

@@ -140,7 +140,7 @@ The tag must match the declared package version exactly:
 
 .. code-block:: bash
 
-   python scripts/check_release_version.py --tag v0.1.0a1
+   python scripts/check_release_version.py --tag v0.1.0a3
 
 Pushing that signed tag triggers the same distribution build and evidence gate,
 then publishes through the protected ``pypi`` environment. The PyPI publishing
