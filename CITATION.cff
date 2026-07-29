@@ -12,8 +12,8 @@ authors:
 repository-code: "https://github.com/smiryusupov/robustcov"
 url: "https://robustcov.readthedocs.io/"
 license: "Apache-2.0"
-version: "0.1.0a1"
-date-released: "2026-07-20"
+version: "0.1.0a2"
+date-released: "2026-07-29"
 abstract: >-
   robustcov provides robust covariance, scatter, precision, PCA, ICA, SOBI,
   factor-model, anomaly-detection, feature-geometry, and monitoring workflows
