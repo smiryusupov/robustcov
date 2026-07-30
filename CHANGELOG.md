@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- Added `RobustExplanationReference` plus thin SHAP and LIME tabular adapters that pass a contamination-resistant background, robust location/covariance, and full-matrix locality metric to the upstream explainers.
+- Added a contaminated binary-Iris example demonstrating explanation-reference sensitivity without retraining or reimplementing SHAP/LIME.
+
 ### Changed
 
 - Promoted the focused FastMCD and native-boundary regression probes into the permanent test modules and removed the temporary test staging directory.

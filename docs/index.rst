@@ -162,6 +162,7 @@ Choose by data problem
    :caption: Workflows
 
    workflows
+   explanations
    conformal_alert_calibration
    online_subspace_tracking
    use_case_gallery

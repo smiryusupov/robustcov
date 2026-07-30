@@ -123,6 +123,13 @@ GPyTorch kernel adapters
    :members:
    :undoc-members:
 
+SHAP and LIME adapters
+----------------------
+
+.. automodule:: robustcov.explain
+   :members:
+   :undoc-members:
+
 Outlier detection
 -----------------
 

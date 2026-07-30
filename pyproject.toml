@@ -110,6 +110,14 @@ gpytorch = [
   "gpytorch>=1.11",
 ]
 
+explain = [
+  "shap>=0.50.0",
+  "lime>=0.2.0.1",
+  "scikit-learn>=1.5.0; python_version < '3.13'",
+  "scikit-learn>=1.6.0; python_version >= '3.13' and python_version < '3.14'",
+  "scikit-learn>=1.8.0; python_version >= '3.14'",
+]
+
 test = [
   "pytest>=8",
   "matplotlib>=3.10.5",
@@ -155,7 +163,7 @@ examples = [
 ]
 
 all = [
-  "robustcov[dev,bench,docs,examples,plot,sklearn,gpytorch]",
+  "robustcov[dev,bench,docs,examples,plot,sklearn,gpytorch,explain]",
 ]
 
 [tool.scikit-build]

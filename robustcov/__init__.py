@@ -59,6 +59,12 @@ from .parallel import has_openmp, get_num_threads, set_num_threads, thread_limit
 from ._native import native_available
 from .external import top_k_mask, scores_to_submission
 from .metrics import RobustInputMetric, pairwise_mahalanobis_squared
+from .explain import (
+    RobustExplanationReference,
+    RobustLimeTabularExplainer,
+    make_shap_explainer,
+    make_lime_tabular_explainer,
+)
 from .kernels import robust_rbf_kernel, robust_matern_kernel
 from .provenance import (
     Reference,
@@ -213,6 +219,10 @@ __all__ = [
     "top_k_mask",
     "scores_to_submission",
     "RobustInputMetric",
+    "RobustExplanationReference",
+    "RobustLimeTabularExplainer",
+    "make_shap_explainer",
+    "make_lime_tabular_explainer",
     "pairwise_mahalanobis_squared",
     "robust_rbf_kernel",
     "robust_matern_kernel",

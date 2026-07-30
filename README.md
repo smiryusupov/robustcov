@@ -25,6 +25,7 @@ Use it to:
 - convert held-out anomaly or monitoring scores into conformal p-values and calibrated alert labels;
 - perform robust PCA, low-rank-plus-sparse decomposition, reconstruction diagnostics, and subspace monitoring;
 - build robust whitening transforms, kernels, and metrics for learned features or embeddings;
+- stabilize SHAP and LIME reference distributions when explainer data are contaminated;
 - handle bad cells, missing values, matrix-valued observations, and multilinear low-rank structure;
 - estimate sparse precision graphs or recover robust independent sources and latent factors.
 
@@ -49,6 +50,7 @@ platform.
 | Turn a held-out anomaly or monitoring score into a finite-sample alert | `ConformalAlertCalibrator` |
 | Sparse conditional-dependence structure | `RobustGraphicalLasso` or `SGLASSO` |
 | Learned features, embeddings, whitening, or robust kernels | `FeatureGeometry` |
+| A SHAP or LIME reference matrix contains leverage points | `RobustExplanationReference` |
 | Independent or temporally correlated latent sources | `TwoScatterICA`, `RobustSOBI`, or `RobustFactorModel` |
 
 See the [documentation](https://robustcov.readthedocs.io/en/latest/) for the
@@ -62,7 +64,7 @@ and API reference.
 - **Matrix decomposition, PCA, and monitoring:** `PrincipalComponentPursuit`, `RobustPCA`, `DensityPowerRobustPCA`, experimental `DistributionallyRobustPCA`, `SubspaceStability`, `RobustSubspaceMonitor`, experimental `OnlineRobustSubspaceTracker`, and `ConformalAlertCalibrator`.
 - **Sparse precision:** `RobustGraphicalLasso` and `SGLASSO`.
 - **Latent structure:** `TwoScatterICA`, `SOBI`, `RobustSOBI`, and `RobustFactorModel`.
-- **Reusable geometry:** robust distances, anomaly diagnostics, whitening, `FeatureGeometry`, full-matrix kernels, SPD utilities, and optional OpenMP acceleration.
+- **Reusable geometry:** robust distances, anomaly diagnostics, whitening, `FeatureGeometry`, full-matrix kernels, SHAP/LIME reference adapters, SPD utilities, and optional OpenMP acceleration.
 
 ## Installation
 
@@ -83,6 +85,12 @@ Plotting is optional and is not installed with the numerical core:
 
 ```bash
 python -m pip install "robustcov[plot]"
+```
+
+SHAP and LIME adapters are also optional:
+
+```bash
+python -m pip install "robustcov[explain]"
 ```
 
 The package can be imported without the compiled extension. NumPy-backed estimators continue to work, while native-only estimators such as `FastMCD` and `TylerShape` raise an actionable error when fitted. Check the active installation with `robustcov.native_available()`. A native-free development wheel can be built explicitly with:

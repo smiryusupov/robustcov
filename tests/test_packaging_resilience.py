@@ -64,6 +64,16 @@ def test_matplotlib_is_an_optional_dependency():
     assert any(item.lower().startswith("matplotlib") for item in plot_dependencies)
 
 
+def test_explainers_are_optional_dependencies():
+    with (PROJECT_ROOT / "pyproject.toml").open("rb") as stream:
+        config = tomllib.load(stream)
+    dependencies = config["project"]["dependencies"]
+    explain_dependencies = config["project"]["optional-dependencies"]["explain"]
+    assert not any(item.lower().startswith(("shap", "lime")) for item in dependencies)
+    assert any(item.lower().startswith("shap") for item in explain_dependencies)
+    assert any(item.lower().startswith("lime") for item in explain_dependencies)
+
+
 def test_import_without_matplotlib_and_clear_plotting_error(tmp_path):
     package_root = _copy_python_package(tmp_path)
     result = _run_isolated(
