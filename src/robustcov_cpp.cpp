@@ -514,14 +514,38 @@ static std::vector<int> deterministic_median_start(const Mat& X, int h) {
     return smallest_indices(d, h);
 }
 
-static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::array::forcecast> arr,
-                                 double support_fraction, int n_init, int max_iter,
-                                 double tol, bool reweight, std::uint64_t seed,
-                                 int n_best, int initial_c_steps,
-                                 double raw_consistency_factor, double reweight_cutoff,
-                                 double reweight_consistency_factor) {
-    Mat X = numpy_to_mat(arr);
-    int n = X.n, p = X.p;
+struct FastMCDParameters {
+    int h;
+    int n_best;
+};
+
+struct FastMCDResult {
+    std::vector<double> location;
+    Mat covariance;
+    Mat precision;
+    std::vector<double> distances;
+    std::vector<unsigned char> support;
+    Mat raw_covariance;
+    std::vector<double> raw_distances;
+    std::vector<unsigned char> raw_support;
+    double consistency_factor;
+    bool reweighted;
+};
+
+static FastMCDParameters validate_fast_mcd_parameters(
+    const Mat& X,
+    double support_fraction,
+    int n_init,
+    int max_iter,
+    double tol,
+    int n_best,
+    int initial_c_steps,
+    double raw_consistency_factor,
+    double reweight_cutoff,
+    double reweight_consistency_factor
+) {
+    const int n = X.n;
+    const int p = X.p;
     if (!(support_fraction == -1.0 ||
           (std::isfinite(support_fraction) && support_fraction > 0.0 && support_fraction <= 1.0))) {
         throw std::invalid_argument("support_fraction must be -1 or finite and in (0, 1]");
@@ -529,10 +553,6 @@ static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::ar
     if (!(tol > 0.0) || !std::isfinite(tol))
         throw std::invalid_argument("tol must be positive and finite");
     if (n <= p) throw std::invalid_argument("FastMCD requires n_samples > n_features for this MVP");
-    int h;
-    if (support_fraction < 0.0) h = (n + p + 1) / 2;
-    else h = static_cast<int>(std::floor(support_fraction * n));
-    h = std::max(p + 1, std::min(h, n));
     if (n_init < 1) throw std::invalid_argument("n_init must be positive");
     if (max_iter < 1) throw std::invalid_argument("max_iter must be positive");
     if (n_best < 1) throw std::invalid_argument("n_best must be positive");
@@ -543,161 +563,297 @@ static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::ar
         throw std::invalid_argument("reweight_cutoff must be finite and positive");
     if (!std::isfinite(reweight_consistency_factor) || reweight_consistency_factor <= 0.0)
         throw std::invalid_argument("reweight_consistency_factor must be finite and positive");
+
+    int h;
+    if (support_fraction < 0.0) h = (n + p + 1) / 2;
+    else h = static_cast<int>(std::floor(support_fraction * n));
+    h = std::max(p + 1, std::min(h, n));
+
     const int maximum_best = n_init == std::numeric_limits<int>::max()
         ? n_init
         : n_init + 1;
-    n_best = std::min(n_best, maximum_best);
+    return {h, std::min(n_best, maximum_best)};
+}
 
-    std::mt19937_64 rng(seed);
-    std::vector<int> all(n);
-    std::iota(all.begin(), all.end(), 0);
+static void retain_mcd_candidate(
+    std::vector<MCDCandidate>& pool,
+    MCDCandidate&& candidate,
+    int h,
+    int n_best
+) {
+    if (!std::isfinite(candidate.logdet) || static_cast<int>(candidate.idx.size()) != h) return;
+    pool.push_back(std::move(candidate));
+    std::sort(pool.begin(), pool.end(), [](const MCDCandidate& left, const MCDCandidate& right) {
+        return left.logdet < right.logdet;
+    });
+    if (static_cast<int>(pool.size()) > n_best) pool.resize(n_best);
+}
+
+static std::vector<MCDCandidate> initialize_mcd_candidates(
+    const Mat& X,
+    int h,
+    int n_init,
+    int n_best,
+    int initial_c_steps,
+    double tol,
+    std::uint64_t seed
+) {
     std::vector<MCDCandidate> pool;
     pool.reserve(checked_product(static_cast<size_t>(n_init), 1, "n_init") + 4);
-
-    auto push_candidate = [&](MCDCandidate&& c) {
-        if (!std::isfinite(c.logdet) || static_cast<int>(c.idx.size()) != h) return;
-        pool.push_back(std::move(c));
-        std::sort(pool.begin(), pool.end(), [](const MCDCandidate& a, const MCDCandidate& b) {
-            return a.logdet < b.logdet;
-        });
-        if (static_cast<int>(pool.size()) > n_best) pool.resize(n_best);
-    };
 
     // Deterministic start: nearest observations to coordinate-wise median. This improves
     // reproducibility and helps easy contamination cases without sacrificing speed.
     try {
-        push_candidate(run_c_steps(X, deterministic_median_start(X, h), h, initial_c_steps, tol, 1e-7));
+        retain_mcd_candidate(
+            pool,
+            run_c_steps(X, deterministic_median_start(X, h), h, initial_c_steps, tol, 1e-7),
+            h,
+            n_best
+        );
     } catch (...) {}
 
     // Random elemental subsets. Starting from p+1 points gives a much higher probability
     // of drawing an uncontaminated candidate than starting from a full h-subset.
     // Starts are generated serially for deterministic random_state behavior, then
     // evaluated independently; OpenMP can parallelize this expensive phase.
-    int elemental_size = std::min(n, p + 1);
+    std::mt19937_64 rng(seed);
+    std::vector<int> all(X.n);
+    std::iota(all.begin(), all.end(), 0);
+    const int elemental_size = std::min(X.n, X.p + 1);
     std::vector<std::vector<int>> random_starts;
     random_starts.reserve(static_cast<size_t>(n_init));
     for (int init = 0; init < n_init; ++init) {
         std::shuffle(all.begin(), all.end(), rng);
         random_starts.emplace_back(all.begin(), all.begin() + elemental_size);
     }
+
     std::vector<MCDCandidate> random_candidates(static_cast<size_t>(n_init));
     std::vector<unsigned char> random_ok(static_cast<size_t>(n_init), 0);
 #ifdef _OPENMP
-    int init_threads = effective_threads_cpp(n_init, 4);
+    const int init_threads = effective_threads_cpp(n_init, 4);
 #pragma omp parallel for schedule(dynamic) num_threads(init_threads) if(init_threads > 1)
 #endif
     for (int init = 0; init < n_init; ++init) {
         try {
-            MCDCandidate c = run_c_steps(X, random_starts[static_cast<size_t>(init)], h, initial_c_steps, tol, 1e-7);
-            if (std::isfinite(c.logdet) && static_cast<int>(c.idx.size()) == h) {
-                random_candidates[static_cast<size_t>(init)] = std::move(c);
+            MCDCandidate candidate = run_c_steps(
+                X,
+                random_starts[static_cast<size_t>(init)],
+                h,
+                initial_c_steps,
+                tol,
+                1e-7
+            );
+            if (std::isfinite(candidate.logdet) && static_cast<int>(candidate.idx.size()) == h) {
+                random_candidates[static_cast<size_t>(init)] = std::move(candidate);
                 random_ok[static_cast<size_t>(init)] = 1;
             }
         } catch (...) {
             // Singular elemental starts are expected occasionally; skip them.
         }
     }
-    for (int init = 0; init < n_init; ++init) if (random_ok[static_cast<size_t>(init)]) {
-        push_candidate(std::move(random_candidates[static_cast<size_t>(init)]));
+    for (int init = 0; init < n_init; ++init) {
+        if (random_ok[static_cast<size_t>(init)]) {
+            retain_mcd_candidate(
+                pool,
+                std::move(random_candidates[static_cast<size_t>(init)]),
+                h,
+                n_best
+            );
+        }
     }
 
     if (pool.empty()) throw std::runtime_error("FastMCD failed to find a valid initial subset");
+    return pool;
+}
 
+static MCDCandidate polish_mcd_candidates(
+    const Mat& X,
+    const std::vector<MCDCandidate>& pool,
+    int h,
+    int max_iter,
+    double tol
+) {
     std::vector<MCDCandidate> polished_pool(pool.size());
     std::vector<unsigned char> polished_ok(pool.size(), 0);
 #ifdef _OPENMP
-    int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
+    const int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
 #pragma omp parallel for schedule(dynamic) num_threads(polish_threads) if(polish_threads > 1)
 #endif
-    for (int ci = 0; ci < static_cast<int>(pool.size()); ++ci) {
+    for (int candidate_index = 0; candidate_index < static_cast<int>(pool.size()); ++candidate_index) {
         try {
-            polished_pool[static_cast<size_t>(ci)] = run_c_steps(X, pool[static_cast<size_t>(ci)].idx, h, max_iter, tol, 1e-9);
-            polished_ok[static_cast<size_t>(ci)] = 1;
+            polished_pool[static_cast<size_t>(candidate_index)] = run_c_steps(
+                X,
+                pool[static_cast<size_t>(candidate_index)].idx,
+                h,
+                max_iter,
+                tol,
+                1e-9
+            );
+            polished_ok[static_cast<size_t>(candidate_index)] = 1;
         } catch (...) {}
     }
+
     MCDCandidate best;
-    best.logdet = std::numeric_limits<double>::infinity();
-    for (size_t ci = 0; ci < polished_pool.size(); ++ci) {
-        if (!polished_ok[ci]) continue;
-        MCDCandidate& polished = polished_pool[ci];
+    for (size_t candidate_index = 0; candidate_index < polished_pool.size(); ++candidate_index) {
+        if (!polished_ok[candidate_index]) continue;
+        MCDCandidate& polished = polished_pool[candidate_index];
         if (polished.logdet < best.logdet) best = std::move(polished);
     }
     if (best.idx.empty()) throw std::runtime_error("FastMCD failed during final C-steps");
+    return best;
+}
 
+static FastMCDResult calibrate_and_reweight_mcd(
+    const Mat& X,
+    const MCDCandidate& best,
+    bool reweight,
+    double raw_consistency_factor,
+    double reweight_cutoff,
+    double reweight_consistency_factor
+) {
     // Python computes exact Gaussian consistency constants with SciPy. Keeping
     // distribution functions out of the native kernel makes the calibration
     // auditable while C++ remains responsible for subset search and covariance work.
-    Mat raw_cov_corrected = best.cov;
-    double raw_scale = raw_consistency_factor;
-    scale_matrix_inplace(raw_cov_corrected, raw_scale);
+    Mat raw_covariance = best.cov;
+    scale_matrix_inplace(raw_covariance, raw_consistency_factor);
 
-    Mat raw_prec = inverse_spd(raw_cov_corrected);
-    auto raw_dist = mahalanobis2(X, best.loc, raw_prec);
-    std::vector<unsigned char> raw_support(n, 0);
-    for (int id : best.idx) raw_support[id] = 1;
+    Mat raw_precision = inverse_spd(raw_covariance);
+    std::vector<double> raw_distances = mahalanobis2(X, best.loc, raw_precision);
+    std::vector<unsigned char> raw_support(X.n, 0);
+    for (int index : best.idx) raw_support[index] = 1;
 
-    std::vector<unsigned char> support = raw_support;
-    std::vector<double> final_loc = best.loc;
-    Mat final_cov = raw_cov_corrected;
-    double final_consistency_factor = raw_consistency_factor;
-    bool reweighted = false;
+    FastMCDResult result;
+    result.location = best.loc;
+    result.covariance = raw_covariance;
+    result.support = raw_support;
+    result.raw_covariance = raw_covariance;
+    result.raw_distances = std::move(raw_distances);
+    result.raw_support = raw_support;
+    result.consistency_factor = raw_consistency_factor;
+    result.reweighted = false;
 
     if (reweight) {
         // Classical MCD reweighting: retain observations within the exact
         // chi-square cutoff supplied by Python, then correct the truncated
         // covariance back to Gaussian consistency.
-        std::vector<int> rw;
-        rw.reserve(n);
-        for (int i = 0; i < n; ++i) if (raw_dist[i] <= reweight_cutoff) rw.push_back(i);
-        if (static_cast<int>(rw.size()) >= p + 1) {
-            final_loc = column_mean(X, &rw);
-            final_cov = covariance_from_indices(X, rw, final_loc, 1e-9);
-            scale_matrix_inplace(final_cov, reweight_consistency_factor);
-            final_consistency_factor = reweight_consistency_factor;
-            reweighted = true;
-            std::fill(support.begin(), support.end(), 0);
-            for (int id : rw) support[id] = 1;
+        std::vector<int> reweighted_indices;
+        reweighted_indices.reserve(static_cast<size_t>(X.n));
+        for (int i = 0; i < X.n; ++i) {
+            if (result.raw_distances[static_cast<size_t>(i)] <= reweight_cutoff) {
+                reweighted_indices.push_back(i);
+            }
+        }
+        if (static_cast<int>(reweighted_indices.size()) >= X.p + 1) {
+            result.location = column_mean(X, &reweighted_indices);
+            result.covariance = covariance_from_indices(X, reweighted_indices, result.location, 1e-9);
+            scale_matrix_inplace(result.covariance, reweight_consistency_factor);
+            result.consistency_factor = reweight_consistency_factor;
+            result.reweighted = true;
+            std::fill(result.support.begin(), result.support.end(), 0);
+            for (int index : reweighted_indices) result.support[index] = 1;
         }
     }
 
-    Mat final_prec = inverse_spd(final_cov);
-    auto final_dist = mahalanobis2(X, final_loc, final_prec);
-
-    py::array_t<bool> supp(n);
-    auto sb = supp.mutable_unchecked<1>();
-    py::array_t<bool> raw_supp(n);
-    auto rsb = raw_supp.mutable_unchecked<1>();
-    for (int i = 0; i < n; ++i) {
-        sb(i) = support[i] != 0;
-        rsb(i) = raw_support[i] != 0;
-    }
-
-    py::dict out;
-    out["location"] = vec_to_numpy(final_loc);
-    out["shape"] = mat_to_numpy(final_cov);
-    out["covariance"] = mat_to_numpy(final_cov);
-    out["precision"] = mat_to_numpy(final_prec);
-    out["distances"] = vec_to_numpy(final_dist);
-    out["support"] = supp;
-    out["raw_location"] = vec_to_numpy(best.loc);
-    out["raw_covariance"] = mat_to_numpy(raw_cov_corrected);
-    out["raw_scale"] = raw_scale;
-    out["raw_consistency_factor"] = raw_consistency_factor;
-    out["consistency_factor"] = final_consistency_factor;
-    if (reweight) out["reweight_threshold"] = reweight_cutoff;
-    else out["reweight_threshold"] = py::none();
-    out["reweighted"] = reweighted;
-    out["raw_distances"] = vec_to_numpy(raw_dist);
-    out["raw_support"] = raw_supp;
-    out["h"] = h;
-    out["c_step_objective_value"] = best.logdet;
-    out["raw_objective_value"] = logdet_spd(raw_cov_corrected);
-    out["objective_value"] = logdet_spd(final_cov);
-    out["n_iter"] = best.iterations;
-    out["converged"] = best.converged;
-    return out;
+    result.precision = inverse_spd(result.covariance);
+    result.distances = mahalanobis2(X, result.location, result.precision);
+    return result;
 }
 
+static py::array_t<bool> support_to_numpy(const std::vector<unsigned char>& support) {
+    py::array_t<bool> output(static_cast<py::ssize_t>(support.size()));
+    auto buffer = output.mutable_unchecked<1>();
+    for (py::ssize_t i = 0; i < static_cast<py::ssize_t>(support.size()); ++i) {
+        buffer(i) = support[static_cast<size_t>(i)] != 0;
+    }
+    return output;
+}
+
+static py::dict fast_mcd_result_to_dict(
+    const MCDCandidate& best,
+    const FastMCDResult& result,
+    int h,
+    bool reweight,
+    double raw_consistency_factor,
+    double reweight_cutoff
+) {
+    py::dict output;
+    output["location"] = vec_to_numpy(result.location);
+    output["shape"] = mat_to_numpy(result.covariance);
+    output["covariance"] = mat_to_numpy(result.covariance);
+    output["precision"] = mat_to_numpy(result.precision);
+    output["distances"] = vec_to_numpy(result.distances);
+    output["support"] = support_to_numpy(result.support);
+    output["raw_location"] = vec_to_numpy(best.loc);
+    output["raw_covariance"] = mat_to_numpy(result.raw_covariance);
+    output["raw_scale"] = raw_consistency_factor;
+    output["raw_consistency_factor"] = raw_consistency_factor;
+    output["consistency_factor"] = result.consistency_factor;
+    if (reweight) output["reweight_threshold"] = reweight_cutoff;
+    else output["reweight_threshold"] = py::none();
+    output["reweighted"] = result.reweighted;
+    output["raw_distances"] = vec_to_numpy(result.raw_distances);
+    output["raw_support"] = support_to_numpy(result.raw_support);
+    output["h"] = h;
+    output["c_step_objective_value"] = best.logdet;
+    output["raw_objective_value"] = logdet_spd(result.raw_covariance);
+    output["objective_value"] = logdet_spd(result.covariance);
+    output["n_iter"] = best.iterations;
+    output["converged"] = best.converged;
+    return output;
+}
+
+static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::array::forcecast> arr,
+                                 double support_fraction, int n_init, int max_iter,
+                                 double tol, bool reweight, std::uint64_t seed,
+                                 int n_best, int initial_c_steps,
+                                 double raw_consistency_factor, double reweight_cutoff,
+                                 double reweight_consistency_factor) {
+    Mat X = numpy_to_mat(arr);
+    const FastMCDParameters parameters = validate_fast_mcd_parameters(
+        X,
+        support_fraction,
+        n_init,
+        max_iter,
+        tol,
+        n_best,
+        initial_c_steps,
+        raw_consistency_factor,
+        reweight_cutoff,
+        reweight_consistency_factor
+    );
+    std::vector<MCDCandidate> initial_candidates = initialize_mcd_candidates(
+        X,
+        parameters.h,
+        n_init,
+        parameters.n_best,
+        initial_c_steps,
+        tol,
+        seed
+    );
+    MCDCandidate best = polish_mcd_candidates(
+        X,
+        initial_candidates,
+        parameters.h,
+        max_iter,
+        tol
+    );
+    FastMCDResult result = calibrate_and_reweight_mcd(
+        X,
+        best,
+        reweight,
+        raw_consistency_factor,
+        reweight_cutoff,
+        reweight_consistency_factor
+    );
+    return fast_mcd_result_to_dict(
+        best,
+        result,
+        parameters.h,
+        reweight,
+        raw_consistency_factor,
+        reweight_cutoff
+    );
+}
 
 
 static std::vector<double> solve_spd_vector(Mat A, const std::vector<double>& rhs) {
