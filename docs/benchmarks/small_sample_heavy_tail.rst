@@ -68,6 +68,14 @@ and ``not_applicable``.  A method that performs strongly in the low-dimensional
 part of the grid should not be described as a high-dimensional default merely
 because its ineligible rows were omitted.
 
+In the committed quick profile, ``AutoRobustScatter`` has the lowest aggregate
+median error (``0.5907``) and the highest win rate (``0.8750``), with its runtime
+including candidate selection.  ``RegularizedCauchy`` is the strongest single
+estimator across all eight scenarios (median error ``0.5950``).  On the four
+scenarios where classical MCD is applicable, native ``FastMCD`` has median error
+``0.6774`` versus ``0.8233`` for scikit-learn ``MinCovDet``.  These are quick
+profile results, not a replacement for a larger repeated study.
+
 Run it yourself
 ---------------
 

@@ -11,6 +11,11 @@ Install the optional integrations with::
 
 from __future__ import annotations
 
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
 import numpy as np
 
 import robustcov as rc
@@ -23,7 +28,40 @@ def _weight_vector(explanation, label: int, n_features: int) -> np.ndarray:
     return weights
 
 
-def main() -> None:
+def _write_plot(report: dict[str, Any], path: Path) -> None:
+    import matplotlib.pyplot as plt
+
+    labels: list[str] = []
+    empirical: list[float] = []
+    robust: list[float] = []
+    for name in ("shap", "lime"):
+        result = report[name]
+        if not result["available"]:
+            continue
+        labels.append(name.upper())
+        empirical.append(float(result["contaminated_empirical_drift"]))
+        robust.append(float(result["robust_reference_drift"]))
+
+    if not labels:
+        return
+
+    positions = np.arange(len(labels), dtype=float)
+    width = 0.36
+    figure, axis = plt.subplots(figsize=(6.4, 4.0))
+    axis.bar(positions - width / 2, empirical, width, label="Contaminated empirical")
+    axis.bar(positions + width / 2, robust, width, label="Robust reference")
+    axis.set_xticks(positions, labels)
+    axis.set_ylabel("Total absolute attribution drift")
+    axis.set_title("Explanation drift from clean reference")
+    axis.legend()
+    axis.grid(axis="y", alpha=0.25)
+    figure.tight_layout()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path, dpi=180)
+    plt.close(figure)
+
+
+def run_experiment() -> dict[str, Any]:
     from sklearn.datasets import load_iris
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import train_test_split
@@ -55,10 +93,24 @@ def main() -> None:
 
     reference = rc.RobustExplanationReference(max_samples=50).fit(contaminated)
     query = X_test[[0]]
+    retained = int(reference.support_[contaminated_rows].sum())
+
+    report: dict[str, Any] = {
+        "schema_version": 1,
+        "dataset": "sklearn Iris classes 0 and 1",
+        "model": "standardized logistic regression",
+        "n_training_rows": int(X_train.shape[0]),
+        "n_features": int(X_train.shape[1]),
+        "contaminated_rows": int(len(contaminated_rows)),
+        "contaminated_rows_retained": retained,
+        "robust_support_size": int(reference.support_.sum()),
+        "shap": {"available": False},
+        "lime": {"available": False},
+    }
 
     print(
         "contaminated rows retained by robust support:",
-        int(reference.support_[contaminated_rows].sum()),
+        retained,
         "of",
         len(contaminated_rows),
     )
@@ -68,6 +120,7 @@ def main() -> None:
     except ImportError:
         print("SHAP not installed; skipping SHAP comparison")
     else:
+
         def linear_values(mean, covariance):
             masker = shap.maskers.Impute(
                 {"mean": mean, "cov": covariance}, method="linear"
@@ -93,6 +146,12 @@ def main() -> None:
 
         empirical_drift = float(np.abs(contaminated_values - clean_values).sum())
         robust_drift = float(np.abs(robust_values - clean_values).sum())
+        report["shap"] = {
+            "available": True,
+            "contaminated_empirical_drift": empirical_drift,
+            "robust_reference_drift": robust_drift,
+            "drift_ratio": robust_drift / empirical_drift,
+        }
         print(f"SHAP attribution drift, contaminated empirical: {empirical_drift:.3f}")
         print(f"SHAP attribution drift, robust reference:       {robust_drift:.3f}")
 
@@ -133,9 +192,34 @@ def main() -> None:
         robust_weights = _weight_vector(robust_exp, label, X_train.shape[1])
         empirical_drift = float(np.abs(contaminated_weights - clean_weights).sum())
         robust_drift = float(np.abs(robust_weights - clean_weights).sum())
+        report["lime"] = {
+            "available": True,
+            "contaminated_empirical_drift": empirical_drift,
+            "robust_reference_drift": robust_drift,
+            "drift_ratio": robust_drift / empirical_drift,
+        }
         print(f"LIME weight drift, contaminated empirical: {empirical_drift:.3f}")
         print(f"LIME weight drift, robust reference:       {robust_drift:.3f}")
 
+    return report
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--json-output", type=Path)
+    parser.add_argument("--plot-output", type=Path)
+    args = parser.parse_args()
+
+    report = run_experiment()
+    if args.json_output is not None:
+        args.json_output.parent.mkdir(parents=True, exist_ok=True)
+        args.json_output.write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    if args.plot_output is not None:
+        _write_plot(report, args.plot_output)
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

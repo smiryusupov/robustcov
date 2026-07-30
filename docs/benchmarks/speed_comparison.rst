@@ -58,6 +58,12 @@ Read timing together with the accuracy and contamination benchmarks.  A method
 should not be selected only because it is fastest on a workload for which its
 statistical error is poor.
 
+The committed CSV is a local release-candidate snapshot.  Compiler, BLAS,
+processor, and thread settings are recorded in
+``docs/_static/release_evidence.json``.  Runtime ratios must be regenerated on
+the target machine and are intentionally not presented as portable package
+constants.
+
 Run it yourself
 ---------------
 

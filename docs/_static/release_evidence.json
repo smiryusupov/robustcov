@@ -1,0 +1,202 @@
+{
+  "artifacts": {
+    "docs/_static/benchmarks/small_sample.csv": {
+      "bytes": 18634,
+      "sha256": "d42dc6d168f3f36ec07af4a60a5a698ed2b899a3db869ebfeee9bb07a9514cd6"
+    },
+    "docs/_static/benchmarks/small_sample_rank.png": {
+      "bytes": 96954,
+      "sha256": "ca0b9ddac85c7b0251c233642143ba3aeb8d072d89ce2470e0c3ca18cdd56f0e"
+    },
+    "docs/_static/benchmarks/small_sample_summary.csv": {
+      "bytes": 1373,
+      "sha256": "06ac28510e5ca2dbbc891c6598c8b7b1002520d844a853387b8bce6652efdc97"
+    },
+    "docs/_static/benchmarks/speed.csv": {
+      "bytes": 9368,
+      "sha256": "c1d8bd8fb9a92535ec914e2619d028f225e7ba555e41a83e7d7b9f5f97ae4ebc"
+    },
+    "docs/_static/benchmarks/speed.png": {
+      "bytes": 386821,
+      "sha256": "9fab3073e084c519bdc501bcce99734c781730a84509a8925ba741db015966ba"
+    },
+    "docs/_static/benchmarks/statistical_validation.json": {
+      "bytes": 2911,
+      "sha256": "586e1d817d86a341c9a21b4fdca9c76b2302836f26ad90b5f170672c7a0a9cd0"
+    },
+    "docs/_static/examples/robust_explanations_iris.json": {
+      "bytes": 624,
+      "sha256": "d8a299f3d8a9537b7b398f581f0f96915b88586374b1735db1d81713eb410607"
+    },
+    "docs/_static/examples/robust_explanations_iris.png": {
+      "bytes": 41255,
+      "sha256": "48124104db9453f66923a00b80599e1e574174f1c4d8f377f73f274ba12f5694"
+    },
+    "docs/_static/examples/robust_explanations_iris_output.txt": {
+      "bytes": 260,
+      "sha256": "5eb552c5f98a95ca07a3f17ea0ee877e45c1d8a4883015f936e17a687d3e61bd"
+    }
+  },
+  "commands": [
+    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python benchmarks/small_sample_heavy_tail.py --profile quick --repeat 2 --csv docs/_static/benchmarks/small_sample.csv",
+    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python benchmarks/benchmark_summary.py --input docs/_static/benchmarks/small_sample.csv --csv docs/_static/benchmarks/small_sample_summary.csv",
+    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python examples/plot_benchmark_summary.py --input docs/_static/benchmarks/small_sample_summary.csv --metric mean_rank --output docs/_static/benchmarks/small_sample_rank.png",
+    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python benchmarks/speed_estimators.py --profile quick --repeat 2 --csv docs/_static/benchmarks/speed.csv",
+    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python examples/plot_speed_comparison.py --input docs/_static/benchmarks/speed.csv --output docs/_static/benchmarks/speed.png",
+    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python benchmarks/statistical_validation.py --json-output docs/_static/benchmarks/statistical_validation.json",
+    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python examples/robust_explanations_iris.py --json-output docs/_static/examples/robust_explanations_iris.json --plot-output docs/_static/examples/robust_explanations_iris.png"
+  ],
+  "environment": {
+    "lime": "0.2.0.1",
+    "machine": "x86_64",
+    "matplotlib": "3.11.0",
+    "numpy": "2.4.6",
+    "platform": "Linux-6.17.0-1028-oem-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "python_compiler": "GCC 13.3.0",
+    "python_implementation": "CPython",
+    "scikit_learn": "1.9.0",
+    "scipy": "1.18.0",
+    "shap": "0.52.0"
+  },
+  "generated_at_utc": "2026-07-30T19:16:48.304765+00:00",
+  "key_results": {
+    "classical_contamination_speed": {
+      "fastmcd_seconds": 0.005085,
+      "local_speed_ratio": 28.204129793510322,
+      "sklearn_mincovdet_seconds": 0.143418
+    },
+    "robust_explanations_iris": {
+      "contaminated_rows": 12,
+      "contaminated_rows_retained": 0,
+      "dataset": "sklearn Iris classes 0 and 1",
+      "lime": {
+        "available": true,
+        "contaminated_empirical_drift": 0.2094721480514683,
+        "drift_ratio": 0.07790080427788364,
+        "robust_reference_drift": 0.016318048807025295
+      },
+      "model": "standardized logistic regression",
+      "n_features": 4,
+      "n_training_rows": 75,
+      "robust_support_size": 62,
+      "schema_version": 1,
+      "shap": {
+        "available": true,
+        "contaminated_empirical_drift": 2.5275552789414255,
+        "drift_ratio": 0.1533197820993489,
+        "robust_reference_drift": 0.3875242246113584
+      }
+    },
+    "small_sample": {
+      "auto_robust_scatter": {
+        "appearances": "8",
+        "eligible": "8",
+        "failures": "0",
+        "mean_error": "0.6659",
+        "mean_rank": "1.6250",
+        "median_error": "0.5907",
+        "median_seconds": "0.032008",
+        "method": "robustcov AutoRobustScatter",
+        "not_applicable": "0",
+        "success_rate": "1.0000",
+        "successes": "8",
+        "win_rate": "0.8750"
+      },
+      "fastmcd": {
+        "appearances": "4",
+        "eligible": "4",
+        "failures": "0",
+        "mean_error": "0.7454",
+        "mean_rank": "5.5000",
+        "median_error": "0.6774",
+        "median_seconds": "0.003731",
+        "method": "robustcov FastMCD",
+        "not_applicable": "4",
+        "success_rate": "1.0000",
+        "successes": "4",
+        "win_rate": "0.2500"
+      },
+      "regularized_cauchy": {
+        "appearances": "8",
+        "eligible": "8",
+        "failures": "0",
+        "mean_error": "0.6808",
+        "mean_rank": "1.8750",
+        "median_error": "0.5950",
+        "median_seconds": "0.004289",
+        "method": "robustcov RegularizedCauchy",
+        "not_applicable": "0",
+        "success_rate": "1.0000",
+        "successes": "8",
+        "win_rate": "0.3750"
+      },
+      "sklearn_mincovdet": {
+        "appearances": "4",
+        "eligible": "4",
+        "failures": "0",
+        "mean_error": "1.1903",
+        "mean_rank": "6.7500",
+        "median_error": "0.8233",
+        "median_seconds": "0.010784",
+        "method": "sklearn MinCovDet",
+        "not_applicable": "4",
+        "success_rate": "1.0000",
+        "successes": "4",
+        "win_rate": "0.0000"
+      }
+    },
+    "statistical_validation": {
+      "contamination_curve": [
+        {
+          "contamination": 0.0,
+          "empirical_covariance_relative_error": 0.10694677479722674,
+          "fastmcd_covariance_relative_error": 0.11895505428154558,
+          "fastmcd_support_size": 233,
+          "passed": true
+        },
+        {
+          "contamination": 0.1,
+          "empirical_covariance_relative_error": 9.900877781799425,
+          "fastmcd_covariance_relative_error": 0.1348268972796155,
+          "fastmcd_support_size": 211,
+          "passed": true
+        },
+        {
+          "contamination": 0.2,
+          "empirical_covariance_relative_error": 17.648109898604428,
+          "fastmcd_covariance_relative_error": 0.1256239812261056,
+          "fastmcd_support_size": 188,
+          "passed": true
+        },
+        {
+          "contamination": 0.3,
+          "empirical_covariance_relative_error": 23.343028744671443,
+          "fastmcd_covariance_relative_error": 0.13203002873892233,
+          "fastmcd_support_size": 165,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "sklearn_reference": {
+        "available": true,
+        "covariance_relative_error": 0.005347594195031497,
+        "distance_correlation": 0.9999999999999997,
+        "location_relative_error": 0.0,
+        "passed": true
+      }
+    }
+  },
+  "profile": {
+    "small_sample": "quick, repeat=2",
+    "speed": "quick, repeat=2",
+    "thread_environment": {
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "2",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "schema_version": 1,
+  "source_revision": "d8bfea78b4a997486a2e68fb9f30102ea67e1b5e",
+  "source_tree_sha256": "fec530e935c12913f352af0b71111352dcae9d7a367614cad89fd4c849b0a982"
+}

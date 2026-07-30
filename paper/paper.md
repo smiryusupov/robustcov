@@ -13,7 +13,7 @@ authors:
 affiliations:
   - name: Independent researcher
     index: 1
-date: 2026-06-07
+date: 2026-07-30
 bibliography: paper.bib
 ---
 
@@ -22,8 +22,8 @@ bibliography: paper.bib
 `robustcov` is a Python package that provides a unified pipeline from robust
 scatter estimation to SPD geometry and robust kernel/similarity methods for
 machine-learning workflows. The package combines a C++/pybind core with Python
-estimators, diagnostics, benchmark galleries, and adapters for scikit-learn-style
-and GPyTorch-style workflows. Its central design idea is that robust scatter
+estimators, diagnostics, benchmark galleries, and adapters for scikit-learn-style,
+GPyTorch-style, SHAP, and LIME workflows. Its central design idea is that robust scatter
 estimates should not stop at covariance matrices: they should define robust
 precision matrices, Mahalanobis geometry, anomaly scores, whitening transforms,
 and input metrics for kernel and similarity methods. `robustcov` is intended for
@@ -61,7 +61,10 @@ points or heavy-tailed contamination, this input geometry can be distorted.
 scatter gives robust precision, robust precision gives Mahalanobis distance, and
 Mahalanobis distance gives robust similarity or kernel geometry. The package
 therefore fills a tooling gap between robust covariance estimation and practical
-input-robust kernel, Gaussian-process, retrieval, and similarity workflows.
+input-robust kernel, Gaussian-process, retrieval, similarity, and explanation-
+reference workflows.  For SHAP and LIME, RobustCov supplies a robust background
+matrix or robust location/covariance geometry while the upstream packages retain
+ownership of the explanation algorithms.
 
 # Software design
 
@@ -93,21 +96,39 @@ the robust input geometry reusable without duplicating mature GP infrastructure
 # Benchmarks and evidence
 
 The documentation includes reproducible benchmark and use-case galleries rather
-than embedding large result tables in this paper. Three results summarize the
-current evidence. In a 27-setting small-sample heavy-tail benchmark, `RegularizedCauchy` achieved median relative Frobenius error `0.5994`
-and win rate `0.7407`, compared with median error `2.1739` and win rate `0.1111`
-for scikit-learn `MinCovDet`. In the documented speed benchmark, `robustcov
-FastMCD` had median runtime `0.023761` seconds, compared with `0.191902` seconds
-for scikit-learn `MinCovDet`, an approximately `8.08x` speedup. In the robust
-GP input-metric example, RMSE improved from `0.3566` with an empirical input
-covariance metric to `0.1813` with a robust input covariance metric.
+than embedding large result tables in this paper.  A focused release-evidence
+command records the source-tree digest, environment, commands, key results, and
+SHA-256 hashes for the numerical areas changed in this release cycle.
 
-The documentation also reports unfavorable scenarios. For example, in one
-mean-shift hard-contamination benchmark, scikit-learn `MinCovDet` has lower
-relative Frobenius error than `robustcov FastMCD`, while in the heavy-tail-inlier
-scenario `robustcov FastMCD` performs better. This is intentional: the benchmark
-gallery is designed to show where the package is useful and where method choice
-still matters.
+In the eight-scenario quick small-sample heavy-tail profile,
+`AutoRobustScatter` achieved median relative Frobenius error `0.5907` and win
+rate `0.8750`, with its runtime including candidate fitting and selection.
+`RegularizedCauchy` was the strongest single estimator across all eight
+scenarios with median error `0.5950`.  On the four scenarios where classical
+MCD is mathematically applicable, native `FastMCD` had median error `0.6774`
+versus `0.8233` for scikit-learn `MinCovDet`.
+
+The statistical validation gate checks unit equivariance, singular inputs, a
+contamination curve, and agreement with scikit-learn.  In the committed fixed
+reference comparison, FastMCD covariance differs from scikit-learn `MinCovDet`
+by relative Frobenius error `0.00535`, with robust-distance correlation
+numerically equal to `1.0`.  At 10--30 percent injected row contamination,
+FastMCD covariance error remains between `0.126` and `0.135`, while empirical
+covariance error ranges from `9.90` to `23.34`.
+
+The explanation-reference example keeps the fitted model and query fixed and
+contaminates only the background matrix.  The robust support retains none of
+the twelve injected leverage rows.  Total absolute SHAP attribution drift from
+the clean reference is `2.528` for the contaminated empirical reference and
+`0.388` for the robust reference.  The result demonstrates the purpose of the
+adapter without claiming that robust references universally improve every
+explanation.
+
+Timing tables are retained as local engineering snapshots rather than portable
+constants because compiler, BLAS, processor, and threading choices materially
+affect them.  The documentation also reports unfavorable contamination
+scenarios so that method choice remains tied to the assumed data-generating
+problem.
 
 # Research impact statement
 

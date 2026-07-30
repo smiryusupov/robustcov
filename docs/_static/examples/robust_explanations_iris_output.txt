@@ -1,0 +1,5 @@
+contaminated rows retained by robust support: 0 of 12
+SHAP attribution drift, contaminated empirical: 2.528
+SHAP attribution drift, robust reference:       0.388
+LIME weight drift, contaminated empirical: 0.209
+LIME weight drift, robust reference:       0.016

@@ -34,6 +34,23 @@ python scripts/check_release_version.py --expected 0.1.0
 Before generating public benchmark snapshots, commit the implementation so the
 snapshot publisher can record a clean source commit.
 
+Regenerate the focused numerical snapshot from that implementation commit before
+editing the manuscript or copying quantitative claims:
+
+```bash
+SOURCE_REVISION="$(git rev-parse HEAD)"
+python scripts/generate_release_evidence.py \
+  --source-revision "$SOURCE_REVISION"
+python scripts/generate_release_evidence.py --check
+```
+
+The command refreshes the quick covariance accuracy/speed tables, FastMCD
+statistical validation, and contaminated-Iris explanation evidence.  It writes
+a source-tree digest, environment, commands, key results, and artifact hashes
+to `docs/_static/release_evidence.json`.  Review the generated diffs before
+committing them; timing values are local engineering evidence, not portable
+constants.
+
 Regenerate, review, and publish the case studies one at a time. Publishing a
 snapshot changes tracked documentation files, so commit FD002 before publishing
 FD004; the publisher intentionally refuses to create reviewed evidence from a

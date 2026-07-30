@@ -68,3 +68,25 @@ not for portable performance claims.
 A five-seed matrix/tensor Monte Carlo smoke run is stored in
 ``docs/_static/benchmarks/monte_carlo_summary.csv``.  Larger conclusions should
 be based on more seeds and the target deployment hardware.
+
+Release-candidate statistical validation
+----------------------------------------
+
+The focused release evidence command also runs
+``benchmarks/statistical_validation.py`` after changes to covariance equations
+or native kernels.  In the committed snapshot all checks pass.  FastMCD agrees
+with scikit-learn ``MinCovDet`` on the fixed contaminated Gaussian reference to
+relative covariance error ``0.00535`` with distance correlation effectively
+``1.0``.  At 10--30 percent injected row contamination, FastMCD covariance
+error remains between ``0.126`` and ``0.135`` while empirical covariance error
+ranges from ``9.90`` to ``23.34``.
+
+.. literalinclude:: _static/benchmarks/statistical_validation.json
+   :language: json
+
+Regenerate and verify the focused snapshot with:
+
+.. code-block:: bash
+
+   python scripts/generate_release_evidence.py --source-revision "$(git rev-parse HEAD)"
+   python scripts/generate_release_evidence.py --check

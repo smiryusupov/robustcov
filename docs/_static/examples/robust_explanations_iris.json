@@ -1,0 +1,22 @@
+{
+  "contaminated_rows": 12,
+  "contaminated_rows_retained": 0,
+  "dataset": "sklearn Iris classes 0 and 1",
+  "lime": {
+    "available": true,
+    "contaminated_empirical_drift": 0.2094721480514683,
+    "drift_ratio": 0.07790080427788364,
+    "robust_reference_drift": 0.016318048807025295
+  },
+  "model": "standardized logistic regression",
+  "n_features": 4,
+  "n_training_rows": 75,
+  "robust_support_size": 62,
+  "schema_version": 1,
+  "shap": {
+    "available": true,
+    "contaminated_empirical_drift": 2.5275552789414255,
+    "drift_ratio": 0.1533197820993489,
+    "robust_reference_drift": 0.3875242246113584
+  }
+}

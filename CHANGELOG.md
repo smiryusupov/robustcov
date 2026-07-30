@@ -9,6 +9,8 @@
 
 ### Changed
 
+- Regenerated the focused release evidence from the hardened FastMCD and robust-explanation implementations, added source/environment/hash provenance, and synchronized the benchmark documentation and JOSS manuscript with the committed artifacts.
+- Replaced stale paper claims based on an older 27-setting benchmark and a single portable-looking speed ratio with the current quick-profile, statistical-validation, and explanation-reference evidence.
 - Promoted the focused FastMCD and native-boundary regression probes into the permanent test modules and removed the temporary test staging directory.
 - Clarified that package-root and experimental public APIs are defined by their
   ``__all__`` exports, removed a stale duplicate stability note, and strengthened

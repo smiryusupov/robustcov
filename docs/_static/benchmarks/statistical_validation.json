@@ -1,0 +1,99 @@
+{
+  "contamination_curve": [
+    {
+      "contamination": 0.0,
+      "empirical_covariance_relative_error": 0.10694677479722674,
+      "fastmcd_covariance_relative_error": 0.11895505428154558,
+      "fastmcd_support_size": 233,
+      "passed": true
+    },
+    {
+      "contamination": 0.1,
+      "empirical_covariance_relative_error": 9.900877781799425,
+      "fastmcd_covariance_relative_error": 0.1348268972796155,
+      "fastmcd_support_size": 211,
+      "passed": true
+    },
+    {
+      "contamination": 0.2,
+      "empirical_covariance_relative_error": 17.648109898604428,
+      "fastmcd_covariance_relative_error": 0.1256239812261056,
+      "fastmcd_support_size": 188,
+      "passed": true
+    },
+    {
+      "contamination": 0.3,
+      "empirical_covariance_relative_error": 23.343028744671443,
+      "fastmcd_covariance_relative_error": 0.13203002873892233,
+      "fastmcd_support_size": 165,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "singular_inputs": {
+    "minimum_eigenvalues": {
+      "DetMM": 8.97301624479751e-09,
+      "DetS": 8.970593606094416e-09,
+      "RegularizedTyler": 0.1628896479591021
+    },
+    "passed": true,
+    "unregularized_tyler_rejected": true
+  },
+  "sklearn_reference": {
+    "available": true,
+    "covariance_relative_error": 0.005347594195031497,
+    "distance_correlation": 0.9999999999999997,
+    "location_relative_error": 0.0,
+    "passed": true
+  },
+  "unit_equivariance": [
+    {
+      "distance_relative_error": 1.772219130824476e-16,
+      "estimator": "FastMCD",
+      "location_relative_error": 3.743501118080751e-16,
+      "matrix_relative_error": 0.0,
+      "output": "covariance",
+      "passed": true
+    },
+    {
+      "distance_relative_error": 3.687013175823809e-16,
+      "estimator": "RegularizedCauchy",
+      "location_relative_error": 2.7662980665640635e-16,
+      "matrix_relative_error": 0.0,
+      "output": "covariance",
+      "passed": true
+    },
+    {
+      "distance_relative_error": 4.886385390913001e-16,
+      "estimator": "StudentTScatter",
+      "location_relative_error": 8.748745417496688e-16,
+      "matrix_relative_error": 0.0,
+      "output": "covariance",
+      "passed": true
+    },
+    {
+      "distance_relative_error": 1.5675672598454693e-15,
+      "estimator": "MRCD",
+      "location_relative_error": 6.828472211717582e-17,
+      "matrix_relative_error": 0.0,
+      "output": "covariance",
+      "passed": true
+    },
+    {
+      "distance_relative_error": 1.6998774271948716e-15,
+      "estimator": "DetS",
+      "location_relative_error": 1.0713881487112863e-16,
+      "matrix_relative_error": 0.0,
+      "output": "covariance",
+      "passed": true
+    },
+    {
+      "distance_relative_error": null,
+      "estimator": "RegularizedTyler",
+      "location_relative_error": 6.764296562555786e-16,
+      "matrix_relative_error": 5.659372476966798e-16,
+      "output": "shape",
+      "passed": true
+    }
+  ]
+}

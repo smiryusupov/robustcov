@@ -93,6 +93,12 @@ heavy-tail, and latent-structure gallery assets:
 
 This writes a standalone HTML report, Markdown report, CSV files, and plots.
 
+For the focused release-candidate snapshot covering FastMCD calibration and
+robust explanation references, run ``scripts/generate_release_evidence.py``.
+The command records package versions, thread settings, source-tree digest,
+commands, key results, and SHA-256 hashes in
+``docs/_static/release_evidence.json``.
+
 Run the latent-structure suite separately when evaluating ICA, SOBI, robust
 PCA, or factor models:
 

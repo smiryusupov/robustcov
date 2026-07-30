@@ -11,6 +11,7 @@ import json
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
+import sys
 import tarfile
 import tomllib
 from typing import Iterable
@@ -250,6 +251,10 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         "scripts/check_release_version.py",
         "scripts/installed_package_smoke.py",
         "scripts/write_artifact_checksums.py",
+        "scripts/generate_release_evidence.py",
+        "docs/_static/release_evidence.json",
+        "docs/_static/benchmarks/statistical_validation.json",
+        "docs/_static/examples/robust_explanations_iris.json",
         "examples_external/gas_sensor_drift_dro_pca.py",
         "examples_external/cmapss_dro_pca_monitoring.py",
         ".github/workflows/external-data.yml",
@@ -385,7 +390,7 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
     )
 
     extras = project.get("optional-dependencies", {})
-    required_extras = {"plot", "sklearn", "test", "dev", "bench", "docs", "examples"}
+    required_extras = {"plot", "sklearn", "test", "dev", "bench", "docs", "examples", "explain"}
     _check(
         checks,
         "source: expected extras",
@@ -407,6 +412,26 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         "source: one API stability policy",
         not (root / "docs" / "API_STABILITY.md").exists(),
         "docs/api_stability.rst is canonical",
+    )
+
+    evidence_check = subprocess.run(
+        [
+            sys.executable,
+            str(root / "scripts" / "generate_release_evidence.py"),
+            "--check",
+            "--manifest",
+            str(root / "docs" / "_static" / "release_evidence.json"),
+        ],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    _check(
+        checks,
+        "source: release evidence manifest",
+        evidence_check.returncode == 0,
+        (evidence_check.stdout + evidence_check.stderr).strip(),
     )
 
     init_path = root / "robustcov" / "__init__.py"
@@ -601,6 +626,10 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
             f"{top}/scripts/check_release_version.py",
             f"{top}/scripts/installed_package_smoke.py",
             f"{top}/scripts/write_artifact_checksums.py",
+            f"{top}/scripts/generate_release_evidence.py",
+            f"{top}/docs/_static/release_evidence.json",
+            f"{top}/docs/_static/benchmarks/statistical_validation.json",
+            f"{top}/docs/_static/examples/robust_explanations_iris.json",
             f"{top}/requirements/minimum.txt",
             f"{top}/robustcov/datasets/__init__.py",
             f"{top}/robustcov/datasets/_external.py",

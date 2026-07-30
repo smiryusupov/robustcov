@@ -125,12 +125,23 @@ Run it with:
 
    python examples/robust_explanations_iris.py
 
-On the deterministic SHAP comparison used during development, the contaminated
-empirical reference produced an attribution drift of about ``2.53`` in total
-absolute SHAP value, while the robust reference produced about ``0.39`` and
-retained none of the twelve injected leverage points. Treat those values as an
-illustration, not a universal performance claim; explanation stability depends
-on the model, query, contamination pattern, and explainer settings.
+The release-candidate snapshot retains none of the twelve injected leverage
+rows.  For the fixed query and model, total absolute SHAP drift from the clean
+reference is ``2.528`` with the contaminated empirical reference and ``0.388``
+with the robust reference.
+
+.. image:: _static/examples/robust_explanations_iris.png
+   :alt: SHAP and optional LIME attribution drift under reference contamination
+   :width: 640px
+
+.. literalinclude:: _static/examples/robust_explanations_iris_output.txt
+   :language: text
+
+The machine-readable result is stored in
+``docs/_static/examples/robust_explanations_iris.json`` and is hashed by the
+release evidence manifest. Treat the values as a controlled example, not a
+universal performance claim; explanation stability depends on the model,
+query, contamination pattern, and explainer settings.
 
 Scope and interpretation
 ------------------------
