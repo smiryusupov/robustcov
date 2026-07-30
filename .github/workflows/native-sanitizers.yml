@@ -1,0 +1,63 @@
+name: native sanitizers
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  asan-ubsan:
+    name: ASan and UBSan on Python 3.13
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      ASAN_OPTIONS: verify_asan_link_order=0:detect_leaks=0:halt_on_error=1:strict_string_checks=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+      PYTHONMALLOC: malloc
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install build and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "scikit-build-core>=1.0.3" \
+            "pybind11>=3.0.1" \
+            "pytest>=8" \
+            "numpy>=2.1.0" \
+            "scipy>=1.14.1"
+
+      - name: Build editable extension with sanitizers
+        run: |
+          python -m pip install \
+            --no-build-isolation \
+            --no-deps \
+            --config-settings=cmake.define.ROBUSTCOV_ENABLE_SANITIZERS=ON \
+            --config-settings=cmake.define.CMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE \
+            -e .
+
+      - name: Configure sanitizer runtimes
+        shell: bash
+        run: |
+          libstdcxx="$(g++ -print-file-name=libstdc++.so)"
+          libasan="$(g++ -print-file-name=libasan.so)"
+          echo "LD_PRELOAD=${libstdcxx}:${libasan}" >> "$GITHUB_ENV"
+
+      - name: Run focused native checks
+        run: |
+          python -m pytest -q \
+            tests/tests_to_remove/test_native_input_validation.py \
+            tests/test_native_kernels.py \
+            tests/test_basic.py::test_fast_mcd_basic

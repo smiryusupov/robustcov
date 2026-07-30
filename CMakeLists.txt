@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.18)
 project(robustcov_cpp LANGUAGES NONE)
 
 option(ROBUSTCOV_BUILD_NATIVE "Build the optional pybind11 extension" ON)
+option(ROBUSTCOV_ENABLE_SANITIZERS "Build the native extension with ASan and UBSan" OFF)
 
 if(ROBUSTCOV_BUILD_NATIVE)
   enable_language(CXX)
@@ -23,7 +24,21 @@ if(ROBUSTCOV_BUILD_NATIVE)
   endif()
 
   if(MSVC)
+    if(ROBUSTCOV_ENABLE_SANITIZERS)
+      message(FATAL_ERROR "ROBUSTCOV_ENABLE_SANITIZERS is supported only with GCC or Clang")
+    endif()
     target_compile_options(_robustcov_cpp PRIVATE /O2)
+  elseif(ROBUSTCOV_ENABLE_SANITIZERS)
+    target_compile_options(
+      _robustcov_cpp PRIVATE
+      -O1
+      -g
+      -Wall
+      -Wextra
+      -fno-omit-frame-pointer
+      -fsanitize=address,undefined
+    )
+    target_link_options(_robustcov_cpp PRIVATE -fsanitize=address,undefined)
   else()
     target_compile_options(_robustcov_cpp PRIVATE -O3 -Wall -Wextra)
   endif()

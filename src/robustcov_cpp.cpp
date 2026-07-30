@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <sstream>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -44,22 +45,67 @@ static bool has_openmp_cpp() {
 #endif
 }
 
-static int effective_threads_cpp(int tasks, int min_tasks_per_thread = 128) {
 #ifdef _OPENMP
+static int effective_threads_cpp(int tasks, int min_tasks_per_thread = 128) {
     int mx = omp_get_max_threads();
     int by_work = std::max(1, tasks / std::max(1, min_tasks_per_thread));
     return std::max(1, std::min(mx, by_work));
-#else
-    (void)tasks; (void)min_tasks_per_thread;
-    return 1;
+}
 #endif
+
+static int checked_dimension(py::ssize_t value, const char* name, py::ssize_t minimum = 1) {
+    if (value < minimum) {
+        std::ostringstream message;
+        message << name << " must be at least " << minimum;
+        throw std::invalid_argument(message.str());
+    }
+    if (value > static_cast<py::ssize_t>(std::numeric_limits<int>::max())) {
+        throw std::overflow_error(std::string(name) + " exceeds the native integer range");
+    }
+    return static_cast<int>(value);
+}
+
+static size_t checked_product(size_t left, size_t right, const char* name) {
+    if (left != 0 && right > std::numeric_limits<size_t>::max() / left) {
+        throw std::overflow_error(std::string(name) + " is too large");
+    }
+    return left * right;
+}
+
+static size_t checked_matrix_elements(int rows, int columns, const char* name) {
+    if (rows < 0 || columns < 0) {
+        throw std::invalid_argument(std::string(name) + " has negative dimensions");
+    }
+    return checked_product(static_cast<size_t>(rows), static_cast<size_t>(columns), name);
+}
+
+static int checked_int_product(int left, int right, const char* name) {
+    if (left < 0 || right < 0) {
+        throw std::invalid_argument(std::string(name) + " has negative dimensions");
+    }
+    const size_t result = checked_product(
+        static_cast<size_t>(left), static_cast<size_t>(right), name
+    );
+    if (result > static_cast<size_t>(std::numeric_limits<int>::max())) {
+        throw std::overflow_error(std::string(name) + " exceeds the native integer range");
+    }
+    return static_cast<int>(result);
+}
+
+static void require_all_finite(const double* values, size_t count, const char* name) {
+    for (size_t index = 0; index < count; ++index) {
+        if (!std::isfinite(values[index])) {
+            throw std::invalid_argument(std::string(name) + " contains NaN or infinity");
+        }
+    }
 }
 
 struct Mat {
     int n = 0, p = 0;
     std::vector<double> a;
     Mat() = default;
-    Mat(int n_, int p_, double v = 0.0) : n(n_), p(p_), a(static_cast<size_t>(n_) * p_, v) {}
+    Mat(int n_, int p_, double v = 0.0)
+        : n(n_), p(p_), a(checked_matrix_elements(n_, p_, "native matrix"), v) {}
     double& operator()(int i, int j) { return a[static_cast<size_t>(i) * p + j]; }
     double operator()(int i, int j) const { return a[static_cast<size_t>(i) * p + j]; }
 };
@@ -67,15 +113,15 @@ struct Mat {
 static Mat numpy_to_mat(py::array_t<double, py::array::c_style | py::array::forcecast> arr) {
     auto b = arr.request();
     if (b.ndim != 2) throw std::invalid_argument("X must be a 2D float64 array");
-    int n = static_cast<int>(b.shape[0]);
-    int p = static_cast<int>(b.shape[1]);
-    if (n < 2 || p < 1) throw std::invalid_argument("X must have at least 2 rows and 1 column");
+    const int n = checked_dimension(b.shape[0], "X rows", 2);
+    const int p = checked_dimension(b.shape[1], "X columns");
+    const size_t count = checked_product(
+        static_cast<size_t>(n), static_cast<size_t>(p), "X element count"
+    );
     Mat X(n, p);
     const double* ptr = static_cast<const double*>(b.ptr);
-    for (int i = 0; i < n * p; ++i) {
-        if (!std::isfinite(ptr[i])) throw std::invalid_argument("X contains NaN or infinity");
-        X.a[i] = ptr[i];
-    }
+    require_all_finite(ptr, count, "X");
+    std::copy(ptr, ptr + count, X.a.begin());
     return X;
 }
 
@@ -282,8 +328,12 @@ static py::dict fit_tyler_cpp(py::array_t<double, py::array::c_style | py::array
                               bool assume_centered) {
     Mat X = numpy_to_mat(arr);
     int n = X.n, p = X.p;
+    if (max_iter < 1) throw std::invalid_argument("max_iter must be positive");
+    if (!(tol > 0.0) || !std::isfinite(tol))
+        throw std::invalid_argument("tol must be positive and finite");
+    if (!std::isfinite(regularization) || regularization < 0.0 || regularization >= 1.0)
+        throw std::invalid_argument("regularization must be finite and in [0, 1)");
     if (regularization <= 0.0 && n <= p) throw std::invalid_argument("Unregularized Tyler requires n_samples > n_features");
-    if (regularization < 0.0 || regularization >= 1.0) throw std::invalid_argument("regularization must be in [0, 1)");
 
     std::vector<double> loc(p, 0.0);
     if (!assume_centered) loc = column_mean(X);
@@ -472,9 +522,15 @@ static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::ar
                                  double reweight_consistency_factor) {
     Mat X = numpy_to_mat(arr);
     int n = X.n, p = X.p;
+    if (!(support_fraction == -1.0 ||
+          (std::isfinite(support_fraction) && support_fraction > 0.0 && support_fraction <= 1.0))) {
+        throw std::invalid_argument("support_fraction must be -1 or finite and in (0, 1]");
+    }
+    if (!(tol > 0.0) || !std::isfinite(tol))
+        throw std::invalid_argument("tol must be positive and finite");
     if (n <= p) throw std::invalid_argument("FastMCD requires n_samples > n_features for this MVP");
     int h;
-    if (support_fraction <= 0.0) h = (n + p + 1) / 2;
+    if (support_fraction < 0.0) h = (n + p + 1) / 2;
     else h = static_cast<int>(std::floor(support_fraction * n));
     h = std::max(p + 1, std::min(h, n));
     if (n_init < 1) throw std::invalid_argument("n_init must be positive");
@@ -487,13 +543,16 @@ static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::ar
         throw std::invalid_argument("reweight_cutoff must be finite and positive");
     if (!std::isfinite(reweight_consistency_factor) || reweight_consistency_factor <= 0.0)
         throw std::invalid_argument("reweight_consistency_factor must be finite and positive");
-    n_best = std::min(n_best, n_init + 1);
+    const int maximum_best = n_init == std::numeric_limits<int>::max()
+        ? n_init
+        : n_init + 1;
+    n_best = std::min(n_best, maximum_best);
 
     std::mt19937_64 rng(seed);
     std::vector<int> all(n);
     std::iota(all.begin(), all.end(), 0);
     std::vector<MCDCandidate> pool;
-    pool.reserve(static_cast<size_t>(n_init + 4));
+    pool.reserve(checked_product(static_cast<size_t>(n_init), 1, "n_init") + 4);
 
     auto push_candidate = [&](MCDCandidate&& c) {
         if (!std::isfinite(c.logdet) || static_cast<int>(c.idx.size()) != h) return;
@@ -523,8 +582,10 @@ static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::ar
     }
     std::vector<MCDCandidate> random_candidates(static_cast<size_t>(n_init));
     std::vector<unsigned char> random_ok(static_cast<size_t>(n_init), 0);
-int init_threads = effective_threads_cpp(n_init, 4);
+#ifdef _OPENMP
+    int init_threads = effective_threads_cpp(n_init, 4);
 #pragma omp parallel for schedule(dynamic) num_threads(init_threads) if(init_threads > 1)
+#endif
     for (int init = 0; init < n_init; ++init) {
         try {
             MCDCandidate c = run_c_steps(X, random_starts[static_cast<size_t>(init)], h, initial_c_steps, tol, 1e-7);
@@ -544,8 +605,10 @@ int init_threads = effective_threads_cpp(n_init, 4);
 
     std::vector<MCDCandidate> polished_pool(pool.size());
     std::vector<unsigned char> polished_ok(pool.size(), 0);
-int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
+#ifdef _OPENMP
+    int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
 #pragma omp parallel for schedule(dynamic) num_threads(polish_threads) if(polish_threads > 1)
+#endif
     for (int ci = 0; ci < static_cast<int>(pool.size()); ++ci) {
         try {
             polished_pool[static_cast<size_t>(ci)] = run_c_steps(X, pool[static_cast<size_t>(ci)].idx, h, max_iter, tol, 1e-9);
@@ -673,24 +736,33 @@ static py::array_t<double> mahalanobis2_batch_cpp(
     if (xb.ndim != 2 || lb.ndim != 1 || pb.ndim != 2) {
         throw std::invalid_argument("X must be 2D, location must be 1D, and precision must be 2D");
     }
-    const int n = static_cast<int>(xb.shape[0]);
-    const int p = static_cast<int>(xb.shape[1]);
-    if (n < 1 || p < 1 || lb.shape[0] != p || pb.shape[0] != p || pb.shape[1] != p) {
+    if (lb.shape[0] != xb.shape[1] ||
+        pb.shape[0] != xb.shape[1] || pb.shape[1] != xb.shape[1]) {
         throw std::invalid_argument("Mahalanobis dimensions do not match");
     }
+    const int n = checked_dimension(xb.shape[0], "X rows");
+    const int p = checked_dimension(xb.shape[1], "X columns");
+    const size_t x_count = checked_product(
+        static_cast<size_t>(n), static_cast<size_t>(p), "X element count"
+    );
+    const size_t precision_count = checked_matrix_elements(p, p, "precision element count");
     const double* X = static_cast<const double*>(xb.ptr);
     const double* location = static_cast<const double*>(lb.ptr);
     const double* precision = static_cast<const double*>(pb.ptr);
-    py::array_t<double> out(n);
+    require_all_finite(X, x_count, "X");
+    require_all_finite(location, static_cast<size_t>(p), "location");
+    require_all_finite(precision, precision_count, "precision");
+
+    py::array_t<double> out(static_cast<py::ssize_t>(n));
     double* distances = static_cast<double*>(out.request().ptr);
     {
         py::gil_scoped_release release;
-        const int nt = effective_threads_cpp(n, 256);
 #ifdef _OPENMP
+        const int nt = effective_threads_cpp(n, 256);
 #pragma omp parallel for schedule(static) num_threads(nt) if(nt > 1)
 #endif
         for (int i = 0; i < n; ++i) {
-            const double* row = X + static_cast<size_t>(i) * p;
+            const double* row = X + static_cast<size_t>(i) * static_cast<size_t>(p);
             double distance = 0.0;
             // Pair off-diagonal terms so the result is the full quadratic form
             // even when precision is only numerically symmetric.
@@ -722,26 +794,39 @@ static py::array_t<double> matrix_mahalanobis2_batch_cpp(
     if (xb.ndim != 3 || mb.ndim != 2 || rb.ndim != 2 || cb.ndim != 2) {
         throw std::invalid_argument("X must be 3D and matrix arguments must be 2D");
     }
-    const int n = static_cast<int>(xb.shape[0]);
-    const int r = static_cast<int>(xb.shape[1]);
-    const int c = static_cast<int>(xb.shape[2]);
-    if (mb.shape[0] != r || mb.shape[1] != c || rb.shape[0] != r || rb.shape[1] != r || cb.shape[0] != c || cb.shape[1] != c) {
+    if (mb.shape[0] != xb.shape[1] || mb.shape[1] != xb.shape[2] ||
+        rb.shape[0] != xb.shape[1] || rb.shape[1] != xb.shape[1] ||
+        cb.shape[0] != xb.shape[2] || cb.shape[1] != xb.shape[2]) {
         throw std::invalid_argument("matrix Mahalanobis dimensions do not match");
     }
+    const int n = checked_dimension(xb.shape[0], "X samples");
+    const int r = checked_dimension(xb.shape[1], "X rows");
+    const int c = checked_dimension(xb.shape[2], "X columns");
+    const size_t sample_size = checked_matrix_elements(r, c, "matrix sample size");
+    const size_t x_count = checked_product(
+        static_cast<size_t>(n), sample_size, "X element count"
+    );
+    const size_t row_precision_count = checked_matrix_elements(r, r, "row precision element count");
+    const size_t column_precision_count = checked_matrix_elements(c, c, "column precision element count");
     const double* X = static_cast<const double*>(xb.ptr);
     const double* M = static_cast<const double*>(mb.ptr);
     const double* RP = static_cast<const double*>(rb.ptr);
     const double* CP = static_cast<const double*>(cb.ptr);
-    py::array_t<double> out(n);
+    require_all_finite(X, x_count, "X");
+    require_all_finite(M, sample_size, "location");
+    require_all_finite(RP, row_precision_count, "row_precision");
+    require_all_finite(CP, column_precision_count, "column_precision");
+
+    py::array_t<double> out(static_cast<py::ssize_t>(n));
     double* result = static_cast<double*>(out.request().ptr);
     {
         py::gil_scoped_release release;
-        int nt = effective_threads_cpp(n, 32);
 #ifdef _OPENMP
+        int nt = effective_threads_cpp(n, 32);
 #pragma omp parallel for schedule(static) num_threads(nt) if(nt > 1)
 #endif
         for (int i = 0; i < n; ++i) {
-            std::vector<double> left(static_cast<size_t>(r) * c, 0.0);
+            std::vector<double> left(sample_size, 0.0);
             for (int a = 0; a < r; ++a) {
                 for (int b = 0; b < c; ++b) {
                     double value = 0.0;
@@ -782,27 +867,47 @@ static py::array_t<double> weighted_tucker_scores_2d_cpp(
     if (xb.ndim != 3 || wb.ndim != 3 || mb.ndim != 2 || ub.ndim != 2 || vb.ndim != 2) {
         throw std::invalid_argument("weighted Tucker inputs have invalid dimensions");
     }
-    const int n = static_cast<int>(xb.shape[0]);
-    const int r = static_cast<int>(xb.shape[1]);
-    const int c = static_cast<int>(xb.shape[2]);
-    const int q1 = static_cast<int>(ub.shape[1]);
-    const int q2 = static_cast<int>(vb.shape[1]);
-    const int q = q1 * q2;
-    if (wb.shape[0] != n || wb.shape[1] != r || wb.shape[2] != c || mb.shape[0] != r || mb.shape[1] != c || ub.shape[0] != r || vb.shape[0] != c) {
+    if (wb.shape[0] != xb.shape[0] || wb.shape[1] != xb.shape[1] || wb.shape[2] != xb.shape[2] ||
+        mb.shape[0] != xb.shape[1] || mb.shape[1] != xb.shape[2] ||
+        ub.shape[0] != xb.shape[1] || vb.shape[0] != xb.shape[2]) {
         throw std::invalid_argument("weighted Tucker dimensions do not match");
     }
-    if (!(ridge > 0.0) || !std::isfinite(ridge)) throw std::invalid_argument("ridge must be positive and finite");
+    const int n = checked_dimension(xb.shape[0], "X samples");
+    const int r = checked_dimension(xb.shape[1], "X rows");
+    const int c = checked_dimension(xb.shape[2], "X columns");
+    const int q1 = checked_dimension(ub.shape[1], "row component rank");
+    const int q2 = checked_dimension(vb.shape[1], "column component rank");
+    const int q = checked_int_product(q1, q2, "Tucker core size");
+    if (!(ridge > 0.0) || !std::isfinite(ridge))
+        throw std::invalid_argument("ridge must be positive and finite");
+
+    const size_t sample_size = checked_matrix_elements(r, c, "matrix sample size");
+    const size_t x_count = checked_product(
+        static_cast<size_t>(n), sample_size, "X element count"
+    );
+    const size_t row_component_count = checked_matrix_elements(r, q1, "row component element count");
+    const size_t column_component_count = checked_matrix_elements(c, q2, "column component element count");
     const double* X = static_cast<const double*>(xb.ptr);
     const double* W = static_cast<const double*>(wb.ptr);
     const double* M = static_cast<const double*>(mb.ptr);
     const double* U = static_cast<const double*>(ub.ptr);
     const double* V = static_cast<const double*>(vb.ptr);
-    py::array_t<double> out({n, q1, q2});
+    require_all_finite(X, x_count, "X");
+    require_all_finite(W, x_count, "weights");
+    require_all_finite(M, sample_size, "center");
+    require_all_finite(U, row_component_count, "row_components");
+    require_all_finite(V, column_component_count, "column_components");
+
+    py::array_t<double> out({
+        static_cast<py::ssize_t>(n),
+        static_cast<py::ssize_t>(q1),
+        static_cast<py::ssize_t>(q2),
+    });
     double* scores = static_cast<double*>(out.request().ptr);
     {
         py::gil_scoped_release release;
-        int nt = effective_threads_cpp(n, 8);
 #ifdef _OPENMP
+        int nt = effective_threads_cpp(n, 8);
 #pragma omp parallel for schedule(static) num_threads(nt) if(nt > 1)
 #endif
         for (int i = 0; i < n; ++i) {
@@ -813,7 +918,7 @@ static py::array_t<double> weighted_tucker_scores_2d_cpp(
                 for (int b = 0; b < c; ++b) {
                     const size_t offset = (static_cast<size_t>(i) * r + a) * c + b;
                     const double w = W[offset];
-                    if (!(w > 0.0) || !std::isfinite(w)) continue;
+                    if (!(w > 0.0)) continue;
                     const double y = X[offset] - M[static_cast<size_t>(a) * c + b];
                     for (int u = 0; u < q1; ++u) {
                         for (int v = 0; v < q2; ++v) {
@@ -849,15 +954,18 @@ static py::tuple joint_diagonalize_symmetric_cpp(
     if (buffer.ndim != 3 || buffer.shape[1] != buffer.shape[2]) {
         throw std::invalid_argument("matrices must have shape (n_matrices, p, p)");
     }
-    const int n_matrices = static_cast<int>(buffer.shape[0]);
-    const int p = static_cast<int>(buffer.shape[1]);
-    if (n_matrices < 1 || p < 1) throw std::invalid_argument("matrices must be non-empty");
+    const int n_matrices = checked_dimension(buffer.shape[0], "number of matrices");
+    const int p = checked_dimension(buffer.shape[1], "matrix dimension");
     if (max_sweeps < 1) throw std::invalid_argument("max_sweeps must be positive");
     if (!(tol > 0.0) || !std::isfinite(tol)) throw std::invalid_argument("tol must be positive and finite");
 
     const double* input = static_cast<const double*>(buffer.ptr);
-    const size_t matrix_size = static_cast<size_t>(p) * p;
-    std::vector<double> arrays(static_cast<size_t>(n_matrices) * matrix_size, 0.0);
+    const size_t matrix_size = checked_matrix_elements(p, p, "joint diagonalization matrix size");
+    const size_t total_size = checked_product(
+        static_cast<size_t>(n_matrices), matrix_size,
+        "joint diagonalization element count"
+    );
+    std::vector<double> arrays(total_size, 0.0);
     for (int k = 0; k < n_matrices; ++k) {
         for (int i = 0; i < p; ++i) {
             for (int j = 0; j < p; ++j) {
