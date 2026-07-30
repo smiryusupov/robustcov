@@ -10,3 +10,7 @@ folded into the permanent estimator contract tests.
 Remove `test_fast_mcd_c_step_reference.py` after the native C-step has been
 refactored into independently testable production components or the same
 reference comparison has been folded into the permanent native-kernel tests.
+
+Remove `test_fast_mcd_exact_calibration.py` after the exact chi-square
+calibration has survived one release cycle and its fitted-factor assertions
+have been folded into the permanent FastMCD contract tests.

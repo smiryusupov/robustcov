@@ -81,6 +81,22 @@ The raw subset location and covariance are
    \qquad
    \hat\Sigma_H = \frac{1}{h-1}\sum_{i\in H}(x_i-\hat\mu_H)(x_i-\hat\mu_H)^T.
 
+For Gaussian consistency, let :math:`\alpha_H=h/n`,
+:math:`q_H=F^{-1}_{\chi^2_p}(\alpha_H)`, and
+
+.. math::
+
+   c_H = \frac{\alpha_H}{F_{\chi^2_{p+2}}(q_H)}.
+
+``robustcov`` multiplies the raw covariance by :math:`c_H`. Reweighting uses
+the exact cutoff :math:`q_r=F^{-1}_{\chi^2_p}(\alpha_r)` and applies the
+corresponding factor
+:math:`c_r=\alpha_r/F_{\chi^2_{p+2}}(q_r)` to the covariance of the
+reweighted support. These quantities are evaluated with SciPy rather than a
+Wilson--Hilferty approximation. The fitted attributes
+``raw_consistency_factor_``, ``reweight_threshold_``, and
+``consistency_factor_`` expose the values used by the fit.
+
 The FastMCD idea is the **C-step**. Starting from a candidate subset, compute Mahalanobis distances
 with the current subset covariance and keep the :math:`h` observations with smallest distances. The
 C-step has the monotonicity property that it does not increase the determinant under regularity

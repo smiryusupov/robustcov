@@ -438,66 +438,9 @@ static MCDCandidate run_c_steps(const Mat& X,
 }
 
 
-static double median_copy(std::vector<double> v) {
-    if (v.empty()) return std::numeric_limits<double>::quiet_NaN();
-    size_t mid = v.size() / 2;
-    std::nth_element(v.begin(), v.begin() + mid, v.end());
-    double med = v[mid];
-    if (v.size() % 2 == 0) {
-        auto max_it = std::max_element(v.begin(), v.begin() + mid);
-        med = 0.5 * (med + *max_it);
-    }
-    return med;
-}
-
 static void scale_matrix_inplace(Mat& A, double scale) {
     if (!std::isfinite(scale) || scale <= 0.0) return;
     for (double& x : A.a) x *= scale;
-}
-
-static double normal_quantile_approx(double p) {
-    // Peter J. Acklam's inverse-normal approximation, dependency-free.
-    if (p <= 0.0) return -std::numeric_limits<double>::infinity();
-    if (p >= 1.0) return std::numeric_limits<double>::infinity();
-    static const double a[] = {
-        -3.969683028665376e+01, 2.209460984245205e+02,
-        -2.759285104469687e+02, 1.383577518672690e+02,
-        -3.066479806614716e+01, 2.506628277459239e+00};
-    static const double b[] = {
-        -5.447609879822406e+01, 1.615858368580409e+02,
-        -1.556989798598866e+02, 6.680131188771972e+01,
-        -1.328068155288572e+01};
-    static const double c[] = {
-        -7.784894002430293e-03, -3.223964580411365e-01,
-        -2.400758277161838e+00, -2.549732539343734e+00,
-         4.374664141464968e+00, 2.938163982698783e+00};
-    static const double d[] = {
-         7.784695709041462e-03, 3.224671290700398e-01,
-         2.445134137142996e+00, 3.754408661907416e+00};
-    const double plow = 0.02425;
-    const double phigh = 1.0 - plow;
-    double q, r;
-    if (p < plow) {
-        q = std::sqrt(-2.0 * std::log(p));
-        return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
-               ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
-    }
-    if (p > phigh) {
-        q = std::sqrt(-2.0 * std::log(1.0 - p));
-        return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
-                ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0);
-    }
-    q = p - 0.5;
-    r = q * q;
-    return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
-           (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1.0);
-}
-
-static double chi2_quantile_wilson_hilferty(double alpha, int p) {
-    double z = normal_quantile_approx(alpha);
-    double pp = static_cast<double>(std::max(1, p));
-    double a = 1.0 - 2.0 / (9.0 * pp) + z * std::sqrt(2.0 / (9.0 * pp));
-    return std::max(1e-12, pp * a * a * a);
 }
 
 static std::vector<int> deterministic_median_start(const Mat& X, int h) {
@@ -524,7 +467,9 @@ static std::vector<int> deterministic_median_start(const Mat& X, int h) {
 static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::array::forcecast> arr,
                                  double support_fraction, int n_init, int max_iter,
                                  double tol, bool reweight, std::uint64_t seed,
-                                 int n_best, int initial_c_steps, double reweight_alpha) {
+                                 int n_best, int initial_c_steps,
+                                 double raw_consistency_factor, double reweight_cutoff,
+                                 double reweight_consistency_factor) {
     Mat X = numpy_to_mat(arr);
     int n = X.n, p = X.p;
     if (n <= p) throw std::invalid_argument("FastMCD requires n_samples > n_features for this MVP");
@@ -536,6 +481,12 @@ static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::ar
     if (max_iter < 1) throw std::invalid_argument("max_iter must be positive");
     if (n_best < 1) throw std::invalid_argument("n_best must be positive");
     if (initial_c_steps < 1) throw std::invalid_argument("initial_c_steps must be positive");
+    if (!std::isfinite(raw_consistency_factor) || raw_consistency_factor <= 0.0)
+        throw std::invalid_argument("raw_consistency_factor must be finite and positive");
+    if (!std::isfinite(reweight_cutoff) || reweight_cutoff <= 0.0)
+        throw std::invalid_argument("reweight_cutoff must be finite and positive");
+    if (!std::isfinite(reweight_consistency_factor) || reweight_consistency_factor <= 0.0)
+        throw std::invalid_argument("reweight_consistency_factor must be finite and positive");
     n_best = std::min(n_best, n_init + 1);
 
     std::mt19937_64 rng(seed);
@@ -610,16 +561,11 @@ int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
     }
     if (best.idx.empty()) throw std::runtime_error("FastMCD failed during final C-steps");
 
-    // Raw MCD covariance is computed from the central h-subset and is therefore
-    // systematically too small under Gaussian data. Use a robust radial median
-    // consistency correction before reweighting. This is dependency-free and keeps
-    // the estimator well calibrated enough for the MVP benchmarks.
+    // Python computes exact Gaussian consistency constants with SciPy. Keeping
+    // distribution functions out of the native kernel makes the calibration
+    // auditable while C++ remains responsible for subset search and covariance work.
     Mat raw_cov_corrected = best.cov;
-    Mat raw_prec_uncorrected = inverse_spd(best.cov);
-    auto raw_dist_uncorrected = mahalanobis2(X, best.loc, raw_prec_uncorrected);
-    double chi2_med = chi2_quantile_wilson_hilferty(0.5, p);
-    double raw_scale = median_copy(raw_dist_uncorrected) / std::max(chi2_med, 1e-12);
-    raw_scale = std::max(1e-6, std::min(raw_scale, 1e6));
+    double raw_scale = raw_consistency_factor;
     scale_matrix_inplace(raw_cov_corrected, raw_scale);
 
     Mat raw_prec = inverse_spd(raw_cov_corrected);
@@ -630,24 +576,22 @@ int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
     std::vector<unsigned char> support = raw_support;
     std::vector<double> final_loc = best.loc;
     Mat final_cov = raw_cov_corrected;
+    double final_consistency_factor = raw_consistency_factor;
+    bool reweighted = false;
 
     if (reweight) {
-        // Classical MCD reweighting: keep observations within an approximately Gaussian
-        // robust distance cutoff after raw covariance consistency correction.
-        double cutoff = chi2_quantile_wilson_hilferty(reweight_alpha, p);
+        // Classical MCD reweighting: retain observations within the exact
+        // chi-square cutoff supplied by Python, then correct the truncated
+        // covariance back to Gaussian consistency.
         std::vector<int> rw;
         rw.reserve(n);
-        for (int i = 0; i < n; ++i) if (raw_dist[i] <= cutoff) rw.push_back(i);
+        for (int i = 0; i < n; ++i) if (raw_dist[i] <= reweight_cutoff) rw.push_back(i);
         if (static_cast<int>(rw.size()) >= p + 1) {
             final_loc = column_mean(X, &rw);
             final_cov = covariance_from_indices(X, rw, final_loc, 1e-9);
-            // Do NOT radial-median rescale the final reweighted covariance using all
-            // observations. At high contamination, the global median radial distance is
-            // no longer a clean-data median: with 30% upper-tail outliers it corresponds
-            // roughly to the 71st percentile of the clean radial distribution, inflating
-            // covariance scale. Once a reweighted support is selected, its sample
-            // covariance is the better default MVP estimate. Users can still request
-            // explicit Python-level scale_correction if they want tail calibration.
+            scale_matrix_inplace(final_cov, reweight_consistency_factor);
+            final_consistency_factor = reweight_consistency_factor;
+            reweighted = true;
             std::fill(support.begin(), support.end(), 0);
             for (int id : rw) support[id] = 1;
         }
@@ -675,6 +619,11 @@ int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
     out["raw_location"] = vec_to_numpy(best.loc);
     out["raw_covariance"] = mat_to_numpy(raw_cov_corrected);
     out["raw_scale"] = raw_scale;
+    out["raw_consistency_factor"] = raw_consistency_factor;
+    out["consistency_factor"] = final_consistency_factor;
+    if (reweight) out["reweight_threshold"] = reweight_cutoff;
+    else out["reweight_threshold"] = py::none();
+    out["reweighted"] = reweighted;
     out["raw_distances"] = vec_to_numpy(raw_dist);
     out["raw_support"] = raw_supp;
     out["h"] = h;
@@ -1059,5 +1008,7 @@ PYBIND11_MODULE(_robustcov_cpp, m) {
           py::arg("n_init")=100, py::arg("max_iter")=50, py::arg("tol")=1e-6,
           py::arg("reweight")=true, py::arg("random_state")=0,
           py::arg("n_best")=10, py::arg("initial_c_steps")=2,
-          py::arg("reweight_alpha")=0.975);
+          py::arg("raw_consistency_factor")=-1.0,
+          py::arg("reweight_cutoff")=-1.0,
+          py::arg("reweight_consistency_factor")=-1.0);
 }

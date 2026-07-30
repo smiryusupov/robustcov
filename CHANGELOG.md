@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Replaced FastMCD's Wilson--Hilferty calibration approximations with exact SciPy chi-square cutoffs and Gaussian consistency factors for the raw and reweighted covariance estimates.
 - Made FastMCD reject ``initial_c_steps=0`` instead of silently running one C-step, and corrected ``converged_``, ``n_iter_``, and objective diagnostics to describe the selected fitted solution.
 
 ## 0.1.0 - 2026-07-29

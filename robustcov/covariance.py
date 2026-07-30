@@ -19,6 +19,39 @@ class ConvergenceWarning(UserWarning):
     pass
 
 
+def _mcd_consistency_factor(retained_fraction: float, n_features: int) -> float:
+    """Return the Gaussian consistency factor for a truncated covariance."""
+    retained_fraction = float(retained_fraction)
+    n_features = int(n_features)
+    if not (0.0 < retained_fraction <= 1.0):
+        raise ValueError("retained_fraction must be in (0, 1]")
+    if n_features < 1:
+        raise ValueError("n_features must be positive")
+    if retained_fraction >= 1.0 - 1e-15:
+        return 1.0
+    quantile = float(chi2.ppf(retained_fraction, n_features))
+    denominator = float(chi2.cdf(quantile, n_features + 2))
+    if not np.isfinite(quantile) or not np.isfinite(denominator) or denominator <= 0.0:
+        raise RuntimeError("failed to compute FastMCD chi-square calibration")
+    return retained_fraction / denominator
+
+
+def _fast_mcd_calibration(
+    n_samples: int,
+    n_features: int,
+    h: int,
+    reweight_alpha: float,
+) -> tuple[float, float, float]:
+    """Compute exact raw and reweighted Gaussian calibration constants."""
+    raw_fraction = h / float(n_samples)
+    raw_factor = _mcd_consistency_factor(raw_fraction, n_features)
+    reweight_cutoff = float(chi2.ppf(reweight_alpha, n_features))
+    reweight_factor = _mcd_consistency_factor(reweight_alpha, n_features)
+    if not np.isfinite(reweight_cutoff) or reweight_cutoff <= 0.0:
+        raise RuntimeError("failed to compute FastMCD reweighting cutoff")
+    return raw_factor, reweight_cutoff, reweight_factor
+
+
 @dataclass(repr=False)
 class BaseRobustCovariance(EstimatorMixin):
     assume_centered: bool = False
@@ -134,6 +167,8 @@ class FastMCD(BaseRobustCovariance):
             raise ValueError("n_init, max_iter, and n_best must be positive")
         if values["initial_c_steps"] < 1:
             raise ValueError("initial_c_steps must be positive")
+        if not (0.5 < float(self.reweight_alpha) < 1.0):
+            raise ValueError("reweight_alpha must be between 0.5 and 1")
         return values
 
     def fit(self, X, y=None):
@@ -152,6 +187,21 @@ class FastMCD(BaseRobustCovariance):
             sf = 1.0 - float(self.contamination)
         else:
             sf = -1.0 if self.support_fraction is None else float(self.support_fraction)
+        if sf <= 0.0:
+            h = (self.n_samples_in_ + self.n_features_in_ + 1) // 2
+        else:
+            h = int(np.floor(sf * self.n_samples_in_))
+        h = max(self.n_features_in_ + 1, min(h, self.n_samples_in_))
+        (
+            raw_consistency_factor,
+            reweight_cutoff,
+            reweight_consistency_factor,
+        ) = _fast_mcd_calibration(
+            self.n_samples_in_,
+            self.n_features_in_,
+            h,
+            float(self.reweight_alpha),
+        )
         cpp = require_native("FastMCD.fit")
         with thread_limit(self.n_jobs):
             result = cpp.fit_fast_mcd(
@@ -164,7 +214,9 @@ class FastMCD(BaseRobustCovariance):
                 random_state=int(self.random_state),
                 n_best=self.effective_n_best_,
                 initial_c_steps=self.effective_initial_c_steps_,
-                reweight_alpha=float(self.reweight_alpha),
+                raw_consistency_factor=raw_consistency_factor,
+                reweight_cutoff=reweight_cutoff,
+                reweight_consistency_factor=reweight_consistency_factor,
             )
         self._load_result(result)
         return self
@@ -181,6 +233,15 @@ class FastMCD(BaseRobustCovariance):
         self.raw_distances_ = result["raw_distances"]
         self.raw_support_ = result["raw_support"]
         self.raw_scale_ = float(result.get("raw_scale", 1.0))
+        self.raw_consistency_factor_ = float(
+            result.get("raw_consistency_factor", self.raw_scale_)
+        )
+        self.consistency_factor_ = float(
+            result.get("consistency_factor", self.raw_consistency_factor_)
+        )
+        threshold = result.get("reweight_threshold")
+        self.reweight_threshold_ = None if threshold is None else float(threshold)
+        self.reweighted_ = bool(result.get("reweighted", False))
         self.h_ = int(result["h"])
         self.effective_support_fraction_ = self.h_ / float(getattr(self, "n_samples_in_", len(self.support_)))
         self.det_ = float(np.linalg.det(self.covariance_))
