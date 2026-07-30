@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Made release-evidence hashes independent of LF versus CRLF text checkouts while retaining byte-exact verification for binary artifacts.
+
 ## 0.2.0 - 2026-07-30
 
 ### Added

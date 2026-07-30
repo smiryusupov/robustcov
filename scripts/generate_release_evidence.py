@@ -28,13 +28,25 @@ DEFAULT_BENCHMARK_DIR = ROOT / "docs" / "_static" / "benchmarks"
 DEFAULT_EXAMPLE_DIR = ROOT / "docs" / "_static" / "examples"
 DEFAULT_MANIFEST = ROOT / "docs" / "_static" / "release_evidence.json"
 
+_TEXT_SUFFIXES = {".cpp", ".csv", ".h", ".hpp", ".json", ".py", ".toml", ".txt"}
+
+
+def _canonical_file_bytes(path: Path) -> bytes:
+    """Return stable content bytes for release-evidence hashing.
+
+    Git may check tracked text files out with CRLF on Windows. Evidence hashes
+    describe logical file content, so normalize text line endings while keeping
+    binary assets byte-exact.
+    """
+
+    content = path.read_bytes()
+    if path.suffix.lower() in _TEXT_SUFFIXES:
+        return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return content
+
 
 def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    return hashlib.sha256(_canonical_file_bytes(path)).hexdigest()
 
 
 def _source_files() -> list[Path]:
@@ -52,7 +64,7 @@ def _source_tree_sha256() -> str:
         relative = path.relative_to(ROOT).as_posix().encode("utf-8")
         digest.update(relative)
         digest.update(b"\0")
-        digest.update(path.read_bytes())
+        digest.update(_canonical_file_bytes(path))
         digest.update(b"\0")
     return digest.hexdigest()
 

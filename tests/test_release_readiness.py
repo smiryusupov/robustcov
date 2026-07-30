@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -69,6 +70,26 @@ def test_public_deprecation_policy_is_documented():
     assert "DeprecationWarning" in text
     assert "CHANGELOG.md" in text
 
+
+
+def test_release_evidence_hashes_ignore_text_line_endings(tmp_path):
+    script = ROOT / "scripts" / "generate_release_evidence.py"
+    spec = importlib.util.spec_from_file_location("release_evidence", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    lf = tmp_path / "evidence.csv"
+    crlf = tmp_path / "evidence-copy.csv"
+    lf.write_bytes(b"method,value\nFastMCD,1\n")
+    crlf.write_bytes(b"method,value\r\nFastMCD,1\r\n")
+    assert module._sha256(lf) == module._sha256(crlf)
+
+    binary_lf = tmp_path / "plot.png"
+    binary_crlf = tmp_path / "plot-copy.png"
+    binary_lf.write_bytes(b"\x89PNG\r\n\x1a\nraw\nbytes")
+    binary_crlf.write_bytes(b"\x89PNG\r\n\x1a\nraw\r\nbytes")
+    assert module._sha256(binary_lf) != module._sha256(binary_crlf)
 
 def test_release_check_source_mode(tmp_path):
     output = tmp_path / "release-check.json"
