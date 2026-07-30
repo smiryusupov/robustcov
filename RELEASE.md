@@ -100,6 +100,22 @@ python -m pytest -q
 
 ## Build and inspect local artifacts
 
+Do not distribute a ZIP of the working checkout. It can contain `.git`, local
+virtual environments, caches, compiled extensions, and stale build output. A
+release artifact must come from the build backend; a temporary source snapshot
+for code review should come from `git archive`, not from a file-manager ZIP.
+
+Before building, verify the tracked tree and preview ignored local state:
+
+```bash
+git status --short
+git clean -ndX
+```
+
+The preview is informational; do not run `git clean -fdX` unless every listed
+path is disposable. Temporary regression probes under `tests/tests_to_remove`
+are intentionally excluded from source distributions.
+
 ```bash
 rm -rf build dist native-free-wheel release-metadata
 python -m build

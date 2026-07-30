@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Consolidated source-distribution configuration in `pyproject.toml`, excluded temporary regression probes and local build state, and strengthened wheel/sdist content audits against VCS metadata, caches, compiled source artifacts, and nested distributions.
 - Hardened native array boundaries with checked dimensions and allocation products, explicit finite-value validation, and an opt-in AddressSanitizer/UndefinedBehaviorSanitizer workflow.
 - Replaced FastMCD's Wilson--Hilferty calibration approximations with exact SciPy chi-square cutoffs and Gaussian consistency factors for the raw and reweighted covariance estimates.
 - Made FastMCD reject ``initial_c_steps=0`` instead of silently running one C-step, and corrected ``converged_``, ``n_iter_``, and objective diagnostics to describe the selected fitted solution.

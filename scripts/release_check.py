@@ -99,21 +99,79 @@ def _safe_archive_names(names: Iterable[str]) -> bool:
     return True
 
 
-def _forbidden_archive_names(names: Iterable[str]) -> list[str]:
-    """Return build caches, downloaded data, or partial downloads in an artifact."""
+_FORBIDDEN_ARCHIVE_PARTS = {
+    ".git",
+    ".hg",
+    ".svn",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".tox",
+    ".nox",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "_skbuild",
+    "CMakeFiles",
+    "build",
+    "dist",
+    "wheelhouse",
+    "release-metadata",
+    "native-free-wheel",
+    "native-wheel",
+    ".external-data",
+}
+_FORBIDDEN_ARCHIVE_FILENAMES = {
+    ".coverage",
+    ".DS_Store",
+    "Thumbs.db",
+    "CMakeCache.txt",
+    "cmake_install.cmake",
+    "install_manifest.txt",
+    ".ninja_deps",
+    ".ninja_log",
+}
+_FORBIDDEN_ARCHIVE_SUFFIXES = {".pyc", ".pyo", ".partial", ".download"}
+_FORBIDDEN_SDIST_SUFFIXES = {
+    ".so",
+    ".pyd",
+    ".dll",
+    ".dylib",
+    ".o",
+    ".obj",
+    ".a",
+    ".lib",
+    ".whl",
+    ".zip",
+}
+
+
+def _forbidden_archive_names(names: Iterable[str], *, artifact_kind: str) -> list[str]:
+    """Return local state, build output, or nested artifacts in a distribution."""
 
     forbidden: list[str] = []
     for name in names:
         path = PurePosixPath(name)
         parts = set(path.parts)
+        local_environment = any(part.startswith(".venv-") for part in path.parts)
+        coverage_file = path.name.startswith(".coverage.")
+        generated_docs = "docs" in parts and "_build" in parts
+        downloaded_data = "examples_external" in parts and "data" in parts
+        external_results = "results" in parts and "external" in parts
+        forbidden_sdist_binary = artifact_kind == "sdist" and (
+            path.suffix.lower() in _FORBIDDEN_SDIST_SUFFIXES
+            or path.name.endswith(".tar.gz")
+        )
         if (
-            "__pycache__" in parts
-            or ".pytest_cache" in parts
-            or ".external-data" in parts
-            or ("docs" in parts and "_build" in parts)
-            or ("examples_external" in parts and "data" in parts)
-            or ("results" in parts and "external" in parts)
-            or path.suffix in {".pyc", ".pyo", ".partial", ".download"}
+            parts.intersection(_FORBIDDEN_ARCHIVE_PARTS)
+            or local_environment
+            or path.name in _FORBIDDEN_ARCHIVE_FILENAMES
+            or coverage_file
+            or generated_docs
+            or downloaded_data
+            or external_results
+            or path.suffix.lower() in _FORBIDDEN_ARCHIVE_SUFFIXES
+            or forbidden_sdist_binary
         ):
             forbidden.append(name)
     return forbidden
@@ -278,6 +336,31 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         and "pyproject.toml" in sdist_config.get("include", []),
         repr(sdist_config.get("inclusion-mode")),
     )
+    required_sdist_exclusions = {
+        "**/.git/**",
+        "**/__pycache__/**",
+        "**/.venv/**",
+        "**/*.so",
+        "**/*.whl",
+        "**/*.zip",
+        "tests/tests_to_remove/**",
+        "docs/_build/**",
+        "build/**",
+        "dist/**",
+    }
+    configured_sdist_exclusions = set(sdist_config.get("exclude", []))
+    _check(
+        checks,
+        "source: sdist excludes local and temporary state",
+        required_sdist_exclusions.issubset(configured_sdist_exclusions),
+        f"missing={sorted(required_sdist_exclusions - configured_sdist_exclusions)}",
+    )
+    _check(
+        checks,
+        "source: one sdist configuration",
+        not (root / "MANIFEST.in").exists(),
+        "pyproject.toml is the only sdist manifest",
+    )
 
     expected_minimum_lines = {
         'numpy==2.0.0; python_version < "3.13"',
@@ -364,7 +447,7 @@ def wheel_checks(path: Path, project: dict) -> list[Check]:
     with zipfile.ZipFile(path) as archive:
         names = archive.namelist()
         _check(checks, f"wheel {path.name}: safe paths", _safe_archive_names(names), "archive paths")
-        forbidden = _forbidden_archive_names(names)
+        forbidden = _forbidden_archive_names(names, artifact_kind="wheel")
         _check(
             checks,
             f"wheel {path.name}: no caches or external data",
@@ -378,6 +461,21 @@ def wheel_checks(path: Path, project: dict) -> list[Check]:
         metadata = _metadata(archive.read(metadata_names[0]).decode("utf-8"))
         _check_core_metadata(checks, metadata, label=f"wheel {path.name}", project=project)
         dist_info = metadata_names[0].rsplit("/", 1)[0]
+        allowed_roots = {"robustcov", dist_info}
+        unexpected_roots = sorted(
+            {
+                PurePosixPath(name).parts[0]
+                for name in names
+                if PurePosixPath(name).parts
+            }
+            - allowed_roots
+        )
+        _check(
+            checks,
+            f"wheel {path.name}: runtime-only roots",
+            not unexpected_roots,
+            f"unexpected={unexpected_roots}",
+        )
         required_members = {
             "robustcov/__init__.py",
             "robustcov/_public_api.json",
@@ -398,7 +496,7 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
     with tarfile.open(path, "r:gz") as archive:
         names = archive.getnames()
         _check(checks, f"sdist {path.name}: safe paths", _safe_archive_names(names), "archive paths")
-        forbidden = _forbidden_archive_names(names)
+        forbidden = _forbidden_archive_names(names, artifact_kind="sdist")
         _check(
             checks,
             f"sdist {path.name}: no caches or external data",
@@ -410,6 +508,52 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
         if len(top_levels) != 1:
             return checks
         top = next(iter(top_levels))
+        allowed_children = {
+            ".github",
+            ".readthedocs.yaml",
+            "CHANGELOG.md",
+            "CITATION.cff",
+            "CMakeLists.txt",
+            "CONTRIBUTING.md",
+            "LICENSE",
+            "NOTICE",
+            "PKG-INFO",
+            "README.md",
+            "RELEASE.md",
+            "benchmarks",
+            "conda",
+            "docs",
+            "examples",
+            "examples_external",
+            "notebooks",
+            "pyproject.toml",
+            "requirements",
+            "robustcov",
+            "scripts",
+            "src",
+            "tests",
+        }
+        children = {
+            PurePosixPath(name).parts[1]
+            for name in names
+            if len(PurePosixPath(name).parts) > 1
+        }
+        unexpected_children = sorted(children - allowed_children)
+        _check(
+            checks,
+            f"sdist {path.name}: allowlisted top-level contents",
+            not unexpected_children,
+            f"unexpected={unexpected_children}",
+        )
+        temporary_tests = [
+            name for name in names if f"{top}/tests/tests_to_remove/" in name
+        ]
+        _check(
+            checks,
+            f"sdist {path.name}: no temporary regression tests",
+            not temporary_tests,
+            repr(temporary_tests[:20]),
+        )
         required = {
             f"{top}/PKG-INFO",
             f"{top}/pyproject.toml",
