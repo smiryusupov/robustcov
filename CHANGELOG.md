@@ -20,6 +20,7 @@
 
 ### Fixed
 
+- Allowed standard ``robustcov.libs`` shared-library sidecars produced by auditwheel and delvewheel in repaired Linux and Windows wheels while continuing to reject non-library files in that directory.
 - Consolidated source-distribution configuration in `pyproject.toml`, excluded temporary regression probes and local build state, and strengthened wheel/sdist content audits against VCS metadata, caches, compiled source artifacts, and nested distributions.
 - Hardened native array boundaries with checked dimensions and allocation products, explicit finite-value validation, and an opt-in AddressSanitizer/UndefinedBehaviorSanitizer workflow.
 - Replaced FastMCD's Wilson--Hilferty calibration approximations with exact SciPy chi-square cutoffs and Gaussian consistency factors for the raw and reweighted covariance estimates.

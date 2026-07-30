@@ -133,6 +133,9 @@ _FORBIDDEN_ARCHIVE_FILENAMES = {
     ".ninja_log",
 }
 _FORBIDDEN_ARCHIVE_SUFFIXES = {".pyc", ".pyo", ".partial", ".download"}
+_WHEEL_RUNTIME_LIBRARY_SUFFIXES = {".dll", ".dylib", ".pyd"}
+
+
 _FORBIDDEN_SDIST_SUFFIXES = {
     ".so",
     ".pyd",
@@ -176,6 +179,16 @@ def _forbidden_archive_names(names: Iterable[str], *, artifact_kind: str) -> lis
         ):
             forbidden.append(name)
     return forbidden
+
+
+def _is_wheel_runtime_library(path: PurePosixPath) -> bool:
+    """Return whether *path* names a repaired-wheel runtime library."""
+
+    name = path.name.lower()
+    return (
+        path.suffix.lower() in _WHEEL_RUNTIME_LIBRARY_SUFFIXES
+        or re.search(r"\.so(?:\.\d+)*$", name) is not None
+    )
 
 
 def _check_core_metadata(checks: list[Check], metadata, *, label: str, project: dict) -> None:
@@ -521,7 +534,10 @@ def wheel_checks(path: Path, project: dict) -> list[Check]:
         metadata = _metadata(archive.read(metadata_names[0]).decode("utf-8"))
         _check_core_metadata(checks, metadata, label=f"wheel {path.name}", project=project)
         dist_info = metadata_names[0].rsplit("/", 1)[0]
-        allowed_roots = {"robustcov", dist_info}
+        # auditwheel (Linux) and delvewheel (Windows) place repaired shared
+        # libraries in a distribution-level ``<name>.libs`` directory.
+        runtime_library_root = re.sub(r"[-.]+", "_", project["name"]) + ".libs"
+        allowed_roots = {"robustcov", dist_info, runtime_library_root}
         unexpected_roots = sorted(
             {
                 PurePosixPath(name).parts[0]
@@ -535,6 +551,20 @@ def wheel_checks(path: Path, project: dict) -> list[Check]:
             f"wheel {path.name}: runtime-only roots",
             not unexpected_roots,
             f"unexpected={unexpected_roots}",
+        )
+        invalid_runtime_members = sorted(
+            name
+            for name in names
+            if PurePosixPath(name).parts
+            and PurePosixPath(name).parts[0] == runtime_library_root
+            and not name.endswith("/")
+            and not _is_wheel_runtime_library(PurePosixPath(name))
+        )
+        _check(
+            checks,
+            f"wheel {path.name}: bundled runtime libraries",
+            not invalid_runtime_members,
+            f"invalid={invalid_runtime_members}",
         )
         required_members = {
             "robustcov/__init__.py",

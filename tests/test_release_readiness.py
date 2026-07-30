@@ -3,11 +3,13 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
 import sys
 import tomllib
+import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -109,3 +111,52 @@ def test_release_check_runs_without_site_packages(tmp_path):
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(output.read_text())["passed"] is True
+
+
+def test_release_check_accepts_repaired_wheel_runtime_libraries(tmp_path):
+    script = ROOT / "scripts" / "release_check.py"
+    spec = importlib.util.spec_from_file_location("robustcov_release_check", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    wheel = tmp_path / "robustcov-0.2.0-cp312-cp312-manylinux.whl"
+    dist_info = "robustcov-0.2.0.dist-info"
+    metadata = "\n".join(
+        [
+            "Metadata-Version: 2.4",
+            "Name: robustcov",
+            "Version: 0.2.0",
+            "Requires-Python: >=3.12",
+            "License-Expression: Apache-2.0",
+            "License-File: LICENSE",
+            "License-File: NOTICE",
+            "",
+        ]
+    )
+    members = {
+        f"{dist_info}/METADATA": metadata,
+        f"{dist_info}/licenses/LICENSE": "",
+        f"{dist_info}/licenses/NOTICE": "",
+        "robustcov/__init__.py": "",
+        "robustcov/_public_api.json": "{}",
+        "robustcov/datasets/__init__.py": "",
+        "robustcov/datasets/_external.py": "",
+        "robustcov/datasets/gas_sensor_drift.py": "",
+        "robustcov/datasets/cmapss.py": "",
+        "robustcov.libs/libgomp-a34b3233.so.1.0.0": "",
+        "robustcov.libs/vcomp140.dll": "",
+    }
+    with zipfile.ZipFile(wheel, "w") as archive:
+        for name, content in members.items():
+            archive.writestr(name, content)
+
+    project = {
+        "name": "robustcov",
+        "version": "0.2.0",
+        "requires-python": ">=3.12",
+    }
+    checks = module.wheel_checks(wheel, project)
+    failures = [check for check in checks if not check.passed]
+    assert not failures, [(check.name, check.detail) for check in failures]
