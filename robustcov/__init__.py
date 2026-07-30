@@ -228,7 +228,7 @@ __all__ = [
     "robust_matern_kernel",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .features import FeatureGeometry, ClassConditionalFeatureGeometry
 from .pca import RobustPCA

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.0 - 2026-07-30
+
 ### Added
 
 - Added `RobustExplanationReference` plus thin SHAP and LIME tabular adapters that pass a contamination-resistant background, robust location/covariance, and full-matrix locality metric to the upstream explainers.
@@ -43,7 +45,7 @@
 - external workflow fix
 - test cleanup.
 
-## Unreleased
+## 0.1.0a2 - 2026-07-29
 
 ### Changed
 

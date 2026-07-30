@@ -12,12 +12,13 @@ authors:
 repository-code: "https://github.com/smiryusupov/robustcov"
 url: "https://robustcov.readthedocs.io/"
 license: "Apache-2.0"
-version: "0.1.0"
-date-released: "2026-07-29"
+version: "0.2.0"
+date-released: "2026-07-30"
 abstract: >-
   robustcov provides robust covariance, scatter, precision, PCA, ICA, SOBI,
-  factor-model, anomaly-detection, feature-geometry, and monitoring workflows
-  through a common Python/C++ API. Method-level documentation distinguishes
+  factor-model, anomaly-detection, feature-geometry, monitoring, and robust
+  explanation-reference workflows through a common Python/C++ API. Method-level
+  documentation distinguishes
   published algorithms, literature-based adaptations, and package-specific
   compositions.
 keywords:
