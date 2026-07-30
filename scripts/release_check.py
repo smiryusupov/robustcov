@@ -343,7 +343,6 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         "**/*.so",
         "**/*.whl",
         "**/*.zip",
-        "tests/tests_to_remove/**",
         "docs/_build/**",
         "build/**",
         "dist/**",
@@ -351,7 +350,7 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
     configured_sdist_exclusions = set(sdist_config.get("exclude", []))
     _check(
         checks,
-        "source: sdist excludes local and temporary state",
+        "source: sdist excludes local and build state",
         required_sdist_exclusions.issubset(configured_sdist_exclusions),
         f"missing={sorted(required_sdist_exclusions - configured_sdist_exclusions)}",
     )
@@ -580,15 +579,6 @@ def sdist_checks(path: Path, project: dict) -> list[Check]:
             f"sdist {path.name}: allowlisted top-level contents",
             not unexpected_children,
             f"unexpected={unexpected_children}",
-        )
-        temporary_tests = [
-            name for name in names if f"{top}/tests/tests_to_remove/" in name
-        ]
-        _check(
-            checks,
-            f"sdist {path.name}: no temporary regression tests",
-            not temporary_tests,
-            repr(temporary_tests[:20]),
         )
         required = {
             f"{top}/PKG-INFO",

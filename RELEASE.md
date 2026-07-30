@@ -113,8 +113,7 @@ git clean -ndX
 ```
 
 The preview is informational; do not run `git clean -fdX` unless every listed
-path is disposable. Temporary regression probes under `tests/tests_to_remove`
-are intentionally excluded from source distributions.
+path is disposable.
 
 ```bash
 rm -rf build dist native-free-wheel release-metadata

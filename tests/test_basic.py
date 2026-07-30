@@ -71,6 +71,23 @@ def test_fast_mcd_quality_and_raw_attributes():
     assert est.raw_support_.sum() == est.h_
     assert np.isfinite(est.raw_det_)
     assert np.isfinite(est.det_)
+    assert est.raw_objective_value_ == pytest.approx(
+        np.linalg.slogdet(est.raw_covariance_)[1]
+    )
+    assert est.objective_value_ == pytest.approx(
+        np.linalg.slogdet(est.covariance_)[1]
+    )
+    assert np.isfinite(est.c_step_objective_value_)
+
+    limited = rc.FastMCD(
+        n_init=12,
+        n_best=4,
+        initial_c_steps=1,
+        max_iter=1,
+        random_state=0,
+    ).fit(X)
+    assert limited.n_iter_ == 1
+    assert limited.converged_ is False
 
 
 def test_fast_mcd_contamination_sets_h():
@@ -81,13 +98,13 @@ def test_fast_mcd_contamination_sets_h():
     assert abs(est.effective_support_fraction_ - est.h_ / 200) < 1e-12
 
 
-def test_fast_mcd_contamination_conflicts_with_support_fraction():
-    try:
-        rc.FastMCD(contamination=0.1, support_fraction=0.8)
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("Expected ValueError")
+def test_fast_mcd_parameter_validation():
+    with pytest.raises(ValueError, match="either support_fraction or contamination"):
+        rc.FastMCD(contamination=0.1, support_fraction=0.8).fit(
+            np.zeros((12, 2))
+        )
+    with pytest.raises(ValueError, match="initial_c_steps must be positive"):
+        rc.FastMCD(initial_c_steps=0).fit(np.zeros((12, 2)))
 
 
 def test_plotting_helpers(tmp_path):

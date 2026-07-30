@@ -58,6 +58,6 @@ jobs:
       - name: Run focused native checks
         run: |
           python -m pytest -q \
-            tests/tests_to_remove/test_native_input_validation.py \
             tests/test_native_kernels.py \
-            tests/test_basic.py::test_fast_mcd_basic
+            tests/test_basic.py::test_fast_mcd_basic \
+            tests/test_statistical_hardening.py::test_fast_mcd_native_solution_matches_numpy_reference

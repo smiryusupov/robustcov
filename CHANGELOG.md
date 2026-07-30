@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Promoted the focused FastMCD and native-boundary regression probes into the permanent test modules and removed the temporary test staging directory.
 - Clarified that package-root and experimental public APIs are defined by their
   ``__all__`` exports, removed a stale duplicate stability note, and strengthened
   release checks against accidental public helper bindings.

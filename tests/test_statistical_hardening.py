@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from scipy.stats import chi2
 
 import robustcov as rc
 
@@ -16,6 +17,30 @@ def _correlated_sample(seed: int = 0, n: int = 160, p: int = 5) -> np.ndarray:
     indices = np.arange(p)
     covariance = 0.6 ** np.abs(indices[:, None] - indices[None, :])
     return rng.multivariate_normal(np.linspace(-0.5, 0.5, p), covariance, size=n)
+
+
+def _mcd_subset_covariance(
+    X: np.ndarray, support: np.ndarray, ridge: float = 1e-9
+) -> tuple[np.ndarray, np.ndarray]:
+    subset = X[np.asarray(support)]
+    location = subset.mean(axis=0)
+    centered = subset - location
+    covariance = centered.T @ centered / (len(subset) - 1)
+    average_variance = np.trace(covariance) / X.shape[1]
+    effective_ridge = (
+        ridge * average_variance
+        if np.isfinite(average_variance)
+        and average_variance > np.finfo(np.float64).tiny
+        else ridge
+    )
+    covariance = covariance.copy()
+    covariance.flat[:: X.shape[1] + 1] += effective_ridge
+    return location, covariance
+
+
+def _mcd_consistency_factor(alpha: float, n_features: int) -> float:
+    quantile = chi2.ppf(alpha, n_features)
+    return float(alpha / chi2.cdf(quantile, n_features + 2))
 
 
 def test_fast_mcd_is_affine_and_unit_equivariant_with_relative_native_ridge():
@@ -41,6 +66,71 @@ def test_fast_mcd_is_affine_and_unit_equivariant_with_relative_native_ridge():
     np.testing.assert_allclose(tiny_fit.location_, tiny * base.location_, rtol=2e-8, atol=1e-110)
     np.testing.assert_allclose(tiny_fit.covariance_, tiny**2 * base.covariance_, rtol=2e-7, atol=1e-210)
     np.testing.assert_allclose(tiny_fit.distances_, base.distances_, rtol=2e-7, atol=2e-8)
+
+
+def test_fast_mcd_native_solution_matches_numpy_reference():
+    rng = np.random.default_rng(7)
+    latent = rng.normal(size=(120, 2))
+    X = np.column_stack(
+        [
+            latent[:, 0],
+            2.0 * latent[:, 0] + 1e-3 * latent[:, 1],
+            -0.5 * latent[:, 0] + 0.2 * latent[:, 1],
+        ]
+    )
+    X[:15] += np.array([7.0, -6.0, 5.0])
+    reweight_alpha = 0.975
+
+    fitted = rc.FastMCD(
+        n_init=40,
+        n_best=5,
+        initial_c_steps=2,
+        max_iter=50,
+        tol=1e-8,
+        reweight=True,
+        reweight_alpha=reweight_alpha,
+        random_state=0,
+        n_jobs=1,
+    ).fit(X)
+
+    raw_location, raw_covariance = _mcd_subset_covariance(
+        X, fitted.raw_support_
+    )
+    raw_factor = _mcd_consistency_factor(fitted.h_ / len(X), X.shape[1])
+    cutoff = float(chi2.ppf(reweight_alpha, X.shape[1]))
+    final_factor = _mcd_consistency_factor(reweight_alpha, X.shape[1])
+
+    np.testing.assert_allclose(fitted.raw_location_, raw_location, atol=1e-12)
+    np.testing.assert_allclose(
+        fitted.raw_covariance_, raw_factor * raw_covariance, rtol=1e-11, atol=1e-12
+    )
+    assert fitted.c_step_objective_value_ == pytest.approx(
+        np.linalg.slogdet(raw_covariance)[1], rel=1e-8, abs=1e-6
+    )
+    assert fitted.raw_consistency_factor_ == pytest.approx(raw_factor)
+    assert fitted.reweight_threshold_ == pytest.approx(cutoff)
+    assert fitted.consistency_factor_ == pytest.approx(final_factor)
+    np.testing.assert_array_equal(
+        fitted.support_, fitted.raw_distances_ <= cutoff
+    )
+
+    precision = np.linalg.inv(raw_covariance)
+    centered = X - raw_location
+    distances = np.maximum(
+        np.einsum("ij,jk,ik->i", centered, precision, centered), 0.0
+    )
+    next_support = np.argpartition(distances, fitted.h_ - 1)[: fitted.h_]
+    np.testing.assert_array_equal(
+        np.sort(next_support), np.flatnonzero(fitted.raw_support_)
+    )
+
+    final_location, final_covariance = _mcd_subset_covariance(
+        X, fitted.support_
+    )
+    np.testing.assert_allclose(fitted.location_, final_location, atol=1e-12)
+    np.testing.assert_allclose(
+        fitted.covariance_, final_factor * final_covariance, rtol=1e-11, atol=1e-12
+    )
 
 
 @pytest.mark.parametrize(

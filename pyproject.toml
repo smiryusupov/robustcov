@@ -225,8 +225,6 @@ exclude = [
   "**/_deps/**",
   "docs/_build",
   "docs/_build/**",
-  "tests/tests_to_remove",
-  "tests/tests_to_remove/**",
   "results",
   "results/**",
   "build",
