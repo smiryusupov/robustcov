@@ -1,6 +1,10 @@
 API reference
 =============
 
+The supported package-root exports and their stability tiers are defined in
+:doc:`api_stability`.  Names not listed in ``robustcov.__all__`` are internal
+implementation details unless a documented submodule explicitly exposes them.
+
 Method provenance
 -----------------
 

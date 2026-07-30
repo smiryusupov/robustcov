@@ -49,6 +49,9 @@ python -m pytest -q -m "unit or integration or native"
 ## API compatibility
 
 Public API changes must follow [`docs/api_stability.rst`](docs/api_stability.rst).
+At the package root and in `robustcov.experimental`, only names listed in the
+namespace's `__all__` are supported exports. Import implementation helpers under
+underscore-prefixed aliases so they do not become accidental public bindings.
 Add deprecations and removals to `CHANGELOG.md`, including the replacement and
 planned removal release when applicable.
 

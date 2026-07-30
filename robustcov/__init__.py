@@ -70,7 +70,7 @@ from .provenance import (
     canonical_method_name,
     get_method_provenance,
     iter_method_provenance,
-    attach_method_provenance,
+    attach_method_provenance as _attach_method_provenance,
 )
 
 from .plotting import (
@@ -229,4 +229,4 @@ from .online_subspace import OnlineRobustSubspaceTracker, OnlineSubspaceUpdate
 
 
 # Expose provenance on public estimator classes and numerical algorithms.
-attach_method_provenance(globals())
+_attach_method_provenance(globals())

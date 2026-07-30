@@ -19,6 +19,19 @@ In practice:
 The stability tier for each public symbol is recorded explicitly so users can
 distinguish mature interfaces from provisional and experimental ones.
 
+What counts as public
+---------------------
+
+At the package root, the supported namespace is exactly the set of names listed
+in ``robustcov.__all__``.  The same rule applies to
+``robustcov.experimental.__all__``.  A helper that is reachable only as an
+implementation detail is not part of the compatibility contract, even if Python
+introspection can discover it through an internal module.
+
+Public classes and functions documented from their defining submodules remain
+usable from those documented paths.  The top-level stability manifest does not
+turn every imported helper or module attribute into a supported API.
+
 Stability tiers
 ---------------
 

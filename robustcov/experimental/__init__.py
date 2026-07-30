@@ -14,7 +14,7 @@ from .spectral_filter_covariance import (
     SpectralFilterStep,
 )
 
-from ..provenance import attach_method_provenance
+from ..provenance import attach_method_provenance as _attach_method_provenance
 
 __all__ = [
     "DistributionallyRobustPCA",
@@ -25,4 +25,4 @@ __all__ = [
     "SpectralFilterStep",
 ]
 
-attach_method_provenance(globals())
+_attach_method_provenance(globals())

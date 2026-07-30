@@ -403,14 +403,29 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         "Deprecation policy" in deprecation_policy and "DeprecationWarning" in deprecation_policy,
         "docs/api_stability.rst",
     )
+    _check(
+        checks,
+        "source: one API stability policy",
+        not (root / "docs" / "API_STABILITY.md").exists(),
+        "docs/api_stability.rst is canonical",
+    )
 
     init_path = root / "robustcov" / "__init__.py"
     init_tree = ast.parse(init_path.read_text(encoding="utf-8"), filename=str(init_path))
     exported = _literal_string_list(init_tree, "__all__")
     bound_names = _module_bound_names(init_tree)
     missing_exports = [name for name in exported if name not in bound_names]
+    accidental_public_bindings = sorted(
+        name for name in bound_names if not name.startswith("_") and name not in exported
+    )
     _check(checks, "source: unique public exports", len(exported) == len(set(exported)), f"count={len(exported)}")
     _check(checks, "source: statically resolvable public exports", not missing_exports, f"missing={missing_exports}")
+    _check(
+        checks,
+        "source: no accidental package-root bindings",
+        not accidental_public_bindings,
+        f"unexpected={accidental_public_bindings}",
+    )
 
     api_manifest_path = root / "robustcov" / "_public_api.json"
     try:
@@ -436,8 +451,29 @@ def source_checks(root: Path) -> tuple[list[Check], dict]:
         experimental_path = root / "robustcov" / "experimental" / "__init__.py"
         experimental_tree = ast.parse(experimental_path.read_text(encoding="utf-8"), filename=str(experimental_path))
         experimental_exports = _literal_string_list(experimental_tree, "__all__")
+        experimental_bound_names = _module_bound_names(experimental_tree)
+        missing_experimental_exports = [
+            name for name in experimental_exports if name not in experimental_bound_names
+        ]
+        accidental_experimental_bindings = sorted(
+            name
+            for name in experimental_bound_names
+            if not name.startswith("_") and name not in experimental_exports
+        )
         manifest_experimental = api_manifest.get("experimental_namespace", [])
         _check(checks, "source: experimental namespace manifest", isinstance(manifest_experimental, list) and set(manifest_experimental) == set(experimental_exports), f"manifest={manifest_experimental}, exports={experimental_exports}")
+        _check(
+            checks,
+            "source: statically resolvable experimental exports",
+            not missing_experimental_exports,
+            f"missing={missing_experimental_exports}",
+        )
+        _check(
+            checks,
+            "source: no accidental experimental bindings",
+            not accidental_experimental_bindings,
+            f"unexpected={accidental_experimental_bindings}",
+        )
 
     return checks, config
 

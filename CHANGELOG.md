@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Changed
+
+- Clarified that package-root and experimental public APIs are defined by their
+  ``__all__`` exports, removed a stale duplicate stability note, and strengthened
+  release checks against accidental public helper bindings.
+
 ### Fixed
 
 - Consolidated source-distribution configuration in `pyproject.toml`, excluded temporary regression probes and local build state, and strengthened wheel/sdist content audits against VCS metadata, caches, compiled source artifacts, and nested distributions.

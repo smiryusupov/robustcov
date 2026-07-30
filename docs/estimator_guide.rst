@@ -95,30 +95,13 @@ reproducible cross-method benchmarks.
 Estimator status
 ----------------
 
-Stable prototype APIs:
+The authoritative symbol-by-symbol classification is maintained in
+``robustcov/_public_api.json`` and explained in :doc:`api_stability`.  The
+manifest is checked against the installed top-level and experimental namespaces
+for every release.
 
-* ``PrincipalComponentPursuit``
-* ``FastMCD``
-* ``DetS`` and ``DetMM``
-* ``MRCD``
-* ``MMCD``
-* ``CellMCD``
-* ``CellPCA``
-* ``RobustGraphicalLasso``
-* ``RegularizedCauchy``
-* ``StudentTScatter``
-* ``RobustOutlierDetector``
-* robust distance plotting helpers
-
-Experimental APIs:
-
-* ``RobustMultilinearPCA`` while its package-native HOSVD initialization and fixed residual scales are cross-validated against ROMPCA
-* ``DensityPowerRobustPCA`` while its package-native alternating-regression updates are compared with the reference rSVDdpd implementation
-* ``SparseCellPCA`` while its alternating coordinate-descent fit is validated against SCRAMBLE and other sparse robust PCA implementations
-* ``KMRCD`` while its package-specific initial-support search is compared with the reference implementation
-* ``CellRCov`` while its package-native CellPCA/FastMCD decomposition is cross-validated
-  against the reference implementation
-* ``SGLASSO`` while the package-specific EBIC path and ADMM implementation are validated against the reference R workflow
-* ``HellingerRegularizedTyler``
-* exact KL/Wiesel variants beyond their current alias/prototype behavior
-* automatic model selection scores
+In broad terms, the mature covariance core is stable, newer structured and
+workflow APIs are provisional, and research interfaces with changing algorithms
+or defaults are experimental.  This guide intentionally does not duplicate the
+full lists, because a second hand-maintained status table can drift from the
+actual compatibility contract.
