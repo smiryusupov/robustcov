@@ -107,6 +107,14 @@ important under contamination: rescaling the final covariance using all observat
 outlier inflation. ``FastMCD`` is best when :math:`n \gg p` and outliers are separable. It is not the
 right tool for :math:`p > n` covariance recovery or diffuse heavy tails.
 
+The fitted convergence diagnostics refer to the selected candidate after full
+polishing: ``n_iter_`` is that candidate's C-step count and ``converged_``
+reports whether its log-determinant met the requested tolerance before the
+iteration budget was exhausted. Objective diagnostics distinguish the raw
+subset criterion (``c_step_objective_value_``), the consistency-corrected raw
+covariance (``raw_objective_value_``), and the final exposed covariance
+(``objective_value_``). All three are log-determinants.
+
 Deterministic S and MM estimators
 ---------------------------------
 

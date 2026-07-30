@@ -57,6 +57,12 @@ class FastMCD(BaseRobustCovariance):
     best determinant candidates, then fully polishes those candidates. ``quality``
     controls the speed/accuracy tradeoff while explicit ``n_init``/``n_best`` values
     remain available for benchmarking.
+
+    After fitting, ``c_step_objective_value_`` is the optimized raw subset
+    log-determinant before consistency correction, ``raw_objective_value_`` is
+    the corrected raw covariance log-determinant, and ``objective_value_`` is
+    the log-determinant of the final exposed covariance. ``n_iter_`` and
+    ``converged_`` describe the selected polished candidate only.
     """
 
     _QUALITY_PRESETS = {
@@ -126,8 +132,8 @@ class FastMCD(BaseRobustCovariance):
         }
         if values["n_init"] < 1 or values["max_iter"] < 1 or values["n_best"] < 1:
             raise ValueError("n_init, max_iter, and n_best must be positive")
-        if values["initial_c_steps"] < 0:
-            raise ValueError("initial_c_steps must be non-negative")
+        if values["initial_c_steps"] < 1:
+            raise ValueError("initial_c_steps must be positive")
         return values
 
     def fit(self, X, y=None):
@@ -179,6 +185,12 @@ class FastMCD(BaseRobustCovariance):
         self.effective_support_fraction_ = self.h_ / float(getattr(self, "n_samples_in_", len(self.support_)))
         self.det_ = float(np.linalg.det(self.covariance_))
         self.raw_det_ = float(np.linalg.det(self.raw_covariance_))
+        self.c_step_objective_value_ = float(
+            result.get("c_step_objective_value", result["objective_value"])
+        )
+        self.raw_objective_value_ = float(
+            result.get("raw_objective_value", np.linalg.slogdet(self.raw_covariance_)[1])
+        )
         self.objective_value_ = float(result["objective_value"])
         self.n_iter_ = int(result["n_iter"])
         self.converged_ = bool(result["converged"])
@@ -187,6 +199,8 @@ class FastMCD(BaseRobustCovariance):
             self.covariance_ = self.scale_ * self.shape_
             self.precision_ = np.linalg.pinv(self.covariance_)
             self.distances_ = mahalanobis_squared_from_fitted(self)
+        sign, logdet = np.linalg.slogdet(self.covariance_)
+        self.objective_value_ = float(logdet) if sign > 0 else float("inf")
         if self.tail_diagnostics:
             self.radial_kurtosis_ = radial_kurtosis(self.distances_, self.n_features_in_)
             self.tail_index_ = self.radial_kurtosis_

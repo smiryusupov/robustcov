@@ -371,6 +371,7 @@ static py::dict fit_tyler_cpp(py::array_t<double, py::array::c_style | py::array
 struct MCDCandidate {
     double logdet = std::numeric_limits<double>::infinity();
     int iterations = 0;
+    bool converged = false;
     std::vector<int> idx;
     std::vector<double> loc;
     Mat cov;
@@ -394,13 +395,16 @@ static MCDCandidate run_c_steps(const Mat& X,
                                 int max_steps,
                                 double tol,
                                 double ridge) {
+    if (max_steps < 1) throw std::invalid_argument("C-step count must be positive");
+
     MCDCandidate cand;
     std::vector<double> loc = column_mean(X, &idx);
     Mat cov = covariance_from_indices(X, idx, loc, ridge);
-    double prev_ld = std::numeric_limits<double>::infinity();
+    double prev_ld = logdet_spd(cov);
 
     int step = 0;
-    for (; step < std::max(1, max_steps); ++step) {
+    bool converged = false;
+    for (; step < max_steps; ++step) {
         Mat P;
         try { P = inverse_spd(cov); }
         catch (...) { break; }
@@ -415,7 +419,8 @@ static MCDCandidate run_c_steps(const Mat& X,
         loc = std::move(next_loc);
         cov = std::move(next_cov);
 
-        if (std::isfinite(prev_ld) && std::abs(prev_ld - ld) <= tol * (1.0 + std::abs(prev_ld))) {
+        if (std::abs(prev_ld - ld) <= tol * (1.0 + std::abs(prev_ld))) {
+            converged = true;
             ++step;
             break;
         }
@@ -425,6 +430,7 @@ static MCDCandidate run_c_steps(const Mat& X,
     }
     cand.logdet = logdet_spd(cov);
     cand.iterations = step;
+    cand.converged = converged;
     cand.idx = std::move(idx);
     cand.loc = std::move(loc);
     cand.cov = std::move(cov);
@@ -526,9 +532,11 @@ static py::dict fit_fast_mcd_cpp(py::array_t<double, py::array::c_style | py::ar
     if (support_fraction <= 0.0) h = (n + p + 1) / 2;
     else h = static_cast<int>(std::floor(support_fraction * n));
     h = std::max(p + 1, std::min(h, n));
-    n_init = std::max(1, n_init);
-    n_best = std::max(1, std::min(n_best, n_init + 4));
-    initial_c_steps = std::max(1, initial_c_steps);
+    if (n_init < 1) throw std::invalid_argument("n_init must be positive");
+    if (max_iter < 1) throw std::invalid_argument("max_iter must be positive");
+    if (n_best < 1) throw std::invalid_argument("n_best must be positive");
+    if (initial_c_steps < 1) throw std::invalid_argument("initial_c_steps must be positive");
+    n_best = std::min(n_best, n_init + 1);
 
     std::mt19937_64 rng(seed);
     std::vector<int> all(n);
@@ -595,11 +603,9 @@ int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
     }
     MCDCandidate best;
     best.logdet = std::numeric_limits<double>::infinity();
-    int total_iter = 0;
     for (size_t ci = 0; ci < polished_pool.size(); ++ci) {
         if (!polished_ok[ci]) continue;
         MCDCandidate& polished = polished_pool[ci];
-        total_iter += polished.iterations;
         if (polished.logdet < best.logdet) best = std::move(polished);
     }
     if (best.idx.empty()) throw std::runtime_error("FastMCD failed during final C-steps");
@@ -672,9 +678,11 @@ int polish_threads = effective_threads_cpp(static_cast<int>(pool.size()), 1);
     out["raw_distances"] = vec_to_numpy(raw_dist);
     out["raw_support"] = raw_supp;
     out["h"] = h;
-    out["objective_value"] = best.logdet;
-    out["n_iter"] = total_iter;
-    out["converged"] = true;
+    out["c_step_objective_value"] = best.logdet;
+    out["raw_objective_value"] = logdet_spd(raw_cov_corrected);
+    out["objective_value"] = logdet_spd(final_cov);
+    out["n_iter"] = best.iterations;
+    out["converged"] = best.converged;
     return out;
 }
 
