@@ -1,7 +1,7 @@
 :orphan:
 
 Monitoring production embeddings with RobustScatterPCA
-================================================
+======================================================
 
 An embedding batch can change in two quite different ways.  The population may
 move along directions already present in the reference data, or new vectors may
