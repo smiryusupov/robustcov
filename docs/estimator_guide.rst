@@ -4,11 +4,44 @@ Choose an estimator
 Start from the failure mode
 ---------------------------
 
-Choose the estimator from the structure of one observation, the way the data
-are contaminated, the ``n``-to-``p`` regime, and the fitted quantity you need.
-The short table below is a starting point.  See :doc:`method_comparison` for
-capability limits, methods that should not be compared directly, and
-reproducible cross-method benchmarks.
+Do not begin by comparing every estimator.  First identify the kind of failure
+in the data, then compare methods inside that family.
+
+.. list-table:: Pick the family first
+   :header-rows: 1
+   :widths: 30 32 38
+
+   * - What is going wrong?
+     - Method family
+     - Good first names to inspect
+   * - A minority of complete rows are abnormal
+     - Rowwise high-breakdown covariance
+     - ``FastMCD``, ``DetS``, ``DetMM``, ``MRCD``
+   * - Tails are broad or covariance is poorly conditioned
+     - Heavy-tail / regularized scatter
+     - ``RegularizedCauchy``, ``StudentTScatter``, ``RegularizedTyler``, ``MRCD``
+   * - Individual cells are corrupted or missing
+     - Cellwise robust covariance or PCA
+     - ``CellMCD``, ``CellRCov``, ``CellPCA``, ``SparseCellPCA``
+   * - The main object is low-rank structure
+     - Robust PCA or matrix decomposition
+     - ``RobustScatterPCA``, ``PrincipalComponentPursuit``, ``CellPCA``
+   * - You need a sparse dependence graph
+     - Robust precision estimation
+     - ``RobustGraphicalLasso``, ``SGLASSO``
+   * - You need scores or change detection rather than another covariance estimate
+     - Detection / monitoring workflow
+     - ``RobustOutlierDetector``, ``ConformalAlertCalibrator``, ``RobustSubspaceMonitor``
+
+For an end-to-end task map, see :doc:`user_guide`.  For capability limits and
+cross-method evidence, see :doc:`method_comparison`.
+
+Detailed chooser
+----------------
+
+Once the family is clear, use the more specific table below.  It accounts for
+the structure of one observation, the contamination mechanism, the ``n``-to-
+``p`` regime, and the fitted quantity you need.
 
 .. list-table::
    :header-rows: 1

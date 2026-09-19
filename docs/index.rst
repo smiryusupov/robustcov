@@ -48,8 +48,14 @@ Choose a path
        <p>Start from row outliers, bad cells, heavy tails, high dimensions, matrices, or a changing stream.</p>
        <strong>Estimator guide →</strong>
      </a>
-     <a class="robustcov-path-card" href="benchmark_gallery.html">
+     <a class="robustcov-path-card" href="user_guide.html">
        <span class="robustcov-card-number">03</span>
+       <h3>Solve a task</h3>
+       <p>Start from covariance, PCA, bad cells, anomaly scoring, monitoring, precision, or structured observations.</p>
+       <strong>User guide →</strong>
+     </a>
+     <a class="robustcov-path-card" href="benchmark_gallery.html">
+       <span class="robustcov-card-number">04</span>
        <h3>Inspect the evidence</h3>
        <p>Review task-specific benchmarks, known limitations, performance checks, and C-MAPSS case studies.</p>
        <strong>Benchmarks →</strong>
@@ -146,50 +152,47 @@ Choose by data problem
    </div>
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Get started
 
-   robust_geometry_layer
    installation
    quickstart
    estimator_guide
-   method_comparison
-   api_stability
+   user_guide
    faq
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Workflows
+   :maxdepth: 1
+   :caption: Guides and examples
 
    workflows
-   explanations
-   conformal_alert_calibration
-   online_subspace_tracking
    use_case_gallery
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Methods
-
-   algorithms
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Examples and evidence
-
    benchmark_gallery
-   external_data
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Reference
 
    api
-   diagnostics
-   openmp
+   algorithms
+   method_comparison
+   api_stability
    methods_and_references
    robust_statistics_background
    references
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Extended topics
+   :hidden:
+
+   robust_geometry_layer
+   explanations
+   conformal_alert_calibration
+   online_subspace_tracking
+   external_data
+   diagnostics
+   openmp
 
 Project status
 --------------

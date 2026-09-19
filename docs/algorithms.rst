@@ -1,20 +1,51 @@
-Method catalog
-==============
+Method reference
+================
 
-This section groups the mathematical and practical descriptions of the
-estimators used by ``robustcov``. Start with :doc:`estimator_guide` when choosing a method; use this
-section for assumptions, fitted quantities, equations, and implementation details.
+This is the mathematical reference, not the recommended starting point.  If you
+are choosing a method for a dataset, use :doc:`estimator_guide`; if you are
+trying to complete a task, use :doc:`user_guide` or :doc:`workflows`.
+
+Use this section when you already know the method family and need assumptions,
+fitted quantities, equations, implementation details, or links to the primary
+literature.  For the distinction between published methodology, package
+adaptations, and RobustCov-specific compositions, see
+:doc:`methods_and_references` and :doc:`references`.
+
+Browse by family
+----------------
+
+.. list-table:: Method families
+   :header-rows: 1
+   :widths: 24 38 38
+
+   * - Family
+     - Typical question
+     - Methods / deeper pages
+   * - Rowwise robust covariance
+     - Are a minority of complete observations contaminating location and covariance?
+     - ``FastMCD``, ``DetS``, ``DetMM``, ``MRCD``; see :doc:`s_estimators` and :doc:`kernel_mrcd`
+   * - Heavy-tail and shape estimators
+     - Is the main problem diffuse radial tails, conditioning, or scale-free elliptical shape?
+     - ``RegularizedCauchy``, ``StudentTScatter``, ``TylerShape``, ``RegularizedTyler``
+   * - Cellwise and structured covariance
+     - Are individual entries bad, or are observations matrices/tensors with meaningful mode structure?
+     - :doc:`cellwise_covariance`, :doc:`cellwise_regularized_covariance`, :doc:`matrix_covariance`
+   * - PCA and decomposition
+     - Do you need a robust subspace, low-rank reconstruction, or low-rank-plus-sparse separation?
+     - :doc:`robust_pca`, :doc:`principal_component_pursuit`, :doc:`cellwise_pca`, :doc:`robust_multilinear_pca`
+   * - Precision and geometry
+     - Do you need a sparse conditional-dependence graph or geometry derived from robust scatter?
+     - :doc:`sparse_precision`, :doc:`spatial_sign_precision`, :doc:`geometry`
+   * - Detection and monitoring
+     - Do you need anomaly scores, calibrated alerts, or change relative to a reference subspace?
+     - :doc:`monitoring`, :doc:`feature_geometry`, :doc:`subspace_stability`
+   * - Sources and factors
+     - Is the goal independent sources, temporally correlated sources, or a common-factor model?
+     - :doc:`source_separation_factor_models`
 
 The package focuses on robust covariance/scatter estimation and robust-distance
 diagnostics, not on fitting a full probability model with density, sampler, AIC,
 or BIC.
-
-This page gives the shared notation and catalog overview.
-
-For a method-by-method distinction between published methodology, package
-adaptations, and robustcov-specific compositions, see
-:doc:`methods_and_references` and :doc:`references`.
-
 
 Detailed method pages
 ---------------------
@@ -44,8 +75,11 @@ Detailed method pages
    monitoring
    feature_geometry
 
+Mathematical catalog
+--------------------
+
 Notation
---------
+~~~~~~~~
 
 Let :math:`X = \{x_i\}_{i=1}^n`, with :math:`x_i \in \mathbb{R}^p`. A location estimate is
 :math:`\hat\mu`, a covariance or scatter estimate is :math:`\hat\Sigma`, and robust squared
@@ -735,7 +769,7 @@ not yet be cited as the exact optimizer of a specific Hellinger objective. The A
 experimental until the objective and fixed-point update are finalized.
 
 RobustScatterSelector
------------------
+---------------------
 
 ``RobustScatterSelector`` is a practical selector. It fits a small candidate set and chooses an
 estimator using a diagnostic or stability score.

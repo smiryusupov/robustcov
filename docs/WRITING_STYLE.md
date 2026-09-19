@@ -18,6 +18,25 @@ Avoid:
 
 > This important example demonstrates why robust methods add value in finance.
 
+
+## Keep navigation task-first
+
+The global navigation should expose decisions and tasks before method names.
+Detailed estimator, benchmark, gallery, and maintainer pages can remain linked
+from landing pages without becoming first-level sidebar entries.
+
+Use this hierarchy when adding documentation:
+
+1. **Get started** teaches the package and helps the reader choose a family.
+2. **Guides and examples** solve end-to-end tasks.
+3. **Reference** documents exact APIs, algorithms, evidence, and stability.
+4. Deep method pages stay reachable from the method reference but should not
+   make a new reader scan the complete catalog.
+
+Before adding a new top-level page, ask whether a user who does not know the
+method's name would look for it there. If not, link it from the relevant landing
+page instead.
+
 ## Use page-specific sections
 
 Do not give every example the same headings. Choose headings that match the

@@ -26,6 +26,8 @@ html_logo = '_static/brand/robustcov-mark.png'
 html_favicon = '_static/brand/robustcov-favicon.png'
 html_static_path = ['_static']
 autodoc_typehints = 'description'
+# Keep API objects addressable without turning every class/function into sidebar navigation.
+toc_object_entries = False
 
 
 html_theme_options = {
