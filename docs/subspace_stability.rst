@@ -27,7 +27,7 @@ For independent observations, the default IID bootstrap is sufficient:
    import robustcov as rc
 
    analysis = rc.SubspaceStability(
-       pca=rc.RobustPCA(
+       pca=rc.RobustScatterPCA(
            n_components=3,
            estimator=rc.FastMCD(random_state=0),
        ),

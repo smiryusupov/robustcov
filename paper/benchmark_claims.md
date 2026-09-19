@@ -10,7 +10,7 @@ in `docs/_static/release_evidence.json`.
 **Paper-ready claim**
 
 Across the eight scenarios in the committed quick profile,
-`AutoRobustScatter` has median relative Frobenius error `0.5907` and win rate
+`RobustScatterSelector` has median relative Frobenius error `0.5907` and win rate
 `0.8750`.  `RegularizedCauchy` is the strongest single estimator across all
 eight scenarios with median error `0.5950`.
 

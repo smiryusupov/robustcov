@@ -29,9 +29,9 @@ def _as_2d_finite_array(X: np.ndarray, *, name: str = "X") -> np.ndarray:
 
 
 def _default_pca() -> Any:
-    from .pca import RobustPCA
+    from .pca import RobustScatterPCA
 
-    return RobustPCA(n_components=0.95, store_scores=False)
+    return RobustScatterPCA(n_components=0.95, store_scores=False)
 
 
 def _extract_pca_state(model: Any, n_features: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -197,7 +197,7 @@ class SubspaceStability(EstimatorMixin):
     pca : object, optional
         PCA-style estimator copied and fitted through ``fit(X)``. It must expose
         ``components_``, ``eigenvalues_``, and ``explained_variance_ratio_``.
-        ``RobustPCA(n_components=0.95)`` is used by default.
+        ``RobustScatterPCA(n_components=0.95)`` is used by default.
     n_resamples : int, default=200
         Number of bootstrap refits.
     confidence_level : float, default=0.95

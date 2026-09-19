@@ -150,7 +150,7 @@ def test_auto_robust_anomaly_detector():
     rng = np.random.default_rng(10)
     X = rng.normal(size=(120, 4))
     X[:10] += 6
-    det = rc.AutoRobustAnomalyDetector(contamination=0.1).fit(X)
+    det = rc.RobustOutlierEnsemble(contamination=0.1).fit(X)
     assert det.labels_.shape == (120,)
     assert det.score_.shape == (120,)
     labels = det.predict(X[:5])
@@ -197,11 +197,11 @@ def test_hellinger_regularized_tyler_experimental_runs():
 def test_auto_robust_scatter_selects_estimator():
     rng = np.random.default_rng(13)
     X = rng.standard_t(df=2, size=(35, 45))
-    est = rc.AutoRobustScatter().fit(X)
+    est = rc.RobustScatterSelector().fit(X)
     assert est.covariance_.shape == (45, 45)
     assert est.best_estimator_name_
     assert len(est.candidate_results_) >= 2
-    assert "AutoRobustScatter selected" in est.summary()
+    assert "RobustScatterSelector selected" in est.summary()
 
 
 def test_m_estimator_damping_parameter():
@@ -215,7 +215,7 @@ def test_m_estimator_damping_parameter():
 def test_auto_robust_scatter_stability_fields():
     rng = np.random.default_rng(15)
     X = rng.standard_t(df=1.5, size=(30, 35))
-    est = rc.AutoRobustScatter(selection="stability", n_splits=2, random_state=0).fit(X)
+    est = rc.RobustScatterSelector(selection="stability", n_splits=2, random_state=0).fit(X)
     assert est.selection == "stability"
     assert np.isfinite(est.best_result_.diagnostic_score)
     assert np.isfinite(est.best_result_.stability_score)
@@ -225,7 +225,7 @@ def test_auto_robust_scatter_stability_fields():
 def test_auto_robust_scatter_diagnostic_mode():
     rng = np.random.default_rng(16)
     X = rng.standard_t(df=2, size=(40, 20))
-    est = rc.AutoRobustScatter(selection="diagnostic").fit(X)
+    est = rc.RobustScatterSelector(selection="diagnostic").fit(X)
     assert est.best_estimator_name_
     assert est.best_result_.stability_score == 0.0
 

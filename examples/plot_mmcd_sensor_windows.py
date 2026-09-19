@@ -61,7 +61,7 @@ order = rng.permutation(X.shape[0])
 X = X[order]
 y = y[order]
 
-classical = rc.MMCD(
+classical = rc.MatrixMCD(
     support_fraction=1.0,
     n_init=1,
     n_best=1,
@@ -71,7 +71,7 @@ classical = rc.MMCD(
     random_state=0,
 ).fit(X)
 
-robust = rc.MMCD(
+robust = rc.MatrixMCD(
     contamination=0.22,
     quality="fast",
     n_init=50,

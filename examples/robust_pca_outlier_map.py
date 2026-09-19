@@ -51,7 +51,7 @@ def main():
     outdir.mkdir(parents=True, exist_ok=True)
 
     X, labels = make_data()
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=2,
         estimator=rc.FastMCD(quality="balanced", random_state=0),
     ).fit(X)

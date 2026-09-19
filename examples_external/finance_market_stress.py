@@ -61,9 +61,9 @@ def main():
     X = StandardScaler().fit_transform(rets.to_numpy(dtype=float))
 
     if args.estimator == 'auto':
-        auto = rc.AutoRobustScatter(selection='diagnostic', random_state=0).fit(X)
+        auto = rc.RobustScatterSelector(selection='diagnostic', random_state=0).fit(X)
         est = auto.estimator_
-        est_name = f'AutoRobustScatter({auto.best_estimator_name_})'
+        est_name = f'RobustScatterSelector({auto.best_estimator_name_})'
     elif args.estimator == 'student':
         est = rc.StudentTScatter(df=3, alpha=0.05, warn_on_nonconvergence=False).fit(X)
         est_name = 'StudentTScatter'

@@ -77,17 +77,17 @@ than a ranking table.
      - Dense ``CellPCA`` as the robustness baseline
      - A larger penalty can improve sparsity while damaging subspace recovery.
    * - Each observation is naturally a matrix
-     - ``MMCD``
+     - ``MatrixMCD``
      - Vector methods only when Kronecker structure is not scientifically meaningful
      - Flattening can discard row/column structure and create a much larger covariance.
    * - Matrix observations have low-rank row/column structure plus bad cells, abnormal samples, or missing entries
      - ``RobustMultilinearPCA``
-     - ``MMCD`` for covariance factors; flattened ``CellPCA`` as a structural baseline
+     - ``MatrixMCD`` for covariance factors; flattened ``CellPCA`` as a structural baseline
      - Fixed mode ranks are required and the package initialization is not reference ROMPCA parity.
    * - Robust dimensionality reduction under rowwise contamination or heavy tails
-     - ``RobustPCA`` with a matching scatter estimator
+     - ``RobustScatterPCA`` with a matching scatter estimator
      - ``CellPCA`` for cellwise errors
-     - ``RobustPCA`` is scatter PCA, not low-rank-plus-sparse decomposition.
+     - ``RobustScatterPCA`` is scatter PCA, not low-rank-plus-sparse decomposition.
    * - Latent signals are statistically independent but observations are instantaneous mixtures
      - ``TwoScatterICA``
      - Symmetrized two-scatter ICA when source skewness is problematic; FastICA as a baseline
@@ -198,7 +198,7 @@ with another estimator rather than handled directly.
      - Yes
      - Yes
      - tabular vectors
-   * - ``MMCD``
+   * - ``MatrixMCD``
      - row/column covariance factors
      - Yes
      - No
@@ -219,7 +219,7 @@ with another estimator rather than handled directly.
      - No
      - Yes
      - complete matrices
-   * - ``RobustPCA``
+   * - ``RobustScatterPCA``
      - principal subspace
      - Depends on scatter
      - No
@@ -300,7 +300,7 @@ Some public classes consume an estimator rather than replace it:
 * ``RobustSubspaceMonitor`` compares a rolling window with a frozen reference.
 * ``SubspaceStability`` resamples and refits a PCA estimator to measure sampling
   variability.
-* ``AutoRobustScatter`` selects among candidate scatter estimators; its quality
+* ``RobustScatterSelector`` selects among candidate scatter estimators; its quality
   depends on the candidate set and the selection score.
 
 These classes are covered by functional tests and application examples, but it

@@ -78,7 +78,7 @@ are:
 Can RobustCov choose the estimator automatically?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``AutoRobustScatter`` and ``AutoRobustAnomalyDetector`` compare a bounded set of
+``RobustScatterSelector`` and ``RobustOutlierEnsemble`` compare a bounded set of
 candidates using package diagnostics.  They are useful for exploration and
 sensitivity analysis, but they are not oracles.  Inspect the selected estimator,
 its fitted diagnostics, and the stability of the choice before using it in a
@@ -92,7 +92,7 @@ Which robust PCA method should I use?
 
 The phrase *robust PCA* refers to several different problems:
 
-* ``RobustPCA``: robust covariance/scatter PCA for rowwise outliers or heavy
+* ``RobustScatterPCA``: robust covariance/scatter PCA for rowwise outliers or heavy
   tails, with score- and orthogonal-distance diagnostics.
 * ``PrincipalComponentPursuit`` / ``PCP``: decompose one matrix as low rank plus
   sparse, potentially very large entrywise corruption.
@@ -192,7 +192,7 @@ share the same missing-data behavior.
 What should I use for matrix- or tensor-valued observations?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use ``MMCD`` when each observation is a matrix and a separable row/column
+Use ``MatrixMCD`` when each observation is a matrix and a separable row/column
 covariance model is scientifically meaningful.  Use ``RobustMultilinearPCA``
 when the target is a low-rank multilinear representation with mode-specific
 loadings.  Flattening is still possible, but it discards structure and can make

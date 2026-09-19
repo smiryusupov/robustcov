@@ -132,7 +132,7 @@ def test_mrcd_integrates_with_pca_and_feature_geometry():
     X = rng.normal(size=(65, 25))
     estimator = _fit_fast(n_init=12)
 
-    pca = rc.RobustPCA(n_components=5, estimator=estimator).fit(X)
+    pca = rc.RobustScatterPCA(n_components=5, estimator=estimator).fit(X)
     geometry = rc.FeatureGeometry(estimator=estimator).fit(X)
 
     assert pca.transform(X).shape == (65, 5)

@@ -19,7 +19,7 @@ import numpy as np
 
 import robustcov as rc
 from robustcov.m_estimators import RegularizedCauchy
-from robustcov.pca import RobustPCA
+from robustcov.pca import RobustScatterPCA
 
 
 def _datasets(seed: int = 42):
@@ -83,7 +83,7 @@ def _cases():
             matrix,
         ),
         "robust_pca": (
-            RobustPCA(
+            RobustScatterPCA(
                 n_components=12,
                 estimator=RegularizedCauchy(
                     alpha=0.1, max_iter=150, tol=1e-7

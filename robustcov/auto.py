@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import copy
+import warnings
 from dataclasses import dataclass
 
 import numpy as np
@@ -46,7 +47,7 @@ class ScatterCandidateResult:
     estimator: object
 
 
-class AutoRobustScatter(EstimatorMixin):
+class RobustScatterSelector(EstimatorMixin):
     """Lightweight unsupervised selector for robust scatter estimators.
 
     ``selection='diagnostic'`` fits each candidate once and scores finite covariance,
@@ -194,7 +195,7 @@ class AutoRobustScatter(EstimatorMixin):
             raise ValueError("No candidate estimators were provided")
         best = min(results, key=lambda r: r.score)
         if best.estimator is None:
-            raise RuntimeError("All AutoRobustScatter candidates failed")
+            raise RuntimeError("All RobustScatterSelector candidates failed")
         self.candidate_results_ = results
         self.best_result_ = best
         self.estimator_ = best.estimator
@@ -217,7 +218,7 @@ class AutoRobustScatter(EstimatorMixin):
         return diagnostic_report(self.estimator_)
 
     def summary(self) -> str:
-        lines = [f"AutoRobustScatter selected: {self.best_estimator_name_} ({self.selection_})", "candidates:"]
+        lines = [f"RobustScatterSelector selected: {self.best_estimator_name_} ({self.selection_})", "candidates:"]
         for r in self.candidate_results_:
             lines.append(
                 f"  - {r.name}: score={r.score:.3f}, diagnostic={r.diagnostic_score:.3f}, "
@@ -225,3 +226,37 @@ class AutoRobustScatter(EstimatorMixin):
                 f"n_iter={r.n_iter}, cond={r.condition_number:.4g}, radial_kurtosis={r.radial_kurtosis:.4g}"
             )
         return "\n".join(lines)
+
+
+class AutoRobustScatter(RobustScatterSelector):
+    """Deprecated compatibility name for :class:`RobustScatterSelector`."""
+
+    def __init__(
+        self,
+        candidates=None,
+        criterion=None,
+        selection="stability",
+        max_condition=1e6,
+        prefer_converged=True,
+        n_splits=3,
+        subsample_fraction=0.7,
+        random_state=0,
+        stability_weight=2.0,
+    ):
+        warnings.warn(
+            "AutoRobustScatter is deprecated; use RobustScatterSelector. "
+            "AutoRobustScatter is planned for removal no earlier than robustcov 0.4.0.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            candidates=candidates,
+            criterion=criterion,
+            selection=selection,
+            max_condition=max_condition,
+            prefer_converged=prefer_converged,
+            n_splits=n_splits,
+            subsample_fraction=subsample_fraction,
+            random_state=random_state,
+            stability_weight=stability_weight,
+        )

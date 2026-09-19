@@ -88,11 +88,11 @@ def main() -> None:
     clean, X, truth, cell_labels, row_labels = make_data()
     q = truth.shape[0]
 
-    empirical = rc.RobustPCA(
+    empirical = rc.RobustScatterPCA(
         n_components=q,
         estimator=EmpiricalScatter(),
     ).fit(X)
-    cauchy = rc.RobustPCA(
+    cauchy = rc.RobustScatterPCA(
         n_components=q,
         estimator=rc.RegularizedCauchy(alpha=0.10, max_iter=180),
     ).fit(X)
@@ -110,7 +110,7 @@ def main() -> None:
 
     models = {
         "Empirical PCA": empirical,
-        "RobustPCA(Cauchy)": cauchy,
+        "RobustScatterPCA(Cauchy)": cauchy,
         "DensityPowerRobustPCA": dpd,
         "CellPCA": cellpca,
     }
@@ -203,7 +203,7 @@ def main() -> None:
         "cell_contamination_fraction": float(cell_labels.mean()),
         "abnormal_row_fraction": float(row_labels.mean()),
         "empirical_subspace_error": errors["Empirical PCA"],
-        "cauchy_subspace_error": errors["RobustPCA(Cauchy)"],
+        "cauchy_subspace_error": errors["RobustScatterPCA(Cauchy)"],
         "dpd_subspace_error": errors["DensityPowerRobustPCA"],
         "cellpca_subspace_error": errors["CellPCA"],
         "dpd_cell_auc": auc(cell_labels, cell_scores),
@@ -221,7 +221,7 @@ def main() -> None:
     print(f"abnormal complete rows: {row_labels.sum()}")
     print("subspace error, empirical / Cauchy / DPD / CellPCA:")
     print(
-        f"{errors['Empirical PCA']:.3f} / {errors['RobustPCA(Cauchy)']:.3f} / "
+        f"{errors['Empirical PCA']:.3f} / {errors['RobustScatterPCA(Cauchy)']:.3f} / "
         f"{errors['DensityPowerRobustPCA']:.3f} / {errors['CellPCA']:.3f}"
     )
     print(f"DPD cell-outlier AUROC: {metrics['dpd_cell_auc']:.3f}")

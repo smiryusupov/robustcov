@@ -151,7 +151,7 @@ families when the data problem is different:
    * - Problem
      - Prefer
    * - Rowwise outliers or heavy tails
-     - ``RobustPCA`` or ``DensityPowerRobustPCA``
+     - ``RobustScatterPCA`` or ``DensityPowerRobustPCA``
    * - Cellwise corruption and missing entries
      - ``CellPCA`` or ``SparseCellPCA``
    * - Structured train-to-target distribution shift

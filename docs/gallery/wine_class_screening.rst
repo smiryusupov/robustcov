@@ -8,7 +8,7 @@ This small real dataset tests robustcov on a tabular problem where class structu
 Benchmark result
 ----------------
 
-LocalOutlierFactor has the highest F1 at 0.900.  ``AutoRobustScatter`` reaches 0.800 with a strong ROC-AUC, but local density is a better fit for this particular class boundary.
+LocalOutlierFactor has the highest F1 at 0.900.  ``RobustScatterSelector`` reaches 0.800 with a strong ROC-AUC, but local density is a better fit for this particular class boundary.
 
 One-class wine task
 -------------------
@@ -18,7 +18,7 @@ The sklearn wine dataset is reduced to a one-class screening task: one class is 
 Automatic estimator selection
 -----------------------------
 
-``AutoRobustScatter`` is used because the best robust scatter choice is not obvious in advance for this small real dataset.
+``RobustScatterSelector`` is used because the best robust scatter choice is not obvious in advance for this small real dataset.
 
 Run the comparison
 ------------------

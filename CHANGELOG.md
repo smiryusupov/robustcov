@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Changed
+
+- Added unambiguous canonical names for three provisional composite workflows: `RobustScatterPCA`, `RobustScatterSelector`, and `RobustOutlierEnsemble`. Method provenance now treats these names as canonical and describes the anomaly workflow as an ensemble rather than a selector.
+
+### Deprecated
+
+- Deprecated `RobustPCA`, `AutoRobustScatter`, and `AutoRobustAnomalyDetector` in favor of `RobustScatterPCA`, `RobustScatterSelector`, and `RobustOutlierEnsemble`, respectively. The compatibility names remain available with `DeprecationWarning` and are planned for removal no earlier than 0.4.0.
+- Deprecated `robustcov.geometry.logeuclidean_distance` in favor of the PEP 8 spelling `log_euclidean_distance`; the old function remains as a warned compatibility wrapper.
+
 ### Fixed
 
 - Made release-evidence hashes independent of LF versus CRLF text checkouts while retaining byte-exact verification for binary artifacts.

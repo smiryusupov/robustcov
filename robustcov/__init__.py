@@ -50,8 +50,8 @@ from .m_estimators import (
     WieselTyler,
     HellingerRegularizedTyler,
 )
-from .outliers import RobustOutlierDetector, AutoRobustAnomalyDetector
-from .auto import AutoRobustScatter
+from .outliers import RobustOutlierDetector, RobustOutlierEnsemble, AutoRobustAnomalyDetector
+from .auto import RobustScatterSelector, AutoRobustScatter
 from .multimodal import ClusterRobustOutlierDetector
 from .preprocessing import RobustMedianImputer
 from .diagnostics import diagnostic_report, RobustDiagnosticReport
@@ -105,6 +105,7 @@ from .plotting import (
 )
 
 __all__ = [
+    "RobustScatterPCA",
     "RobustPCA",
     "PrincipalComponentPursuit",
     "PCP",
@@ -168,6 +169,7 @@ __all__ = [
     "TylerShape",
     "RegularizedTyler",
     "RobustOutlierDetector",
+    "RobustOutlierEnsemble",
     "AutoRobustAnomalyDetector",
     "RobustMedianImputer",
     "IterativeMScatter",
@@ -176,6 +178,7 @@ __all__ = [
     "KLRegularizedTyler",
     "WieselTyler",
     "HellingerRegularizedTyler",
+    "RobustScatterSelector",
     "AutoRobustScatter",
     "ClusterRobustOutlierDetector",
     "diagnostic_report",
@@ -231,7 +234,7 @@ __all__ = [
 __version__ = "0.2.0"
 
 from .features import FeatureGeometry, ClassConditionalFeatureGeometry
-from .pca import RobustPCA
+from .pca import RobustScatterPCA, RobustPCA
 
 from .monitoring import RobustSubspaceMonitor, SubspaceDriftResult
 from .calibration import ConformalAlertCalibrator

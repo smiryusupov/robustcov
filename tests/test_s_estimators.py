@@ -119,7 +119,7 @@ def test_missing_value_median_mode():
 
 def test_works_as_robust_pca_scatter_estimator():
     X, _, _ = make_data(seed=7, n=180, p=5)
-    pca = rc.RobustPCA(n_components=2, estimator=rc.DetMM(max_iter=60)).fit(X)
+    pca = rc.RobustScatterPCA(n_components=2, estimator=rc.DetMM(max_iter=60)).fit(X)
     assert pca.components_.shape == (2, X.shape[1])
     assert np.isfinite(pca.transform(X[:5])).all()
 

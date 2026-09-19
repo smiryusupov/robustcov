@@ -7,7 +7,7 @@ entries.  A row with one faulty measurement can still contribute through its
 other observed cells, while a row that departs from the fitted subspace as a
 whole can be downweighted separately.
 
-This is a different contamination model from :doc:`robust_pca`.  ``RobustPCA``
+This is a different contamination model from :doc:`robust_pca`.  ``RobustScatterPCA``
 eigendecomposes a robust scatter estimate and is primarily rowwise robust.
 ``CellPCA`` fits the low-rank approximation directly with cell and row weights.
 

@@ -13,7 +13,7 @@ import numpy as np
 from ._estimator import EstimatorMixin
 
 from .geometry import affine_invariant_distance, det_normalize
-from .pca import RobustPCA
+from .pca import RobustScatterPCA
 
 
 _MONITOR_METRICS = (
@@ -193,7 +193,7 @@ class SubspaceDriftResult:
 class RobustSubspaceMonitor(EstimatorMixin):
     """Monitor rolling multivariate drift relative to a robust reference model.
 
-    The monitor fits one frozen :class:`~robustcov.RobustPCA` reference model and
+    The monitor fits one frozen :class:`~robustcov.RobustScatterPCA` reference model and
     compares each full rolling window with that reference.  Incoming samples are
     always scored against the frozen reference before the current-window model
     is fitted, which prevents observed drift from silently redefining normality.
@@ -211,8 +211,8 @@ class RobustSubspaceMonitor(EstimatorMixin):
         explained-variance threshold; current windows retain that resolved
         integer dimension.
     estimator : object, optional
-        Robust scatter estimator accepted by :class:`~robustcov.RobustPCA`.
-        The estimator is copied before every fit.  If omitted, RobustPCA's
+        Robust scatter estimator accepted by :class:`~robustcov.RobustScatterPCA`.
+        The estimator is copied before every fit.  If omitted, RobustScatterPCA's
         default ``RegularizedCauchy(alpha=0.10)`` is used.
     window_size : int, default=256
         Number of recent observations used by the current-window model.
@@ -232,7 +232,7 @@ class RobustSubspaceMonitor(EstimatorMixin):
     alarm_metrics : iterable of str, optional
         Metrics allowed to trigger alarms.  Defaults to all calibrated metrics.
     ridge : float, default=1e-10
-        Relative eigenvalue floor passed to RobustPCA.
+        Relative eigenvalue floor passed to RobustScatterPCA.
     random_state : int or None, default=0
         Seed controlling sampled calibration windows.
     history_size : int, default=100
@@ -271,7 +271,7 @@ class RobustSubspaceMonitor(EstimatorMixin):
         X = _as_2d_finite_array(X)
         self._validate_parameters(X.shape[0])
 
-        reference_model = RobustPCA(
+        reference_model = RobustScatterPCA(
             n_components=self.n_components,
             estimator=self.estimator,
             ridge=self.ridge,
@@ -439,8 +439,8 @@ class RobustSubspaceMonitor(EstimatorMixin):
             )
         return X
 
-    def _fit_current_model(self, X: np.ndarray) -> RobustPCA:
-        return RobustPCA(
+    def _fit_current_model(self, X: np.ndarray) -> RobustScatterPCA:
+        return RobustScatterPCA(
             n_components=self.n_components_,
             estimator=self.estimator,
             ridge=self.ridge,
@@ -450,7 +450,7 @@ class RobustSubspaceMonitor(EstimatorMixin):
     def _window_metrics(
         self,
         window: np.ndarray,
-        current_model: RobustPCA,
+        current_model: RobustScatterPCA,
     ) -> tuple[dict[str, float], np.ndarray]:
         reference = self.reference_model_
         delta = current_model.location_ - reference.location_

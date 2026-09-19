@@ -9,7 +9,7 @@ size, so loading and eigenvalue intervals may be much narrower than the time
 series warrants.
 
 This example simulates an eight-variable process driven by two correlated,
-heavy-tailed autoregressive factors.  The same ``RobustPCA`` estimator is
+heavy-tailed autoregressive factors.  The same ``RobustScatterPCA`` estimator is
 bootstrapped in two ways:
 
 * IID rows sampled independently;

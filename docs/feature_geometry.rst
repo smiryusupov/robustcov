@@ -91,7 +91,7 @@ Related examples
   <gallery/feature_geometry_synthetic_ood>`
 * :doc:`Class-conditional OOD scoring
   <gallery/feature_geometry_class_conditional_ood>`
-* :doc:`Production embedding monitoring with RobustPCA
+* :doc:`Production embedding monitoring with RobustScatterPCA
   <gallery/robust_pca_embedding_monitoring>`
 
 Scope

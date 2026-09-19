@@ -417,11 +417,11 @@ def plot_robust_pca_outlier_map(
     output_path=None,
     show=True,
 ):
-    """Plot score distance against orthogonal distance for a fitted RobustPCA.
+    """Plot score distance against orthogonal distance for a fitted RobustScatterPCA.
 
     Parameters
     ----------
-    pca : RobustPCA
+    pca : RobustScatterPCA
         Fitted robust PCA object.
     X : array-like, optional
         Observations to diagnose. If omitted, stored training distances are used.
@@ -742,7 +742,7 @@ def plot_cellpca_outlier_map(
 
     Parameters
     ----------
-    pca : CellwiseRobustPCA
+    pca : CellwiseRobustScatterPCA
         Fitted cellwise robust PCA model.
     X : array-like, optional
         New observations.  When omitted, fitted training diagnostics are used.
@@ -808,7 +808,7 @@ def plot_sparse_cellpca_loadings(
 
     Parameters
     ----------
-    pca : SparseCellwiseRobustPCA
+    pca : SparseCellwiseRobustScatterPCA
         Fitted sparse cellwise robust PCA estimator.
     feature_names : sequence of str, optional
         Labels for the feature axis.

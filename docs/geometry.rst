@@ -117,7 +117,7 @@ What robustcov provides
 a small set of practical utilities that support robust covariance workflows:
 
 * SPD matrix functions: ``spd_log``, ``spd_exp``, and ``spd_power``;
-* SPD distances: ``affine_invariant_distance`` and ``logeuclidean_distance``;
+* SPD distances: ``affine_invariant_distance`` and ``log_euclidean_distance``;
 * affine-invariant geodesics: ``spd_geodesic``;
 * shape normalization: ``trace_normalize`` and ``det_normalize``;
 * Tyler diagnostics: ``tyler_objective`` and
@@ -227,7 +227,7 @@ Distances on the SPD cone
 .. code-block:: python
 
    d_airm = rcg.affine_invariant_distance(S1, S2)
-   d_log = rcg.logeuclidean_distance(S1, S2)
+   d_log = rcg.log_euclidean_distance(S1, S2)
 
 The affine-invariant distance is
 

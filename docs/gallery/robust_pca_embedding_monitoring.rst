@@ -1,7 +1,7 @@
 :orphan:
 
-Monitoring production embeddings with RobustPCA
-================================================
+Monitoring production embeddings with RobustScatterPCA
+======================================================
 
 An embedding batch can change in two quite different ways.  The population may
 move along directions already present in the reference data, or new vectors may
@@ -28,7 +28,7 @@ The regularization also keeps the scatter estimate well conditioned.
 What to look for
 ----------------
 
-The subspace-recovery plot compares empirical PCA with ``RobustPCA`` against the
+The subspace-recovery plot compares empirical PCA with ``RobustScatterPCA`` against the
 known clean latent subspace.  The empirical fit is pulled toward the corrupted
 reference direction, while the robust fit stays closer to the data-generating
 subspace.

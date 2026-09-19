@@ -236,7 +236,7 @@ def _auto_scatter_case(rng, args):
     X[:50, :6] += 4.0
 
     def factory():
-        return rc.AutoRobustScatter(
+        return rc.RobustScatterSelector(
             selection="stability",
             n_splits=2,
             subsample_fraction=0.7,

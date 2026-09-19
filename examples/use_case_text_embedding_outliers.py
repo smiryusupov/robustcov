@@ -33,7 +33,7 @@ if __name__ == "__main__":
     labels[idx] = 1
     X[idx] = rng.normal(0, 5.0, size=(idx.size, p))
 
-    est = rc.AutoRobustScatter(selection="diagnostic").fit(X)
+    est = rc.RobustScatterSelector(selection="diagnostic").fit(X)
     det = rc.RobustOutlierDetector(estimator=est.estimator_, threshold="empirical", alpha=1 - labels.mean()).fit(X)
     pred = det.labels_ == -1
     precision, recall = precision_recall(pred, labels)

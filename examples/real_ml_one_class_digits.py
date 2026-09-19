@@ -60,7 +60,7 @@ if __name__ == "__main__":
             threshold="empirical",
             alpha=1.0 - args.contamination,
         ),
-        "robustcov Auto": lambda: rc.AutoRobustAnomalyDetector(contamination=args.contamination),
+        "robustcov Auto": lambda: rc.RobustOutlierEnsemble(contamination=args.contamination),
         "sklearn MinCovDet": lambda: None,
         "sklearn IsolationForest": lambda: IsolationForest(contamination=args.contamination, random_state=0),
     }

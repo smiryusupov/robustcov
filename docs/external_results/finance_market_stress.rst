@@ -103,7 +103,7 @@ Estimator choice
 
 Start with ``RegularizedCauchy`` for finance returns because it combines strong
 radial downweighting with shrinkage.  Use ``StudentTScatter`` as a smoother
-heavy-tail sensitivity check, and ``AutoRobustScatter`` if the data regime is
+heavy-tail sensitivity check, and ``RobustScatterSelector`` if the data regime is
 unclear.
 
 Using real market data

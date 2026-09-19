@@ -1,7 +1,8 @@
 Matrix-valued covariance estimation
 ===================================
 
-``MMCD`` estimates a mean matrix together with separate row and column
+``MatrixMCD`` implements matrix minimum covariance determinant (MMCD) estimation.
+It estimates a mean matrix together with separate row and column
 covariance factors.  It is intended for data in which each observation is
 naturally a matrix, such as a sensor-by-time window, an image patch, or a
 variable-by-condition panel.
@@ -12,7 +13,7 @@ The input shape is ``(n_samples, n_rows, n_columns)``:
 
    import robustcov as rc
 
-   model = rc.MMCD(
+   model = rc.MatrixMCD(
        contamination=0.20,
        n_init=200,
        random_state=0,
@@ -94,7 +95,7 @@ polishes the best candidates.
 
 The Kronecker factors have a scale ambiguity: multiplying :math:`R` by a
 positive constant and dividing :math:`C` by the same constant leaves
-:math:`C\otimes R` unchanged.  ``MMCD`` fixes this representation by normalizing
+:math:`C\otimes R` unchanged.  ``MatrixMCD`` fixes this representation by normalizing
 :math:`\det(R)=1`.
 
 Distance contributions
@@ -137,7 +138,7 @@ values.
 Numerical and modeling limits
 -----------------------------
 
-``MMCD`` assumes rowwise contamination: a minority of complete matrix
+``MatrixMCD`` assumes rowwise contamination: a minority of complete matrix
 observations may come from another process.  It does not identify isolated bad
 cells during fitting.  The row/column covariance assumption is also a modeling
 choice; it can be too restrictive when the vectorized covariance is not close

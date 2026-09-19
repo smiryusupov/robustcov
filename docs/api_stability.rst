@@ -32,6 +32,11 @@ Public classes and functions documented from their defining submodules remain
 usable from those documented paths.  The top-level stability manifest does not
 turn every imported helper or module attribute into a supported API.
 
+When a method has compatibility aliases, the provenance registry defines one
+canonical spelling. New examples, API headings, and user-guide text use that
+canonical name; aliases exist for compatibility or literature searchability and
+do not create competing preferred spellings.
+
 Stability tiers
 ---------------
 
@@ -79,6 +84,35 @@ Inspect the installed contract
        .read_text(encoding="utf-8")
    )
    print(manifest["stable_top_level"])
+
+Naming migrations before 1.0
+----------------------------
+
+Three provisional composite workflows gained more explicit canonical names in
+the post-0.2 development series.  The previous names remain available as
+deprecated compatibility classes and emit :class:`DeprecationWarning` when
+instantiated.
+
+.. list-table:: Canonical composite names
+   :header-rows: 1
+
+   * - Canonical name
+     - Deprecated compatibility name
+     - Reason
+   * - ``RobustScatterPCA``
+     - ``RobustPCA``
+     - Makes clear that the class diagonalizes a robust scatter estimate rather
+       than solving low-rank-plus-sparse robust PCA.
+   * - ``RobustScatterSelector``
+     - ``AutoRobustScatter``
+     - Names the class by its actual role: selecting one scatter estimator.
+   * - ``RobustOutlierEnsemble``
+     - ``AutoRobustAnomalyDetector``
+     - Names the implemented behavior: normalized scores from several fitted
+       estimators are averaged rather than one estimator being selected.
+
+The deprecated names are planned for removal no earlier than ``0.4.0`` and are
+subject to the minimum deprecation window below.
 
 Deprecation policy
 ------------------

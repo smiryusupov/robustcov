@@ -1,24 +1,24 @@
 {
   "artifacts": {
     "docs/_static/benchmarks/small_sample.csv": {
-      "bytes": 18634,
-      "sha256": "d42dc6d168f3f36ec07af4a60a5a698ed2b899a3db869ebfeee9bb07a9514cd6"
+      "bytes": 18666,
+      "sha256": "1806e037a5bed2c0a81b957c964fe84beead3453f6019c696950083143ce5c63"
     },
     "docs/_static/benchmarks/small_sample_rank.png": {
-      "bytes": 96954,
-      "sha256": "ca0b9ddac85c7b0251c233642143ba3aeb8d072d89ce2470e0c3ca18cdd56f0e"
+      "bytes": 98899,
+      "sha256": "6f3d869f2c7d4347fcb5c276d6e310c5cbd20237615aa2d884164b620d68267a"
     },
     "docs/_static/benchmarks/small_sample_summary.csv": {
-      "bytes": 1373,
-      "sha256": "06ac28510e5ca2dbbc891c6598c8b7b1002520d844a853387b8bce6652efdc97"
+      "bytes": 1377,
+      "sha256": "8ba095e32eb2d36b1a0cfe93a638e8c7ceb1c4bbafb6939b909ce9bd05bfc34b"
     },
     "docs/_static/benchmarks/speed.csv": {
-      "bytes": 9368,
-      "sha256": "c1d8bd8fb9a92535ec914e2619d028f225e7ba555e41a83e7d7b9f5f97ae4ebc"
+      "bytes": 9380,
+      "sha256": "52e39dd934ccedfae17678daddd6b83f9785567f1d3677f3aacfcf76db4490a3"
     },
     "docs/_static/benchmarks/speed.png": {
-      "bytes": 386821,
-      "sha256": "9fab3073e084c519bdc501bcce99734c781730a84509a8925ba741db015966ba"
+      "bytes": 382708,
+      "sha256": "1b08971ec93c8f3c04ab53fe4d8a46c6a9799f06ff060302a7468fc1f1853897"
     },
     "docs/_static/benchmarks/statistical_validation.json": {
       "bytes": 2911,
@@ -51,7 +51,7 @@
     "machine": "x86_64",
     "matplotlib": "3.11.0",
     "numpy": "2.4.6",
-    "platform": "Linux-6.17.0-1028-oem-x86_64-with-glibc2.39",
+    "platform": "Linux-6.17.0-1032-oem-x86_64-with-glibc2.39",
     "python": "3.12.3",
     "python_compiler": "GCC 13.3.0",
     "python_implementation": "CPython",
@@ -59,12 +59,12 @@
     "scipy": "1.18.0",
     "shap": "0.52.0"
   },
-  "generated_at_utc": "2026-07-30T19:16:48.304765+00:00",
+  "generated_at_utc": "2026-09-19T12:02:02.339751+00:00",
   "key_results": {
     "classical_contamination_speed": {
-      "fastmcd_seconds": 0.005085,
-      "local_speed_ratio": 28.204129793510322,
-      "sklearn_mincovdet_seconds": 0.143418
+      "fastmcd_seconds": 0.005179,
+      "local_speed_ratio": 28.092681984939183,
+      "sklearn_mincovdet_seconds": 0.145492
     },
     "robust_explanations_iris": {
       "contaminated_rows": 12,
@@ -96,8 +96,8 @@
         "mean_error": "0.6659",
         "mean_rank": "1.6250",
         "median_error": "0.5907",
-        "median_seconds": "0.032008",
-        "method": "robustcov AutoRobustScatter",
+        "median_seconds": "0.029984",
+        "method": "robustcov RobustScatterSelector",
         "not_applicable": "0",
         "success_rate": "1.0000",
         "successes": "8",
@@ -110,7 +110,7 @@
         "mean_error": "0.7454",
         "mean_rank": "5.5000",
         "median_error": "0.6774",
-        "median_seconds": "0.003731",
+        "median_seconds": "0.004294",
         "method": "robustcov FastMCD",
         "not_applicable": "4",
         "success_rate": "1.0000",
@@ -124,7 +124,7 @@
         "mean_error": "0.6808",
         "mean_rank": "1.8750",
         "median_error": "0.5950",
-        "median_seconds": "0.004289",
+        "median_seconds": "0.003983",
         "method": "robustcov RegularizedCauchy",
         "not_applicable": "0",
         "success_rate": "1.0000",
@@ -138,7 +138,7 @@
         "mean_error": "1.1903",
         "mean_rank": "6.7500",
         "median_error": "0.8233",
-        "median_seconds": "0.010784",
+        "median_seconds": "0.010644",
         "method": "sklearn MinCovDet",
         "not_applicable": "4",
         "success_rate": "1.0000",
@@ -197,6 +197,6 @@
     }
   },
   "schema_version": 1,
-  "source_revision": "d8bfea78b4a997486a2e68fb9f30102ea67e1b5e",
-  "source_tree_sha256": "9399fb9439fd32781e22b0eec397bcd0f7cdf461363e3a49e9e57a42398f23c9"
+  "source_revision": "47012beebca8925fe6fa906b9a9cf2f02018366d",
+  "source_tree_sha256": "db5c62f2c1d70d238e5ae5110628795d2f9c1aaaf9bc47a4461b0f418a17cd68"
 }

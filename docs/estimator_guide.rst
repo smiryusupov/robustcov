@@ -1,21 +1,54 @@
-Choose an estimator
-===================
+Choose a method
+===============
 
 Start from the failure mode
 ---------------------------
 
-Choose the estimator from the structure of one observation, the way the data
-are contaminated, the ``n``-to-``p`` regime, and the fitted quantity you need.
-The short table below is a starting point.  See :doc:`method_comparison` for
-capability limits, methods that should not be compared directly, and
-reproducible cross-method benchmarks.
+Do not begin by comparing every estimator.  First identify the kind of failure
+in the data, then compare methods inside that family.
+
+.. list-table:: Pick the family first
+   :header-rows: 1
+   :widths: 30 32 38
+
+   * - What is going wrong?
+     - Method family
+     - Good first names to inspect
+   * - A minority of complete rows are abnormal
+     - Rowwise high-breakdown covariance
+     - ``FastMCD``, ``DetS``, ``DetMM``, ``MRCD``
+   * - Tails are broad rather than a small separated outlier group
+     - Heavy-tail / regularized scatter
+     - ``RegularizedCauchy``, ``StudentTScatter``, ``RegularizedTyler``
+   * - Individual cells are corrupted or missing
+     - Cellwise robust covariance or PCA
+     - ``CellMCD``, ``CellRCov``, ``CellPCA``, ``SparseCellPCA``
+   * - The main object is low-rank structure
+     - Robust PCA or matrix decomposition
+     - ``RobustScatterPCA``, ``PrincipalComponentPursuit``, ``CellPCA``
+   * - You need a sparse dependence graph
+     - Robust precision estimation
+     - ``RobustGraphicalLasso``, ``SGLASSO``
+   * - You need scores or change detection rather than another covariance estimate
+     - Detection / monitoring workflow
+     - ``RobustOutlierDetector``, ``ConformalAlertCalibrator``, ``RobustSubspaceMonitor``
+
+For an end-to-end task map, see :doc:`user_guide`.  For capability limits and
+cross-method evidence, see :doc:`method_comparison`.
+
+Detailed chooser
+----------------
+
+Once the family is clear, use the more specific table below.  It accounts for
+the structure of one observation, the contamination mechanism, the ``n``-to-
+``p`` regime, and the fitted quantity you need.
 
 .. list-table::
    :header-rows: 1
    :widths: 24 20 28 28
 
    * - Situation
-     - Recommended estimator
+     - Start with
      - Why
      - Main limitation
    * - ``n`` much larger than ``p`` and outliers are separable
@@ -35,7 +68,7 @@ reproducible cross-method benchmarks.
      - Runs the regularized subset search in a kernel feature space.
      - Kernel and bandwidth choices define the geometry and can dominate the result.
    * - Each observation is a matrix and contamination affects complete observations
-     - ``MMCD``
+     - ``MatrixMCD``
      - Estimates separate row and column covariance factors.
      - Assumes a scientifically meaningful separable covariance structure.
    * - Individual cells are corrupted or missing but the rest of each row is useful
@@ -87,7 +120,7 @@ reproducible cross-method benchmarks.
      - Scale-free shape estimate with high-dimensional regularization.
      - Absolute covariance scale needs an explicit correction.
    * - Unsure which heavy-tail estimator to choose
-     - ``AutoRobustScatter``
+     - ``RobustScatterSelector``
      - Fits candidates and selects with a diagnostic or stability score.
      - Selection is only as good as the candidate set and score.
 

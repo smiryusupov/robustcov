@@ -37,7 +37,7 @@ def test_every_public_estimator_supports_clone_and_parameter_protocol(estimator_
 @pytest.mark.parametrize(
     ("estimator", "nested_name", "expected"),
     [
-        (rc.RobustPCA(estimator=rc.FastMCD()), "estimator__quality", "high"),
+        (rc.RobustScatterPCA(estimator=rc.FastMCD()), "estimator__quality", "high"),
         (rc.FeatureGeometry(estimator=rc.FastMCD()), "estimator__quality", "high"),
         (
             rc.ClassConditionalFeatureGeometry(estimator=rc.FastMCD()),
@@ -50,7 +50,7 @@ def test_every_public_estimator_supports_clone_and_parameter_protocol(estimator_
             "high",
         ),
         (
-            rc.SubspaceStability(pca=rc.RobustPCA()),
+            rc.SubspaceStability(pca=rc.RobustScatterPCA()),
             "pca__n_components",
             2,
         ),
@@ -94,11 +94,11 @@ def test_matrix_mcd_preserves_constructor_parameters_until_fit():
 
 
 def test_auto_scatter_preserves_criterion_alias_as_constructor_parameter():
-    estimator = rc.AutoRobustScatter(selection="stability", criterion=None)
+    estimator = rc.RobustScatterSelector(selection="stability", criterion=None)
     assert estimator.selection == "stability"
     assert estimator.criterion is None
 
-    criterion_estimator = rc.AutoRobustScatter(
+    criterion_estimator = rc.RobustScatterSelector(
         selection="stability", criterion="diagnostic"
     )
     criterion_estimator._validate_parameters()

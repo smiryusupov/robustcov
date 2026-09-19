@@ -99,7 +99,7 @@ def evaluate_external_baselines(X, y, contamination=0.02, include_slow=False, ro
 
     t0 = time.perf_counter()
     if robust == 'auto':
-        auto = rc.AutoRobustScatter(selection='diagnostic', random_state=0).fit(X)
+        auto = rc.RobustScatterSelector(selection='diagnostic', random_state=0).fit(X)
         est = auto.estimator_
         name = f"robustcov Auto({auto.best_estimator_name_})"
     elif robust == 'cauchy':

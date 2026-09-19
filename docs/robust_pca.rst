@@ -1,7 +1,7 @@
 Robust principal component analysis
 ===================================
 
-``RobustPCA`` computes principal components from a robust location and scatter
+``RobustScatterPCA`` computes principal components from a robust location and scatter
 estimate.  Use it when a few unusual rows, heavy tails, or leverage points would
 otherwise pull ordinary PCA toward the wrong directions.
 
@@ -17,10 +17,11 @@ and reconstruct observations from the retained components.  It also reports two
 distances that are useful when PCA is used for diagnostics.
 
 
-## Mathematical formulation
+Mathematical formulation
+------------------------
 
 Let :math:`x_1,\ldots,x_n \in \mathbb{R}^p` denote the observations.
-`RobustPCA` first fits a robust location estimate
+``RobustScatterPCA`` first fits a robust location estimate
 :math:`\widehat{\mu}` and a robust scatter estimate
 :math:`\widehat{\Sigma}`.
 
@@ -28,19 +29,15 @@ The scatter matrix is decomposed as
 
 .. math::
 
-# \widehat{\Sigma}
-
-V \Lambda V^\mathsf{T},
+   \widehat{\Sigma} = V \Lambda V^\mathsf{T},
 
 where
 
 .. math::
 
-# \Lambda
-
-\operatorname{diag}(\lambda_1,\ldots,\lambda_p),
-\qquad
-\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_p,
+   \Lambda = \operatorname{diag}(\lambda_1,\ldots,\lambda_p),
+   \qquad
+   \lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_p,
 
 and the columns of :math:`V` are orthonormal eigenvectors.
 
@@ -48,34 +45,29 @@ If :math:`q` components are retained, let
 
 .. math::
 
-V_q = [v_1,\ldots,v_q].
+   V_q = [v_1,\ldots,v_q].
 
 The robust principal-component scores of an observation :math:`x` are
 
 .. math::
 
-z = V_q^\mathsf{T}(x-\widehat{\mu}).
+   z = V_q^\mathsf{T}(x-\widehat{\mu}).
 
 The corresponding reconstruction is
 
 .. math::
 
-# \widehat{x}
-
-\widehat{\mu} + V_qz.
+   \widehat{x} = \widehat{\mu} + V_q z.
 
 The explained-variance ratio of component :math:`j` is
 
 .. math::
 
-# r_j
-
-\frac{\lambda_j}
-{\sum_{k=1}^{p}\lambda_k}.
+   r_j = \frac{\lambda_j}{\sum_{k=1}^{p}\lambda_k}.
 
 The difference from ordinary PCA is the source of
 :math:`\widehat{\mu}` and :math:`\widehat{\Sigma}`. Ordinary PCA uses the
-sample mean and empirical covariance. `RobustPCA` obtains them from the
+sample mean and empirical covariance. ``RobustScatterPCA`` obtains them from the
 selected robust scatter estimator, which reduces the influence of contaminated
 or heavy-tailed observations.
 
@@ -87,7 +79,7 @@ Fit and transform
 
    import robustcov as rc
 
-   pca = rc.RobustPCA(
+   pca = rc.RobustScatterPCA(
        n_components=5,
        estimator=rc.RegularizedCauchy(alpha=0.10),
    ).fit(X_train)
@@ -108,7 +100,7 @@ robust eigenvalue:
 
 .. code-block:: python
 
-   pca = rc.RobustPCA(
+   pca = rc.RobustScatterPCA(
        n_components=0.95,
        estimator=rc.FastMCD(quality="balanced", random_state=0),
        whiten=True,
@@ -180,7 +172,7 @@ number.
 Choosing a scatter estimator
 ----------------------------
 
-``RobustPCA`` clones and fits the estimator passed through ``estimator``.  A
+``RobustScatterPCA`` clones and fits the estimator passed through ``estimator``.  A
 compatible estimator must implement ``fit(X)`` and expose a finite square
 ``covariance_`` matrix.  If it also exposes ``location_``, that location is used
 for centering; otherwise the arithmetic mean is used.
@@ -197,7 +189,7 @@ A few common choices are:
    ]
 
    models = [
-       rc.RobustPCA(n_components=10, estimator=est).fit(X_train)
+       rc.RobustScatterPCA(n_components=10, estimator=est).fit(X_train)
        for est in candidates
    ]
 

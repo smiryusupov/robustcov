@@ -188,7 +188,7 @@ def test_covariance_recovery_beats_median_empirical_on_mixed_contamination():
 def test_works_as_robust_pca_scatter_estimator():
     rng, clean, _ = make_low_rank_data(n=80, p=25)
     X, _, _, _ = damage_data(rng, clean, missing=0.0)
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=3,
         estimator=small_model(),
     ).fit(X)

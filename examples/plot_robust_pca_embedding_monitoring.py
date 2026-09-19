@@ -99,7 +99,7 @@ def main() -> None:
 
     reference, reference_clean, production, true_basis, batch_kind, point_kind = make_data()
 
-    rpca = rc.RobustPCA(
+    rpca = rc.RobustScatterPCA(
         n_components=true_basis.shape[1],
         estimator=rc.RegularizedCauchy(
             alpha=0.12,
@@ -126,7 +126,7 @@ def main() -> None:
     empirical_cov_error = float(np.linalg.norm(np.cov(empirical_scores, rowvar=False) - np.diag(np.var(empirical_scores, axis=0)), ord="fro"))
     robust_cov_error = float(np.linalg.norm(np.cov(robust_scores, rowvar=False) - np.diag(np.var(robust_scores, axis=0)), ord="fro"))
 
-    print("Production embedding monitoring with RobustPCA")
+    print("Production embedding monitoring with RobustScatterPCA")
     print("==============================================")
     print(f"reference shape: {reference.shape}")
     print(f"production shape: {production.shape}")
@@ -153,7 +153,7 @@ def main() -> None:
     ax.axvspan(9.5, 12.5, color="tab:orange", alpha=0.10, label="OOD mixture")
     ax.set_xlabel("production batch")
     ax.set_ylabel("batch distance summary")
-    ax.set_title("RobustPCA separates semantic drift from out-of-subspace traffic")
+    ax.set_title("RobustScatterPCA separates semantic drift from out-of-subspace traffic")
     ax.set_xticks(batches)
     ax.legend(ncol=2)
     fig.tight_layout()
@@ -181,7 +181,7 @@ def main() -> None:
 
     fig = plt.figure(figsize=(6.5, 4.4))
     ax = fig.add_subplot(111)
-    ax.bar(["Empirical PCA", "RobustPCA"], [empirical_error, robust_error])
+    ax.bar(["Empirical PCA", "RobustScatterPCA"], [empirical_error, robust_error])
     ax.set_ylabel("projection-matrix error")
     ax.set_title("Recovery of the uncontaminated embedding subspace")
     for index, value in enumerate([empirical_error, robust_error]):

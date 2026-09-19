@@ -49,7 +49,7 @@ def main() -> int:
     assert scatter.covariance_.shape == (8, 8)
     assert np.all(np.isfinite(scatter.covariance_))
 
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=3,
         estimator=rc.RegularizedCauchy(alpha=0.1, max_iter=40),
     ).fit(X)

@@ -42,7 +42,7 @@ def test_robust_pca_matches_empirical_eigendecomposition():
     rng = np.random.default_rng(100)
     X = rng.normal(size=(300, 5)) @ np.diag([3.0, 2.0, 1.0, 0.5, 0.2])
 
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=3,
         estimator=EmpiricalScatter(),
     ).fit(X)
@@ -63,7 +63,7 @@ def test_robust_pca_full_reconstruction_and_stored_diagnostics():
     rng = np.random.default_rng(101)
     X = rng.normal(size=(120, 4))
 
-    pca = rc.RobustPCA(estimator=EmpiricalScatter()).fit(X)
+    pca = rc.RobustScatterPCA(estimator=EmpiricalScatter()).fit(X)
     reconstructed = pca.reconstruct(X)
 
     assert reconstructed.shape == X.shape
@@ -86,7 +86,7 @@ def test_robust_pca_whitening_and_inverse_transform():
         ]
     )
 
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=4,
         estimator=EmpiricalScatter(),
         whiten=True,
@@ -101,11 +101,11 @@ def test_robust_pca_variance_threshold_and_deterministic_signs():
     rng = np.random.default_rng(103)
     X = rng.normal(size=(400, 4)) @ np.diag([5.0, 2.0, 0.3, 0.1])
 
-    pca_a = rc.RobustPCA(
+    pca_a = rc.RobustScatterPCA(
         n_components=0.90,
         estimator=EmpiricalScatter(),
     ).fit(X)
-    pca_b = rc.RobustPCA(
+    pca_b = rc.RobustScatterPCA(
         n_components=0.90,
         estimator=EmpiricalScatter(),
     ).fit(X)
@@ -124,7 +124,7 @@ def test_robust_pca_outlier_map_separates_subspace_and_orthogonal_outliers():
     X = np.column_stack([3.0 * latent[:, 0], latent[:, 1], np.zeros(250)])
     X += rng.normal(scale=0.01, size=X.shape)
 
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=2,
         estimator=EmpiricalScatter(ridge=1e-8),
     ).fit(X)
@@ -160,11 +160,11 @@ def test_robust_pca_fastmcd_recovers_contaminated_subspace_better_than_empirical
     contamination[:, 3:] += rng.normal(loc=0.0, scale=12.0, size=(50, 2))
     X = np.vstack([X_clean, contamination])
 
-    empirical = rc.RobustPCA(
+    empirical = rc.RobustScatterPCA(
         n_components=2,
         estimator=EmpiricalScatter(),
     ).fit(X)
-    robust = rc.RobustPCA(
+    robust = rc.RobustScatterPCA(
         n_components=2,
         estimator=rc.FastMCD(n_init=60, random_state=0),
     ).fit(X)
@@ -180,7 +180,7 @@ def test_robust_pca_regularizes_singular_covariance_consistently():
     covariance = np.diag([4.0, 1.0, 0.0, -1e-8])
     X = np.arange(40, dtype=float).reshape(10, 4)
 
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         estimator=InvalidScatter(covariance),
         ridge=1e-6,
     ).fit(X)
@@ -207,24 +207,24 @@ def test_robust_pca_regularizes_singular_covariance_consistently():
 def test_robust_pca_parameter_validation(kwargs, error):
     X = np.arange(24, dtype=float).reshape(8, 3)
     with pytest.raises(error):
-        rc.RobustPCA(estimator=EmpiricalScatter(), **kwargs).fit(X)
+        rc.RobustScatterPCA(estimator=EmpiricalScatter(), **kwargs).fit(X)
 
 
 def test_robust_pca_estimator_output_validation_and_unfitted_calls():
     X = np.arange(24, dtype=float).reshape(8, 3)
 
     with pytest.raises(AttributeError, match="not fitted"):
-        rc.RobustPCA().transform(X)
+        rc.RobustScatterPCA().transform(X)
 
     with pytest.raises(ValueError, match="incompatible shape"):
-        rc.RobustPCA(
+        rc.RobustScatterPCA(
             estimator=InvalidScatter(np.eye(2)),
         ).fit(X)
 
     bad = np.eye(3)
     bad[0, 0] = np.nan
     with pytest.raises(ValueError, match="finite"):
-        rc.RobustPCA(
+        rc.RobustScatterPCA(
             estimator=InvalidScatter(bad),
         ).fit(X)
 
@@ -233,7 +233,7 @@ def test_plot_robust_pca_outlier_map(tmp_path):
     pytest.importorskip("matplotlib")
     rng = np.random.default_rng(106)
     X = rng.normal(size=(80, 3))
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=2,
         estimator=EmpiricalScatter(),
     ).fit(X)
@@ -255,7 +255,7 @@ def test_robust_pca_high_dimensional_regularized_scatter():
     rng = np.random.default_rng(107)
     X = rng.standard_t(df=3, size=(24, 40))
 
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=8,
         estimator=rc.RegularizedCauchy(alpha=0.50, max_iter=200),
         whiten=True,
@@ -271,7 +271,7 @@ def test_robust_pca_high_dimensional_regularized_scatter():
 def test_robust_pca_store_scores_false_and_full_variance_threshold():
     rng = np.random.default_rng(108)
     X = rng.normal(size=(60, 4))
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=1.0,
         estimator=EmpiricalScatter(),
         store_scores=False,

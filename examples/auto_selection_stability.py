@@ -1,4 +1,4 @@
-"""Compare diagnostic and stability AutoRobustScatter selection.
+"""Compare diagnostic and stability RobustScatterSelector selection.
 
 Run:
     python examples/auto_selection_stability.py
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     X = Z / np.sqrt(g)[:, None]
 
     for selection in ["diagnostic", "stability"]:
-        auto = rc.AutoRobustScatter(selection=selection, n_splits=3, random_state=0).fit(X)
+        auto = rc.RobustScatterSelector(selection=selection, n_splits=3, random_state=0).fit(X)
         print()
         print("selection:", selection)
         print(auto.summary())

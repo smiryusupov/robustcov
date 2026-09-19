@@ -15,6 +15,8 @@ geometric quantities.
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
 
@@ -114,11 +116,22 @@ def affine_invariant_distance(A: np.ndarray, B: np.ndarray) -> float:
     return float(np.linalg.norm(np.log(vals)))
 
 
-def logeuclidean_distance(A: np.ndarray, B: np.ndarray) -> float:
+def log_euclidean_distance(A: np.ndarray, B: np.ndarray) -> float:
     """Log-Euclidean distance between two SPD matrices."""
     LA = spd_log(A)
     LB = spd_log(B)
     return float(np.linalg.norm(LA - LB, ord="fro"))
+
+
+def logeuclidean_distance(A: np.ndarray, B: np.ndarray) -> float:
+    """Deprecated compatibility name for :func:`log_euclidean_distance`."""
+    warnings.warn(
+        "logeuclidean_distance is deprecated; use log_euclidean_distance. "
+        "logeuclidean_distance is planned for removal no earlier than robustcov 0.4.0.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return log_euclidean_distance(A, B)
 
 
 def spd_geodesic(A: np.ndarray, B: np.ndarray, t: float) -> np.ndarray:

@@ -158,8 +158,8 @@ def pca_checks() -> dict[str, object]:
     rng = np.random.default_rng(804)
     X = rng.normal(size=(120, 6)) @ np.diag([5.0, 3.0, 2.0, 1.0, 0.5, 0.1])
     scale = 1e-50
-    base = rc.RobustPCA(n_components=3, estimator=EmpiricalScatter()).fit(X)
-    tiny = rc.RobustPCA(n_components=3, estimator=EmpiricalScatter()).fit(scale * X)
+    base = rc.RobustScatterPCA(n_components=3, estimator=EmpiricalScatter()).fit(X)
+    tiny = rc.RobustScatterPCA(n_components=3, estimator=EmpiricalScatter()).fit(scale * X)
     eigenvalue_error = relative_error(tiny.eigenvalues_, scale**2 * base.eigenvalues_)
     projection_error = relative_error(
         tiny.components_.T @ tiny.components_, base.components_.T @ base.components_

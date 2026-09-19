@@ -4,7 +4,7 @@ import pytest
 from robustcov.geometry import (
     affine_invariant_distance,
     det_normalize,
-    logeuclidean_distance,
+    log_euclidean_distance,
     spd_exp,
     spd_geodesic,
     spd_log,
@@ -49,12 +49,12 @@ def test_spd_distances_are_symmetric_and_zero_on_self():
     B = np.array([[1.4, -0.2], [-0.2, 2.5]])
 
     assert affine_invariant_distance(A, A) == pytest.approx(0.0, abs=1e-12)
-    assert logeuclidean_distance(A, A) == pytest.approx(0.0, abs=1e-12)
+    assert log_euclidean_distance(A, A) == pytest.approx(0.0, abs=1e-12)
 
     assert affine_invariant_distance(A, B) == pytest.approx(
         affine_invariant_distance(B, A)
     )
-    assert logeuclidean_distance(A, B) == pytest.approx(logeuclidean_distance(B, A))
+    assert log_euclidean_distance(A, B) == pytest.approx(log_euclidean_distance(B, A))
 
 
 def test_spd_geodesic_endpoints():

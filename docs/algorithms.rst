@@ -1,20 +1,51 @@
-Method catalog
-==============
+Method reference
+================
 
-This section groups the mathematical and practical descriptions of the
-estimators used by ``robustcov``. Start with :doc:`estimator_guide` when choosing a method; use this
-section for assumptions, fitted quantities, equations, and implementation details.
+This is the mathematical reference, not the recommended starting point.  If you
+are choosing a method for a dataset, use :doc:`estimator_guide`; if you are
+trying to complete a task, use :doc:`user_guide` or :doc:`workflows`.
+
+Use this section when you already know the method family and need assumptions,
+fitted quantities, equations, implementation details, or links to the primary
+literature.  For the distinction between published methodology, package
+adaptations, and RobustCov-specific compositions, see
+:doc:`methods_and_references` and :doc:`references`.
+
+Browse by family
+----------------
+
+.. list-table:: Method families
+   :header-rows: 1
+   :widths: 24 38 38
+
+   * - Family
+     - Typical question
+     - Methods / deeper pages
+   * - Rowwise robust covariance
+     - Are a minority of complete observations contaminating location and covariance?
+     - ``FastMCD``, ``DetS``, ``DetMM``, ``MRCD``; see :doc:`s_estimators` and :doc:`kernel_mrcd`
+   * - Heavy-tail and shape estimators
+     - Is the main problem diffuse radial tails, conditioning, or scale-free elliptical shape?
+     - ``RegularizedCauchy``, ``StudentTScatter``, ``TylerShape``, ``RegularizedTyler``
+   * - Cellwise and structured covariance
+     - Are individual entries bad, or are observations matrices/tensors with meaningful mode structure?
+     - :doc:`cellwise_covariance`, :doc:`cellwise_regularized_covariance`, :doc:`matrix_covariance`
+   * - PCA and decomposition
+     - Do you need a robust subspace, low-rank reconstruction, or low-rank-plus-sparse separation?
+     - :doc:`robust_pca`, :doc:`principal_component_pursuit`, :doc:`cellwise_pca`, :doc:`robust_multilinear_pca`
+   * - Precision and geometry
+     - Do you need a sparse conditional-dependence graph or geometry derived from robust scatter?
+     - :doc:`sparse_precision`, :doc:`spatial_sign_precision`, :doc:`geometry`
+   * - Detection and monitoring
+     - Do you need anomaly scores, calibrated alerts, or change relative to a reference subspace?
+     - :doc:`monitoring`, :doc:`feature_geometry`, :doc:`subspace_stability`
+   * - Sources and factors
+     - Is the goal independent sources, temporally correlated sources, or a common-factor model?
+     - :doc:`source_separation_factor_models`
 
 The package focuses on robust covariance/scatter estimation and robust-distance
 diagnostics, not on fitting a full probability model with density, sampler, AIC,
 or BIC.
-
-This page gives the shared notation and catalog overview.
-
-For a method-by-method distinction between published methodology, package
-adaptations, and robustcov-specific compositions, see
-:doc:`methods_and_references` and :doc:`references`.
-
 
 Detailed method pages
 ---------------------
@@ -44,8 +75,11 @@ Detailed method pages
    monitoring
    feature_geometry
 
+Mathematical catalog
+--------------------
+
 Notation
---------
+~~~~~~~~
 
 Let :math:`X = \{x_i\}_{i=1}^n`, with :math:`x_i \in \mathbb{R}^p`. A location estimate is
 :math:`\hat\mu`, a covariance or scatter estimate is :math:`\hat\Sigma`, and robust squared
@@ -589,7 +623,7 @@ values, and the distinction from cellwise-robust graph estimation.
 Matrix Minimum Covariance Determinant
 -------------------------------------
 
-``MMCD`` extends the MCD subset principle to matrix-valued observations.  For
+``MatrixMCD`` extends the MCD subset principle to matrix-valued observations.  For
 :math:`X_i \in \mathbb{R}^{r\times c}`, it estimates a mean matrix :math:`M`, a
 row covariance :math:`R`, and a column covariance :math:`C` under
 
@@ -648,8 +682,8 @@ This makes Tyler's estimator highly robust to radial outliers because observatio
 robust distances receive small weights. Since the estimator is shape-only, it is often paired with a
 separate scale correction or used primarily for robust distances and shape diagnostics.
 
-Regularized Tyler / KL Tyler / Wiesel Tyler
--------------------------------------------
+Regularized Tyler and named KL/Wiesel variants
+------------------------------------------------
 
 When :math:`p` is close to :math:`n` or :math:`p > n`, unregularized scatter estimates can become
 singular or unstable. ``RegularizedTyler`` shrinks the Tyler update toward a target matrix
@@ -666,18 +700,18 @@ singular or unstable. ``RegularizedTyler`` shrinks the Tyler update toward a tar
    \qquad 0 \leq \alpha \leq 1.
 
 The result is normalized after each update. Shrinkage improves conditioning and makes the estimator
-usable in high-dimensional small-sample regimes. In the current MVP, ``KLRegularizedTyler`` and
-``WieselTyler`` are documented aliases around this regularized Tyler prototype. They keep the API
-space open for a future exact objective-specific implementation.
+usable in high-dimensional small-sample regimes. ``KLRegularizedTyler`` and
+``WieselTyler`` currently use the same fixed-point shrinkage engine as
+``RegularizedTyler`` while retaining distinct names for provenance and
+benchmarking. They should therefore not be interpreted as exact
+objective-specific KL or Wiesel solvers.
 
 Geometry note.  Regularized Tyler and Wiesel-style estimators are often
 understood through the geometry of the symmetric positive-definite cone.  Their
 objectives can be geodesically convex under appropriate formulations, even when
-they are not ordinary Euclidean-convex functions of the matrix entries.  This is
-why the package documentation separates the fixed-point update used in the MVP
-from stronger mathematical claims about an exact KL/Wiesel objective.  The
-current implementation is pragmatic; future versions may expose objective-level
-solvers once the exact formulation is stabilized.
+they are not ordinary Euclidean-convex functions of the matrix entries.  The
+package documentation therefore distinguishes the implemented fixed-point
+update from stronger mathematical claims about an exact KL/Wiesel objective.
 
 Student-t scatter
 -----------------
@@ -711,8 +745,8 @@ Regularized Cauchy
 ------------------
 
 ``RegularizedCauchy`` is the very-heavy-tail member of the same M-estimator family. It corresponds
-to a Cauchy-like radial downweighting rule and shrinkage toward a stable target. In practice this is
-the current flagship estimator for small-sample heavy-tail covariance recovery.
+to a Cauchy-like radial downweighting rule and shrinkage toward a stable target. It is a practical
+starting point for small-sample heavy-tail covariance recovery when regularization is needed.
 
 A simplified view is
 
@@ -734,11 +768,12 @@ weights with square-root-space shrinkage. It is useful for exploratory compariso
 not yet be cited as the exact optimizer of a specific Hellinger objective. The API label is
 experimental until the objective and fixed-point update are finalized.
 
-AutoRobustScatter
------------------
+Robust scatter selection workflow
+---------------------------------
 
-``AutoRobustScatter`` is a practical selector. It fits a small candidate set and chooses an
-estimator using a diagnostic or stability score.
+``RobustScatterSelector`` is a package-level selection workflow rather than a new scatter
+estimating equation. It fits a small candidate set and chooses an estimator using a diagnostic or
+stability score.
 
 .. code-block:: text
 
@@ -844,21 +879,13 @@ Estimator selection summary
      - ``RegularizedTyler``
      - scale-free robust shape with shrinkage
    * - Unsure which heavy-tail estimator to use
-     - ``AutoRobustScatter``
+     - ``RobustScatterSelector``
      - diagnostic or stability-based selection
-
-References
-----------
-
-See :doc:`references` for the full bibliography. Key background includes Rousseeuw and Van Driessen
-for FastMCD, Tyler for shape estimation, Wiesel for regularized robust covariance, and standard
-Student-t/Cauchy M-estimation literature.
-
 
 Robust multilinear PCA
 ----------------------
 
-For matrix observations :math:`X_i\in\mathbb{R}^{r	imes c}`,
+For matrix observations :math:`X_i\in\mathbb{R}^{r\times c}`,
 ``RobustMultilinearPCA`` fits
 
 .. math::
@@ -880,3 +907,11 @@ scores, center, row loadings, and column loadings.
 The package uses a robust clipped-HOSVD initialization and fixed MAD residual
 scales.  It follows the ROMPCA modeling structure but does not claim exact
 reference-software parity.
+
+
+References
+----------
+
+See :doc:`references` for the full bibliography. Key background includes Rousseeuw and Van Driessen
+for FastMCD, Tyler for shape estimation, Wiesel for regularized robust covariance, and standard
+Student-t/Cauchy M-estimation literature.

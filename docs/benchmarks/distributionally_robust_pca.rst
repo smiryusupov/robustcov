@@ -9,7 +9,7 @@ It separates three scenarios:
 * no train-to-target distribution shift;
 * row contamination without target shift.
 
-The compared methods are empirical PCA, ``RobustPCA`` with Cauchy scatter, the
+The compared methods are empirical PCA, ``RobustScatterPCA`` with Cauchy scatter, the
 identity-geometry Wasserstein control, and two anisotropic
 ``DistributionallyRobustPCA`` geometries.
 

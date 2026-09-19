@@ -81,7 +81,7 @@ def _cases(seed: int = 42):
             loading_max_iter=80,
             loading_tol=1e-7,
         ).fit(sparse),
-        "auto_scatter": lambda: rc.AutoRobustScatter(
+        "auto_scatter": lambda: rc.RobustScatterSelector(
             selection="stability",
             n_splits=2,
             subsample_fraction=0.7,

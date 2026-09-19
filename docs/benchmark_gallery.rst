@@ -6,7 +6,7 @@ understand what has been validated, what was compared, and where the current
 methods fail. Each card links to a focused benchmark page with plots, tables,
 commands, and interpretation.
 
-The gallery and method-comparison page answer seven practical questions:
+The gallery and method-comparison page answer eight practical questions:
 
 * Which estimator matches the contamination model and dimensional regime?
 * Which estimator works best for small-sample heavy-tailed covariance?

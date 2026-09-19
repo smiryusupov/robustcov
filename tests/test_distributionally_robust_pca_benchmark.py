@@ -55,7 +55,7 @@ def test_shift_benchmark_distinguishes_distribution_shift_from_contamination_rob
         for row in rows
         if row["scenario"] == "row contamination without target shift"
     }
-    assert float(contamination["RobustPCA(Cauchy)"]["target_risk"]) < float(
+    assert float(contamination["RobustScatterPCA(Cauchy)"]["target_risk"]) < float(
         contamination["Empirical PCA"]["target_risk"]
     )
 

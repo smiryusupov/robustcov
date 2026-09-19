@@ -1,4 +1,4 @@
-"""Benchmark AutoRobustScatter on small-sample heavy-tailed data.
+"""Benchmark RobustScatterSelector on small-sample heavy-tailed data.
 
 Run:
     python benchmarks/auto_scatter_small_sample.py --selection stability --csv results/auto_scatter.csv
@@ -44,7 +44,7 @@ if __name__ == "__main__":
             for df in args.df_list:
                 X, Sigma = make_data(n, p, df, seed=222 + n + p + int(10 * df))
                 t0 = time.perf_counter()
-                est = rc.AutoRobustScatter(selection=args.selection, n_splits=args.n_splits).fit(X)
+                est = rc.RobustScatterSelector(selection=args.selection, n_splits=args.n_splits).fit(X)
                 seconds = time.perf_counter() - t0
                 br = est.best_result_
                 rows.append({
