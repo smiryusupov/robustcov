@@ -25,7 +25,7 @@ benchmark and separates three workloads:
 It includes FastMCD, MRCD, DetS, DetMM, Tyler variants, Student-t scatter,
 regularized Cauchy, the experimental Hellinger prototype, the automatic selector,
 and sklearn empirical/shrinkage/MCD baselines wherever each method is
-applicable.  ``AutoRobustScatter`` is labelled as a workflow because its runtime
+applicable.  ``RobustScatterSelector`` is labelled as a workflow because its runtime
 includes fitting and selecting several candidate estimators.
 
 The benchmark reports complete ``fit`` time.  It is not a microbenchmark of one

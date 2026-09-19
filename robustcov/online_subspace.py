@@ -19,7 +19,7 @@ from typing import Any
 import numpy as np
 
 from ._estimator import EstimatorMixin
-from .pca import RobustPCA
+from .pca import RobustScatterPCA
 
 
 def _as_2d_finite_array(
@@ -150,7 +150,7 @@ class OnlineSubspaceUpdate:
 class OnlineRobustSubspaceTracker(EstimatorMixin):
     """Track a slowly changing low-dimensional subspace in streaming data.
 
-    The tracker fits an initial :class:`~robustcov.RobustPCA` model, scores each
+    The tracker fits an initial :class:`~robustcov.RobustScatterPCA` model, scores each
     incoming observation against the current subspace, replaces isolated large
     projected residuals by their subspace reconstruction, rejects observations
     that look like dense row outliers, and periodically refits a robust candidate
@@ -168,7 +168,7 @@ class OnlineRobustSubspaceTracker(EstimatorMixin):
         Number of tracked components.  Must be smaller than the feature count.
     estimator : object, optional
         Scatter estimator passed to every robust PCA fit.  It is copied before
-        fitting.  The default is RobustPCA's regularized Cauchy estimator.
+        fitting.  The default is RobustScatterPCA's regularized Cauchy estimator.
     update_interval : int, default=64
         Number of accepted observations between candidate subspace updates.
     buffer_size : int, default=256
@@ -194,7 +194,7 @@ class OnlineRobustSubspaceTracker(EstimatorMixin):
         Candidate updates with a larger principal angle are rejected.  This is a
         slow-change safeguard, not a statistical test.
     ridge : float, default=1e-10
-        Relative eigenvalue floor passed to RobustPCA.
+        Relative eigenvalue floor passed to RobustScatterPCA.
     history_size : int, default=100
         Maximum number of update diagnostics retained.  Zero disables history.
 
@@ -275,9 +275,9 @@ class OnlineRobustSubspaceTracker(EstimatorMixin):
         if self.history_size < 0:
             raise ValueError("history_size must be non-negative")
 
-    def _new_model(self) -> RobustPCA:
+    def _new_model(self) -> RobustScatterPCA:
         estimator = None if self.estimator is None else deepcopy(self.estimator)
-        return RobustPCA(
+        return RobustScatterPCA(
             n_components=int(self.n_components),
             estimator=estimator,
             ridge=float(self.ridge),

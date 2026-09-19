@@ -80,7 +80,7 @@ def main() -> None:
     outdir.mkdir(parents=True, exist_ok=True)
 
     maturities, X, clean, true_basis, event = make_data()
-    rpca = rc.RobustPCA(
+    rpca = rc.RobustScatterPCA(
         n_components=3,
         estimator=rc.FastMCD(
             contamination=0.08,
@@ -128,7 +128,7 @@ def main() -> None:
     for index, label in enumerate(labels, start=1):
         ax = fig.add_subplot(3, 1, index)
         ax.plot(maturities, empirical_loadings[index - 1], marker="o", label="empirical PCA")
-        ax.plot(maturities, robust_loadings[index - 1], marker="s", label="RobustPCA")
+        ax.plot(maturities, robust_loadings[index - 1], marker="s", label="RobustScatterPCA")
         ax.plot(maturities, true_basis[:, index - 1], linestyle="--", label="clean factor subspace")
         ax.set_ylabel(label)
         ax.set_xscale("log")

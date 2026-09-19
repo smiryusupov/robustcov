@@ -18,7 +18,7 @@ The simulation creates time-like machine states with correlated sensor features 
 Turning distance into a health score
 ------------------------------------
 
-``FastMCD`` or ``AutoRobustAnomalyDetector`` can provide a scalar health score from the joint sensor vector.  The score is then tracked through time rather than interpreted only row by row.
+``FastMCD`` or ``RobustOutlierEnsemble`` can provide a scalar health score from the joint sensor vector.  The score is then tracked through time rather than interpreted only row by row.
 
 Run the example
 ---------------

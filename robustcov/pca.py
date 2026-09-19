@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
+import warnings
 from typing import Any
 
 import numpy as np
@@ -52,10 +53,10 @@ def _deterministic_eigenvector_signs(eigenvectors: np.ndarray) -> np.ndarray:
 
 
 @dataclass
-class RobustPCA(EstimatorMixin):
+class RobustScatterPCA(EstimatorMixin):
     """Principal component analysis driven by a robust scatter estimator.
 
-    ``RobustPCA`` fits an existing ``robustcov`` estimator (or any compatible
+    ``RobustScatterPCA`` fits an existing ``robustcov`` estimator (or any compatible
     estimator exposing ``covariance_`` after ``fit``), eigendecomposes its
     robust scatter matrix, and provides PCA-style projection and reconstruction.
     It also exposes the two complementary diagnostics used in robust subspace
@@ -98,7 +99,7 @@ class RobustPCA(EstimatorMixin):
     ridge: float = 1e-10
     store_scores: bool = True
 
-    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> "RobustPCA":
+    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> "RobustScatterPCA":
         """Fit a robust principal subspace.
 
         Parameters
@@ -231,7 +232,7 @@ class RobustPCA(EstimatorMixin):
 
     def _check_is_fitted(self) -> None:
         if not hasattr(self, "components_"):
-            raise AttributeError("RobustPCA is not fitted yet")
+            raise AttributeError("RobustScatterPCA is not fitted yet")
 
     def _check_features(self, X: np.ndarray, *, name: str = "X") -> np.ndarray:
         self._check_is_fitted()
@@ -316,4 +317,34 @@ class RobustPCA(EstimatorMixin):
         """
         return np.column_stack(
             [self.score_distances(X), self.orthogonal_distances(X)]
+        )
+
+
+class RobustPCA(RobustScatterPCA):
+    """Deprecated compatibility name for :class:`RobustScatterPCA`.
+
+    ``RobustPCA`` is ambiguous with low-rank-plus-sparse robust PCA methods.
+    Use ``RobustScatterPCA`` for PCA obtained from a robust scatter estimate.
+    """
+
+    def __init__(
+        self,
+        n_components: int | float | None = None,
+        estimator: Any | None = None,
+        whiten: bool = False,
+        ridge: float = 1e-10,
+        store_scores: bool = True,
+    ):
+        warnings.warn(
+            "RobustPCA is deprecated; use RobustScatterPCA. "
+            "RobustPCA is planned for removal no earlier than robustcov 0.4.0.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            n_components=n_components,
+            estimator=estimator,
+            whiten=whiten,
+            ridge=ridge,
+            store_scores=store_scores,
         )

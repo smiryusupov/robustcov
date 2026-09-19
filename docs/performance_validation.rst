@@ -8,7 +8,7 @@ Every C++ kernel has a NumPy fallback and a backend-equivalence test.
 Current native kernels
 ----------------------
 
-``MMCD`` uses a native batched matrix-Mahalanobis kernel when available.
+``MatrixMCD`` uses a native batched matrix-Mahalanobis kernel when available.
 ``RobustMultilinearPCA`` uses a native weighted Tucker core-score solver.  Both
 classes accept ``backend="auto"``, ``"python"``, or ``"cpp"``.
 

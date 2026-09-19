@@ -8,7 +8,7 @@ Embedding spaces often contain topical clusters and occasional off-topic documen
 Screening result
 ----------------
 
-``AutoRobustScatter`` selects ``StudentTScatter`` and all injected off-topic vectors appear in the flagged set.  The ranked distances can be used as a document-review or search-quality queue.
+``RobustScatterSelector`` selects ``StudentTScatter`` and all injected off-topic vectors appear in the flagged set.  The ranked distances can be used as a document-review or search-quality queue.
 
 Embedding simulation
 --------------------
@@ -18,7 +18,7 @@ The data are synthetic embedding-like vectors: a central topic cloud plus a smal
 Automatic scatter selection
 ---------------------------
 
-``AutoRobustScatter`` chooses among robust scatter candidates.  Student-t scatter is often a good compromise for diffuse, heavy-tailed embedding clouds.
+``RobustScatterSelector`` chooses among robust scatter candidates.  Student-t scatter is often a good compromise for diffuse, heavy-tailed embedding clouds.
 
 Run the example
 ---------------

@@ -237,7 +237,7 @@ def generate(
 
     summary_rows = _read_csv(small_summary)
     speed_rows = _read_csv(speed_csv)
-    auto = _row(summary_rows, "method", "robustcov AutoRobustScatter")
+    auto = _row(summary_rows, "method", "robustcov RobustScatterSelector")
     cauchy = _row(summary_rows, "method", "robustcov RegularizedCauchy")
     fastmcd = _row(summary_rows, "method", "robustcov FastMCD")
     mincovdet = _row(summary_rows, "method", "sklearn MinCovDet")

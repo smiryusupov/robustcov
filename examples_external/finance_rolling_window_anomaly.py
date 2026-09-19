@@ -62,7 +62,7 @@ def main():
         raise SystemExit('Not enough windows; reduce --window or --step.')
     X = StandardScaler().fit_transform(Xraw)
 
-    est = rc.AutoRobustScatter(selection='diagnostic', random_state=0).fit(X).estimator_
+    est = rc.RobustScatterSelector(selection='diagnostic', random_state=0).fit(X).estimator_
     det = rc.RobustOutlierDetector(estimator=est, threshold='empirical', alpha=args.alpha).fit(X)
     scores = np.asarray(det.distances_, dtype=float)
     order = np.argsort(scores)[::-1]

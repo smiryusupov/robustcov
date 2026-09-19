@@ -18,7 +18,7 @@ The example uses a noisy supervised classification problem.  robustcov scores ar
 Using distance as an influence check
 ------------------------------------
 
-``RegularizedCauchy`` or ``AutoRobustScatter`` can identify rows that strongly affect the feature geometry.  Whether those rows should be removed is a separate question that must be answered by cross-validation.
+``RegularizedCauchy`` or ``RobustScatterSelector`` can identify rows that strongly affect the feature geometry.  Whether those rows should be removed is a separate question that must be answered by cross-validation.
 
 Run the example
 ---------------

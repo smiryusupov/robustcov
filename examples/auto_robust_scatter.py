@@ -1,4 +1,4 @@
-"""AutoRobustScatter demo.
+"""RobustScatterSelector demo.
 
 Run:
     python examples/auto_robust_scatter.py
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     g = rng.chisquare(df, size=n) / df
     X = Z / np.sqrt(g)[:, None]
 
-    auto = rc.AutoRobustScatter(selection="stability", n_splits=3, random_state=0).fit(X)
+    auto = rc.RobustScatterSelector(selection="stability", n_splits=3, random_state=0).fit(X)
     print(auto.summary())
     print("selected rel_fro_error:", f"{rel_fro(auto.covariance_, Sigma):.4f}")
     print("diagnostic report:")

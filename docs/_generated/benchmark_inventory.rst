@@ -96,7 +96,7 @@ Benchmark coverage inventory
      - low-rank recovery error / sparse-support recovery
      - ``benchmarks/principal_component_pursuit_validation.py``
    * - PCA
-     - ``RobustPCA``
+     - ``RobustScatterPCA``
      - comparative
      - subspace error / row AUROC
      - ``benchmarks/latent_structure_benchmarks.py``
@@ -156,7 +156,7 @@ Benchmark coverage inventory
      - F1 / ROC AUC
      - ``benchmarks/anomaly_detection_baselines.py``
    * - anomaly detection
-     - ``AutoRobustAnomalyDetector``
+     - ``RobustOutlierEnsemble``
      - comparative
      - F1 / ROC AUC
      - ``benchmarks/anomaly_detection_baselines.py``
@@ -166,7 +166,7 @@ Benchmark coverage inventory
      - cluster-conditioned anomaly diagnostics
      - ``examples/use_case_multimodal_anomaly.py``
    * - selection
-     - ``AutoRobustScatter``
+     - ``RobustScatterSelector``
      - comparative
      - selection score / covariance error
      - ``benchmarks/auto_scatter_small_sample.py``

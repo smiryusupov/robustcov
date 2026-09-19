@@ -589,7 +589,7 @@ values, and the distinction from cellwise-robust graph estimation.
 Matrix Minimum Covariance Determinant
 -------------------------------------
 
-``MMCD`` extends the MCD subset principle to matrix-valued observations.  For
+``MatrixMCD`` extends the MCD subset principle to matrix-valued observations.  For
 :math:`X_i \in \mathbb{R}^{r\times c}`, it estimates a mean matrix :math:`M`, a
 row covariance :math:`R`, and a column covariance :math:`C` under
 
@@ -734,10 +734,10 @@ weights with square-root-space shrinkage. It is useful for exploratory compariso
 not yet be cited as the exact optimizer of a specific Hellinger objective. The API label is
 experimental until the objective and fixed-point update are finalized.
 
-AutoRobustScatter
+RobustScatterSelector
 -----------------
 
-``AutoRobustScatter`` is a practical selector. It fits a small candidate set and chooses an
+``RobustScatterSelector`` is a practical selector. It fits a small candidate set and chooses an
 estimator using a diagnostic or stability score.
 
 .. code-block:: text
@@ -844,7 +844,7 @@ Estimator selection summary
      - ``RegularizedTyler``
      - scale-free robust shape with shrinkage
    * - Unsure which heavy-tail estimator to use
-     - ``AutoRobustScatter``
+     - ``RobustScatterSelector``
      - diagnostic or stability-based selection
 
 References

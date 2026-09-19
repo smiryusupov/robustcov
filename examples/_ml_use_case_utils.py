@@ -110,7 +110,7 @@ def baseline_rows(X, labels, contamination, robust_estimator='fastmcd'):
 
     t0 = time.perf_counter()
     if robust_estimator == 'auto':
-        det = rc.AutoRobustAnomalyDetector(contamination=contamination).fit(X)
+        det = rc.RobustOutlierEnsemble(contamination=contamination).fit(X)
         add('robustcov Auto', det.labels_ == -1, det.score_, time.perf_counter() - t0)
         primary = det
     else:

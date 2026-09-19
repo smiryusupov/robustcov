@@ -497,12 +497,13 @@ METHOD_PROVENANCE: Mapping[str, MethodProvenance] = {
         "The implementation solves the canonical equality-constrained PCP program. It does not implement stable PCP for dense noise, missing-data matrix completion, Outlier Pursuit for column-sparse corruption, or an online decomposition algorithm.",
         ("PCP",),
     ),
-    "RobustPCA": _entry(
-        "RobustPCA", "Principal components", "robustcov_composite",
+    "RobustScatterPCA": _entry(
+        "RobustScatterPCA", "Principal components", "robustcov_composite",
         "Principal-component analysis driven by a user-selectable robust scatter estimator.",
         ("hubert_etal_2005", "maronna_etal_2019"),
         "A unified estimator-driven PCA workflow with projection, reconstruction, whitening, robust score/orthogonal distances, plots, and monitoring integration.",
         "This is not an implementation of the complete ROBPCA algorithm; it diagonalizes the fitted scatter supplied to the estimator.",
+        ("RobustPCA",),
     ),
     "DensityPowerRobustPCA": _entry(
         "DensityPowerRobustPCA", "Principal components", "literature_adaptation",
@@ -602,12 +603,13 @@ METHOD_PROVENANCE: Mapping[str, MethodProvenance] = {
         "Estimator cloning, contamination/quantile thresholding, score API, diagnostics, and sklearn-compatible behavior.",
         "This is a package workflow over established robust Mahalanobis-distance ideas.",
     ),
-    "AutoRobustAnomalyDetector": _entry(
-        "AutoRobustAnomalyDetector", "Anomaly detection", "robustcov_composite",
-        "Automatic robust scatter selection followed by robust-distance anomaly scoring.",
+    "RobustOutlierEnsemble": _entry(
+        "RobustOutlierEnsemble", "Anomaly detection", "robustcov_composite",
+        "Ensemble robust-distance anomaly scoring across multiple fitted scatter estimators.",
         ("maronna_etal_2019", "rousseeuw_vandriessen_1999", "tyler_1987"),
-        "Automatic candidate fitting, contamination thresholding, diagnostics, and end-to-end anomaly API.",
-        "The selection workflow is package-specific and should not be interpreted as a universally optimal statistical selector.",
+        "Candidate fitting, score normalization and averaging, contamination thresholding, diagnostics, and end-to-end anomaly API.",
+        "The ensemble workflow is package-specific and should not be interpreted as a universally optimal anomaly detector.",
+        ("AutoRobustAnomalyDetector",),
     ),
     "ClusterRobustOutlierDetector": _entry(
         "ClusterRobustOutlierDetector", "Anomaly detection", "robustcov_composite",
@@ -616,12 +618,13 @@ METHOD_PROVENANCE: Mapping[str, MethodProvenance] = {
         "Composition of clustering and within-cluster robust scatter, with cluster-aware distances and diagnostics.",
         "This is an applied robustcov workflow rather than a claim of a new robust clustering theory.",
     ),
-    "AutoRobustScatter": _entry(
-        "AutoRobustScatter", "Estimator selection", "robustcov_composite",
+    "RobustScatterSelector": _entry(
+        "RobustScatterSelector", "Estimator selection", "robustcov_composite",
         "Automatic selection among robust scatter candidates using stability and fit diagnostics.",
         ("maronna_etal_2019", "rousseeuw_vandriessen_1999", "tyler_1987"),
         "Candidate registry, reproducible stability scoring, selection diagnostics, and fallback behavior.",
         "The selection criterion and defaults are package-specific engineering choices, not a published universal decision rule.",
+        ("AutoRobustScatter",),
     ),
     "OnlineRobustSubspaceTracker": _entry(
         "OnlineRobustSubspaceTracker", "Online subspace tracking", "robustcov_composite",
@@ -722,11 +725,11 @@ PUBLIC_ESTIMATOR_PROVENANCE_NAMES = (
     "RegularizedTyler", "IterativeMScatter", "StudentTScatter",
     "RegularizedCauchy", "KLRegularizedTyler", "WieselTyler",
     "HellingerRegularizedTyler", "CellMCD", "CellRCov", "MatrixMCD",
-    "PrincipalComponentPursuit", "RobustPCA", "DensityPowerRobustPCA", "CellPCA", "SparseCellPCA",
+    "PrincipalComponentPursuit", "RobustScatterPCA", "DensityPowerRobustPCA", "CellPCA", "SparseCellPCA",
     "RobustMultilinearPCA", "RobustGraphicalLasso", "SGLASSO",
     "TwoScatterICA", "SOBI", "RobustSOBI", "RobustFactorModel",
-    "RobustOutlierDetector", "AutoRobustAnomalyDetector",
-    "ClusterRobustOutlierDetector", "AutoRobustScatter",
+    "RobustOutlierDetector", "RobustOutlierEnsemble",
+    "ClusterRobustOutlierDetector", "RobustScatterSelector",
     "RobustSubspaceMonitor", "ConformalAlertCalibrator",
     "SubspaceStability", "FeatureGeometry",
     "ClassConditionalFeatureGeometry", "RobustInputMetric",

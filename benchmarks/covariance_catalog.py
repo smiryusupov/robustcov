@@ -107,7 +107,7 @@ def covariance_methods(
     include_experimental:
         Include the explicitly labelled Hellinger prototype.
     include_selector:
-        Include :class:`AutoRobustScatter` as a workflow-level timing/accuracy
+        Include :class:`RobustScatterSelector` as a workflow-level timing/accuracy
         row.  Its runtime includes fitting and selecting several candidates.
     include_sklearn:
         Add sklearn baselines when sklearn is installed.
@@ -270,9 +270,9 @@ def covariance_methods(
     if include_selector:
         methods.append(
             CovarianceBenchmarkMethod(
-                "robustcov AutoRobustScatter",
+                "robustcov RobustScatterSelector",
                 "automatic selection workflow",
-                lambda: rc.AutoRobustScatter(
+                lambda: rc.RobustScatterSelector(
                     selection="diagnostic",
                     random_state=0,
                 ),

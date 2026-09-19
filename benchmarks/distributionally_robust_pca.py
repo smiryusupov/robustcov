@@ -38,7 +38,7 @@ def _empirical_fit(X: np.ndarray, rank: int) -> dict[str, object]:
 
 
 def _robust_fit(X: np.ndarray, rank: int) -> dict[str, object]:
-    estimator = rc.RobustPCA(
+    estimator = rc.RobustScatterPCA(
         n_components=rank,
         estimator=rc.RegularizedCauchy(alpha=0.10, max_iter=200, tol=1e-8),
     ).fit(X)
@@ -102,7 +102,7 @@ def run(profile: str, seed: int, repeats: int | None = None) -> list[dict[str, o
     repeats = config["repeats"] if repeats is None else repeats
     methods = [
         ("Empirical PCA", lambda X: _empirical_fit(X, 2)),
-        ("RobustPCA(Cauchy)", lambda X: _robust_fit(X, 2)),
+        ("RobustScatterPCA(Cauchy)", lambda X: _robust_fit(X, 2)),
         ("DRO-PCA identity control", lambda X: _dro_fit(X, 2, "identity", 2.5)),
         ("DRO-PCA residual geometry", lambda X: _dro_fit(X, 2, "residual", 2.5)),
         ("DRO-PCA PCA-block geometry", lambda X: _dro_fit(X, 2, "pca_block", 2.5)),

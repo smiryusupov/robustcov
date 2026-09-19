@@ -100,7 +100,7 @@ def main() -> None:
     outdir.mkdir(parents=True, exist_ok=True)
 
     X, clean, true_basis, event = make_data()
-    rpca = rc.RobustPCA(
+    rpca = rc.RobustScatterPCA(
         n_components=4,
         estimator=rc.RegularizedCauchy(
             alpha=0.08,
@@ -121,7 +121,7 @@ def main() -> None:
     idiosyncratic = event == "idiosyncratic dislocation"
     mixed = event == "mixed shock"
 
-    print("Cross-asset market-risk decomposition with RobustPCA")
+    print("Cross-asset market-risk decomposition with RobustScatterPCA")
     print("====================================================")
     print(f"observations: {X.shape[0]}")
     print(f"assets: {X.shape[1]}")
@@ -155,7 +155,7 @@ def main() -> None:
     positions = np.arange(1, 7)
     width = 0.36
     ax.bar(positions - width / 2, empirical_ratio[:6], width=width, label="empirical PCA")
-    ax.bar(positions + width / 2, robust_ratio[:6], width=width, label="RobustPCA")
+    ax.bar(positions + width / 2, robust_ratio[:6], width=width, label="RobustScatterPCA")
     ax.set_xlabel("component")
     ax.set_ylabel("explained variance ratio")
     ax.set_title("Common-factor concentration under contaminated returns")
@@ -190,7 +190,7 @@ def main() -> None:
     positions = np.arange(len(ASSETS))
     width = 0.36
     ax.bar(positions - width / 2, empirical_residual, width=width, label="empirical PCA")
-    ax.bar(positions + width / 2, robust_residual, width=width, label="RobustPCA")
+    ax.bar(positions + width / 2, robust_residual, width=width, label="RobustScatterPCA")
     ax.set_xticks(positions)
     ax.set_xticklabels(ASSETS, rotation=45, ha="right")
     ax.set_ylabel("mean absolute clean reconstruction residual")

@@ -35,7 +35,7 @@ reproducible cross-method benchmarks.
      - Runs the regularized subset search in a kernel feature space.
      - Kernel and bandwidth choices define the geometry and can dominate the result.
    * - Each observation is a matrix and contamination affects complete observations
-     - ``MMCD``
+     - ``MatrixMCD``
      - Estimates separate row and column covariance factors.
      - Assumes a scientifically meaningful separable covariance structure.
    * - Individual cells are corrupted or missing but the rest of each row is useful
@@ -87,7 +87,7 @@ reproducible cross-method benchmarks.
      - Scale-free shape estimate with high-dimensional regularization.
      - Absolute covariance scale needs an explicit correction.
    * - Unsure which heavy-tail estimator to choose
-     - ``AutoRobustScatter``
+     - ``RobustScatterSelector``
      - Fits candidates and selects with a diagnostic or stability score.
      - Selection is only as good as the candidate set and score.
 

@@ -5,7 +5,7 @@
 
 The example compares ordinary and robust scatter PCA on synthetic daily yield
 changes. A small set of quote dislocations makes the empirical factor basis
-sensitive to which days are resampled. RobustPCA is evaluated with the same
+sensitive to which days are resampled. RobustScatterPCA is evaluated with the same
 bootstrap rows and reports loading intervals together with principal angles.
 """
 
@@ -72,12 +72,12 @@ def main() -> None:
     outdir.mkdir(parents=True, exist_ok=True)
 
     maturities, X, _, true_basis, quote_rows = make_data()
-    empirical_pca = rc.RobustPCA(
+    empirical_pca = rc.RobustScatterPCA(
         n_components=3,
         estimator=EmpiricalScatter(),
         store_scores=False,
     )
-    robust_pca = rc.RobustPCA(
+    robust_pca = rc.RobustScatterPCA(
         n_components=3,
         estimator=rc.FastMCD(
             contamination=0.18,
@@ -126,7 +126,7 @@ def main() -> None:
     ax = fig.add_subplot(111)
     for analysis, label, offset in [
         (empirical, "empirical PCA", -0.08),
-        (robust, "RobustPCA", 0.08),
+        (robust, "RobustScatterPCA", 0.08),
     ]:
         center = analysis.components_[component]
         lower = analysis.loading_interval_lower_[component]
@@ -159,7 +159,7 @@ def main() -> None:
         18,
     )
     ax.hist(empirical.max_principal_angle_degrees_, bins=bins, alpha=0.55, label="empirical PCA")
-    ax.hist(robust.max_principal_angle_degrees_, bins=bins, alpha=0.55, label="RobustPCA")
+    ax.hist(robust.max_principal_angle_degrees_, bins=bins, alpha=0.55, label="RobustScatterPCA")
     ax.set_xlabel("largest principal angle to full-data subspace (degrees)")
     ax.set_ylabel("bootstrap count")
     ax.set_title("Bootstrap variation of the retained factor subspace")
@@ -173,7 +173,7 @@ def main() -> None:
     ax = fig.add_subplot(111)
     for analysis, label, offset in [
         (empirical, "empirical PCA", -0.08),
-        (robust, "RobustPCA", 0.08),
+        (robust, "RobustScatterPCA", 0.08),
     ]:
         center = analysis.eigenvalues_
         lower = analysis.eigenvalue_interval_lower_

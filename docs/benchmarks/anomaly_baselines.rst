@@ -36,7 +36,7 @@ Interpretation
 
 The FastMCD detector is the most direct ``robustcov`` baseline for separable tabular anomalies.  It converts robust Mahalanobis distances into anomaly labels using an empirical threshold.  This is the easiest method to explain to users: fit a robust center and covariance, compute robust distances, and flag the largest distances.
 
-``AutoRobustAnomalyDetector`` is intended as a diagnostic ensemble rather than a universal replacement for dedicated anomaly detectors.  It is useful when the user wants a robust covariance view of the data and wants to compare several scatter estimators quickly.
+``RobustOutlierEnsemble`` is intended as a diagnostic ensemble rather than a universal replacement for dedicated anomaly detectors.  It is useful when the user wants a robust covariance view of the data and wants to compare several scatter estimators quickly.
 
 The sklearn methods are included because users will naturally compare against them.  The result to emphasize is not that robust covariance always wins, but that it gives interpretable distances, covariance diagnostics, and a clear geometric explanation of flagged points.
 

@@ -55,6 +55,35 @@ underscore-prefixed aliases so they do not become accidental public bindings.
 Add deprecations and removals to `CHANGELOG.md`, including the replacement and
 planned removal release when applicable.
 
+## Public naming conventions
+
+Treat the public namespace as one vocabulary, not a collection of locally good
+names. New public APIs should follow these rules:
+
+1. **Published methods use the recognizable literature name.** Prefer established
+   names such as `MRCD`, `DetS`, or `PrincipalComponentPursuit` when that helps a
+   user map code to a paper.
+2. **RobustCov composites use descriptive role names.** Package-specific workflows
+   should expose what they do, for example `RobustScatterSelector` or
+   `RobustOutlierEnsemble`, rather than a generic `Auto*` prefix.
+3. **Expose the statistical object when it is not obvious.** Distinguish covariance,
+   scatter, shape, precision, subspace, and decomposition when those differences
+   affect interpretation.
+4. **Choose exactly one canonical public spelling.** Provenance, examples, API
+   reference headings, reprs, and new documentation should teach that spelling.
+   Compatibility aliases may remain exported, but they are secondary and must map
+   back to the canonical provenance name.
+5. **Parameter names describe semantics before notation.** Reuse ecosystem-standard
+   names such as `random_state`, `contamination`, or `support_fraction`; otherwise
+   prefer names such as `threshold_quantile` over an overloaded symbol when the
+   longer name materially reduces ambiguity.
+6. **Follow normal Python word boundaries.** Public functions and parameters use
+   snake_case words (`log_euclidean_distance`, not `logeuclidean_distance`) unless
+   an established acronym is the clearer scientific name.
+
+Before adding an alias, ask whether searchability or compatibility justifies the
+extra spelling. Every alias increases autocomplete noise and documentation burden.
+
 ## Adding or changing a public method
 
 RobustCov distinguishes literature implementations, package-specific composites,

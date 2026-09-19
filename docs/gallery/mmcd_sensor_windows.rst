@@ -9,7 +9,7 @@ model with correlation between sensors and serial correlation within a window.
 A minority of windows contains one of two localized fault patterns.
 
 Flattening these observations would produce 50-dimensional vectors and discard
-the distinction between sensor and time covariance.  ``MMCD`` instead estimates
+the distinction between sensor and time covariance.  ``MatrixMCD`` instead estimates
 a robust mean matrix, a ``5 x 5`` sensor covariance, and a ``10 x 10``
 within-window covariance.
 

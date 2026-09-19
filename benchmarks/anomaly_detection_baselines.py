@@ -89,7 +89,7 @@ def main():
     rows.append(run_one("robustcov FastMCD detector", robustcov_fastmcd, y))
 
     def robustcov_auto():
-        det = rc.AutoRobustAnomalyDetector(contamination=args.contamination).fit(X)
+        det = rc.RobustOutlierEnsemble(contamination=args.contamination).fit(X)
         return det.labels_ == -1, det.score_
 
     rows.append(run_one("robustcov Auto detector", robustcov_auto, y))

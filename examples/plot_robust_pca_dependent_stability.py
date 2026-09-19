@@ -74,7 +74,7 @@ def main() -> None:
     outdir.mkdir(parents=True, exist_ok=True)
 
     X, true_components, feature_names = make_data()
-    pca = rc.RobustPCA(
+    pca = rc.RobustScatterPCA(
         n_components=2,
         estimator=rc.RegularizedCauchy(
             alpha=0.10,

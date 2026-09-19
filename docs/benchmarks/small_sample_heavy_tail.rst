@@ -21,7 +21,7 @@ hand-maintained subset.  It includes, where mathematically applicable:
 * unregularized, regularized, KL-labelled, and Wiesel-labelled Tyler variants;
 * Student-t and regularized Cauchy M-scatter;
 * the explicitly labelled experimental Hellinger-style prototype; and
-* ``AutoRobustScatter`` as a selector workflow whose timing includes fitting its
+* ``RobustScatterSelector`` as a selector workflow whose timing includes fitting its
   candidate set.
 
 Methods with structural requirements are recorded as ``not_applicable`` rather
@@ -68,7 +68,7 @@ and ``not_applicable``.  A method that performs strongly in the low-dimensional
 part of the grid should not be described as a high-dimensional default merely
 because its ineligible rows were omitted.
 
-In the committed quick profile, ``AutoRobustScatter`` has the lowest aggregate
+In the committed quick profile, ``RobustScatterSelector`` has the lowest aggregate
 median error (``0.5907``) and the highest win rate (``0.8750``), with its runtime
 including candidate selection.  ``RegularizedCauchy`` is the strongest single
 estimator across all eight scenarios (median error ``0.5950``).  On the four

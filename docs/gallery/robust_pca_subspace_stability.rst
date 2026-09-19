@@ -9,7 +9,7 @@ factors unstable from one sample to another.
 
 This example simulates daily changes at ten maturities.  Most observations come
 from a three-factor level, slope, and curvature model.  Twenty-eight days also
-contain large maturity-specific dislocations.  Ordinary PCA and ``RobustPCA``
+contain large maturity-specific dislocations.  Ordinary PCA and ``RobustScatterPCA``
 are each refitted on the same 60 bootstrap samples.
 
 The comparison focuses on uncertainty rather than only the full-sample fit:

@@ -45,7 +45,7 @@ def build_data(seed: int = 20260719) -> tuple[np.ndarray, np.ndarray, np.ndarray
 
 def fit_methods(X_train: np.ndarray) -> dict[str, dict[str, object]]:
     location, basis = leading_basis(X_train, 2)
-    robust = rc.RobustPCA(
+    robust = rc.RobustScatterPCA(
         n_components=2,
         estimator=rc.RegularizedCauchy(alpha=0.10, max_iter=200, tol=1e-8),
     ).fit(X_train)
@@ -63,7 +63,7 @@ def fit_methods(X_train: np.ndarray) -> dict[str, dict[str, object]]:
     ).fit(X_train)
     return {
         "Empirical PCA": {"location": location, "basis": basis, "estimator": None},
-        "RobustPCA (Cauchy)": {
+        "RobustScatterPCA (Cauchy)": {
             "location": robust.location_,
             "basis": robust.components_.T,
             "estimator": robust,

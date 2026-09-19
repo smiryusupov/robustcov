@@ -5,7 +5,7 @@
 
 This module implements Principal Component Pursuit (PCP), the canonical convex
 program often called robust PCA in the matrix-decomposition literature.  It is
-distinct from :class:`robustcov.RobustPCA`, which diagonalizes a robust scatter
+distinct from :class:`robustcov.RobustScatterPCA`, which diagonalizes a robust scatter
 estimate and provides rowwise score/orthogonal-distance diagnostics.
 """
 

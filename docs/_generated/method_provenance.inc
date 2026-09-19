@@ -30,21 +30,6 @@ Adversarial robust covariance
 Anomaly detection
 ~~~~~~~~~~~~~~~~~
 
-.. _method-provenance-autorobustanomalydetector:
-
-``AutoRobustAnomalyDetector``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**Status:** robustcov composite/workflow
-
-**Method:** Automatic robust scatter selection followed by robust-distance anomaly scoring.
-
-**Primary references:** `Maronna et al. (2019) <https://doi.org/10.1002/9781119214656>`__, `Rousseeuw & Van Driessen (1999) <https://doi.org/10.1080/00401706.1999.10485670>`__, `Tyler (1987) <https://doi.org/10.1214/aos/1176350263>`__
-
-**robustcov contribution:** Automatic candidate fitting, contamination thresholding, diagnostics, and end-to-end anomaly API.
-
-**Implementation notes:** The selection workflow is package-specific and should not be interpreted as a universally optimal statistical selector.
-
 .. _method-provenance-clusterrobustoutlierdetector:
 
 ``ClusterRobustOutlierDetector``
@@ -74,6 +59,23 @@ Anomaly detection
 **robustcov contribution:** Estimator cloning, contamination/quantile thresholding, score API, diagnostics, and sklearn-compatible behavior.
 
 **Implementation notes:** This is a package workflow over established robust Mahalanobis-distance ideas.
+
+.. _method-provenance-robustoutlierensemble:
+
+``RobustOutlierEnsemble``
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Status:** robustcov composite/workflow
+
+**Method:** Ensemble robust-distance anomaly scoring across multiple fitted scatter estimators.
+
+**Primary references:** `Maronna et al. (2019) <https://doi.org/10.1002/9781119214656>`__, `Rousseeuw & Van Driessen (1999) <https://doi.org/10.1080/00401706.1999.10485670>`__, `Tyler (1987) <https://doi.org/10.1214/aos/1176350263>`__
+
+**robustcov contribution:** Candidate fitting, score normalization and averaging, contamination thresholding, diagnostics, and end-to-end anomaly API.
+
+**Implementation notes:** The ensemble workflow is package-specific and should not be interpreted as a universally optimal anomaly detector.
+
+**Public aliases:** ``AutoRobustAnomalyDetector``
 
 Cellwise covariance
 ~~~~~~~~~~~~~~~~~~~
@@ -213,10 +215,10 @@ Elliptical shape
 Estimator selection
 ~~~~~~~~~~~~~~~~~~~
 
-.. _method-provenance-autorobustscatter:
+.. _method-provenance-robustscatterselector:
 
-``AutoRobustScatter``
-^^^^^^^^^^^^^^^^^^^^^
+``RobustScatterSelector``
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Status:** robustcov composite/workflow
 
@@ -227,6 +229,8 @@ Estimator selection
 **robustcov contribution:** Candidate registry, reproducible stability scoring, selection diagnostics, and fallback behavior.
 
 **Implementation notes:** The selection criterion and defaults are package-specific engineering choices, not a published universal decision rule.
+
+**Public aliases:** ``AutoRobustScatter``
 
 Heavy-tail covariance
 ~~~~~~~~~~~~~~~~~~~~~
@@ -499,10 +503,10 @@ Principal components
 
 **Public aliases:** ``DPDRobustPCA``
 
-.. _method-provenance-robustpca:
+.. _method-provenance-robustscatterpca:
 
-``RobustPCA``
-^^^^^^^^^^^^^
+``RobustScatterPCA``
+^^^^^^^^^^^^^^^^^^^^
 
 **Status:** robustcov composite/workflow
 
@@ -513,6 +517,8 @@ Principal components
 **robustcov contribution:** A unified estimator-driven PCA workflow with projection, reconstruction, whitening, robust score/orthogonal distances, plots, and monitoring integration.
 
 **Implementation notes:** This is not an implementation of the complete ROBPCA algorithm; it diagonalizes the fitted scatter supplied to the estimator.
+
+**Public aliases:** ``RobustPCA``
 
 .. _method-provenance-sparsecellpca:
 

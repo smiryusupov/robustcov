@@ -58,7 +58,7 @@ PCA estimator:
    print(pcp.decomposition_summary())
 
 See :doc:`principal_component_pursuit` for the incoherence/sparsity assumptions
-and the distinction from :class:`robustcov.RobustPCA`.
+and the distinction from :class:`robustcov.RobustScatterPCA`.
 
 Small-sample heavy-tail scatter
 -------------------------------
@@ -99,14 +99,14 @@ See :doc:`monitoring` for calibration and interpretation details.
 Automatic estimator selection
 -----------------------------
 
-When you are not sure which robust estimator to use, ``AutoRobustScatter`` gives
+When you are not sure which robust estimator to use, ``RobustScatterSelector`` gives
 a practical starting point. It fits a candidate estimator and exposes the same
 ``location_``, ``covariance_``, and ``precision_`` attributes used by the rest of
 the package.
 
 .. code-block:: python
 
-   auto = rc.AutoRobustScatter(selection="diagnostic").fit(X)
+   auto = rc.RobustScatterSelector(selection="diagnostic").fit(X)
    print(auto.summary())
    cov = auto.covariance_
 

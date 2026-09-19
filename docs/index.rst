@@ -133,7 +133,7 @@ Choose by data problem
      - ``RobustSubspaceMonitor``, ``ConformalAlertCalibrator``, or experimental ``OnlineRobustSubspaceTracker``
      - :doc:`monitoring`
    * - Observations are matrices, tensors, or learned embeddings
-     - ``MMCD``, ``RobustMultilinearPCA``, or ``FeatureGeometry``
+     - ``MatrixMCD``, ``RobustMultilinearPCA``, or ``FeatureGeometry``
      - :doc:`use_case_gallery`
 
 .. raw:: html

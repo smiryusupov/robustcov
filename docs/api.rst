@@ -202,7 +202,7 @@ Low-rank plus sparse decomposition
 Robust principal component analysis
 -----------------------------------
 
-.. autoclass:: robustcov.RobustPCA
+.. autoclass:: robustcov.RobustScatterPCA
    :members:
    :undoc-members:
    :show-inheritance:

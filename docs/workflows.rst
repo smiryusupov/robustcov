@@ -37,7 +37,7 @@ separation problem, not a robust covariance or monitoring workflow.
 Use robust PCA when the goal is low-rank representation, reconstruction,
 row/cell diagnostics, or monitoring changes relative to a stable reference.
 
-``RobustPCA`` supplies score and orthogonal distances, ``CellPCA`` handles mixed
+``RobustScatterPCA`` supplies score and orthogonal distances, ``CellPCA`` handles mixed
 casewise/cellwise contamination and missing values, and
 ``RobustSubspaceMonitor`` compares rolling windows with a frozen reference
 model. ``SubspaceStability`` adds bootstrap diagnostics for loadings and
@@ -72,7 +72,7 @@ Structured and cellwise data
 ----------------------------
 
 Use ``CellMCD``, ``CellRCov``, ``CellPCA``, or ``SparseCellPCA`` when isolated
-cells can be corrupted or missing. Use ``MMCD`` for matrix-valued observations
+cells can be corrupted or missing. Use ``MatrixMCD`` for matrix-valued observations
 with separable row/column covariance, and ``RobustMultilinearPCA`` for robust
 low-rank tensor structure.
 

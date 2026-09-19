@@ -904,10 +904,10 @@ def run_pca_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[s
     )
     row_methods: list[tuple[str, Callable[[], Any], str]] = [
         ("Empirical PCA", lambda: EmpiricalPCA(q), "non-robust baseline"),
-        ("RobustPCA(FastMCD)", lambda: rc.RobustPCA(q, estimator=rc.FastMCD(scale_correction="none", **subset_args)), "separable rowwise outliers"),
-        ("RobustPCA(MRCD)", lambda: rc.RobustPCA(q, estimator=rc.MRCD(**subset_args)), "regularized high-breakdown scatter PCA"),
-        ("RobustPCA(StudentT)", lambda: rc.RobustPCA(q, estimator=rc.StudentTScatter(df=3, alpha=0.08, max_iter=180)), "diffuse heavy tails"),
-        ("RobustPCA(Cauchy)", lambda: rc.RobustPCA(q, estimator=rc.RegularizedCauchy(alpha=0.12, max_iter=180)), "very heavy tails"),
+        ("RobustScatterPCA(FastMCD)", lambda: rc.RobustScatterPCA(q, estimator=rc.FastMCD(scale_correction="none", **subset_args)), "separable rowwise outliers"),
+        ("RobustScatterPCA(MRCD)", lambda: rc.RobustScatterPCA(q, estimator=rc.MRCD(**subset_args)), "regularized high-breakdown scatter PCA"),
+        ("RobustScatterPCA(StudentT)", lambda: rc.RobustScatterPCA(q, estimator=rc.StudentTScatter(df=3, alpha=0.08, max_iter=180)), "diffuse heavy tails"),
+        ("RobustScatterPCA(Cauchy)", lambda: rc.RobustScatterPCA(q, estimator=rc.RegularizedCauchy(alpha=0.12, max_iter=180)), "very heavy tails"),
         (
             "DensityPowerRobustPCA",
             lambda: rc.DensityPowerRobustPCA(
@@ -946,7 +946,7 @@ def run_pca_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[s
         return EmpiricalPCA(q).fit(imputed)
 
     def make_cauchy() -> Any:
-        return rc.RobustPCA(q, estimator=rc.RegularizedCauchy(alpha=0.12, max_iter=180)).fit(imputed)
+        return rc.RobustScatterPCA(q, estimator=rc.RegularizedCauchy(alpha=0.12, max_iter=180)).fit(imputed)
 
     def make_cellmcd() -> Any:
         return ScatterPCA(q, rc.CellMCD(max_iter=profile.cell_max_iter, min_samples_per_feature=None)).fit(damaged)
@@ -964,7 +964,7 @@ def run_pca_benchmarks(profile: Profile, repeats: int, seed: int) -> list[dict[s
 
     cell_methods: list[tuple[str, Callable[[], Any], str]] = [
         ("Median-imputed PCA", make_empirical, "simple baseline"),
-        ("RobustPCA(Cauchy, imputed)", make_cauchy, "rowwise/heavy-tail robustness after imputation"),
+        ("RobustScatterPCA(Cauchy, imputed)", make_cauchy, "rowwise/heavy-tail robustness after imputation"),
         ("DensityPowerRobustPCA, imputed", make_dpd_pca, "direct DPD low-rank fit after median imputation"),
         ("CellMCD scatter PCA", make_cellmcd, "cellwise robust scatter followed by eigendecomposition"),
         ("CellPCA", make_cellpca, "joint cellwise and casewise low-rank fit"),

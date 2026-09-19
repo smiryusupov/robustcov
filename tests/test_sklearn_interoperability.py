@@ -43,7 +43,7 @@ def test_robust_pca_works_in_pipeline_and_grid_search():
     y = (X[:, 0] + 0.5 * X[:, 1] > 0.0).astype(int)
     pipeline = Pipeline(
         [
-            ("pca", rc.RobustPCA(n_components=3)),
+            ("pca", rc.RobustScatterPCA(n_components=3)),
             ("classifier", LogisticRegression(max_iter=300)),
         ]
     )

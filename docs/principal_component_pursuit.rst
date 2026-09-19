@@ -14,7 +14,7 @@ where ``low_rank_`` stores :math:`L` and ``sparse_`` stores :math:`S`.
 The nuclear norm promotes low rank and the entrywise L1 norm promotes sparse
 gross corruption.
 
-This is a different task from :class:`robustcov.RobustPCA`:
+This is a different task from :class:`robustcov.RobustScatterPCA`:
 
 .. list-table::
    :header-rows: 1
@@ -26,7 +26,7 @@ This is a different task from :class:`robustcov.RobustPCA`:
    * - ``PrincipalComponentPursuit``
      - A decomposition of one matrix into ``low_rank_`` and ``sparse_``
      - Arbitrarily large errors in a sufficiently sparse, dispersed set of cells
-   * - ``RobustPCA``
+   * - ``RobustScatterPCA``
      - A robust location, scatter, and principal subspace with row diagnostics
      - Heavy tails or rowwise contamination handled through the chosen scatter estimator
    * - ``CellPCA``

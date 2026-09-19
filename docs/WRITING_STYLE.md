@@ -33,7 +33,7 @@ claim.
 
 Prefer:
 
-> LocalOutlierFactor has the highest F1 at 0.90. AutoRobustScatter reaches 0.80
+> LocalOutlierFactor has the highest F1 at 0.90. RobustScatterSelector reaches 0.80
 > and has a higher runtime.
 
 Avoid:

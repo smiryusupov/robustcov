@@ -224,13 +224,13 @@ def test_robust_pca_preserves_tiny_units_and_orthogonal_subspaces():
     scale = 1e-50
     rotation, _ = np.linalg.qr(rng.normal(size=(6, 6)))
 
-    reference = rc.RobustPCA(
+    reference = rc.RobustScatterPCA(
         n_components=3, estimator=_EmpiricalScatter(), whiten=True
     ).fit(X)
-    tiny = rc.RobustPCA(
+    tiny = rc.RobustScatterPCA(
         n_components=3, estimator=_EmpiricalScatter(), whiten=True
     ).fit(scale * X)
-    rotated = rc.RobustPCA(
+    rotated = rc.RobustScatterPCA(
         n_components=3, estimator=_EmpiricalScatter(), whiten=True
     ).fit(X @ rotation)
 
@@ -260,7 +260,7 @@ def test_robust_pca_regularizes_actual_singular_data():
     base = rng.normal(size=(80, 3))
     X = np.column_stack([base, base[:, 0], np.ones(base.shape[0])])
 
-    fitted = rc.RobustPCA(estimator=_EmpiricalScatter(), ridge=1e-8).fit(X)
+    fitted = rc.RobustScatterPCA(estimator=_EmpiricalScatter(), ridge=1e-8).fit(X)
     assert np.linalg.eigvalsh(fitted.covariance_).min() > 0.0
     assert fitted.eigenvalue_floor_ > 0.0
     assert np.isfinite(fitted.transform(X)).all()

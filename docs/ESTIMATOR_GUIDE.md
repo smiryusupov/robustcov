@@ -35,10 +35,10 @@ rc.RegularizedTyler(alpha=0.10, scale_correction="radial_median")
 
 ## Auto selection
 
-Use `AutoRobustScatter(selection="diagnostic")` for a quick unsupervised choice among robust scatter estimators. Use `selection="stability"` when you can afford split-sample refitting.
+Use `RobustScatterSelector(selection="diagnostic")` for a quick unsupervised choice among robust scatter estimators. Use `selection="stability"` when you can afford split-sample refitting.
 
 ```python
-auto = rc.AutoRobustScatter(selection="diagnostic").fit(X)
+auto = rc.RobustScatterSelector(selection="diagnostic").fit(X)
 ```
 
 Auto selection is a diagnostic heuristic, not an oracle. Benchmark it when ground truth is available.
@@ -55,10 +55,10 @@ Use `MRCD` when contamination is rowwise and an MCD-style hard subset is useful,
 
 ## Matrix-valued observations
 
-Use `MMCD` when each sample is naturally a matrix and complete matrix observations may be contaminated. It estimates separate row and column covariance factors instead of flattening the sample and fitting an unrestricted covariance.
+Use `MatrixMCD` when each sample is naturally a matrix and complete matrix observations may be contaminated. It estimates separate row and column covariance factors instead of flattening the sample and fitting an unrestricted covariance.
 
 ```python
-rc.MMCD(contamination=0.20, random_state=0)
+rc.MatrixMCD(contamination=0.20, random_state=0)
 ```
 
-The Kronecker covariance assumption should be checked against the application. `MMCD` is not a cellwise robust estimator.
+The Kronecker covariance assumption should be checked against the application. `MatrixMCD` is not a cellwise robust estimator.

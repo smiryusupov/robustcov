@@ -93,7 +93,7 @@ reference ROMPCA initialization, recentering, or automatic rank-selection
 procedure exactly, so numerical parity with the reference software is not
 claimed.
 
-Use ``MMCD`` instead when the main target is a separable row/column covariance
+Use ``MatrixMCD`` instead when the main target is a separable row/column covariance
 rather than a low-rank reconstruction.  Use ``CellPCA`` when flattening the
 observations is scientifically acceptable.
 

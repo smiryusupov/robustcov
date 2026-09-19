@@ -39,7 +39,7 @@ def test_covariance_catalog_covers_current_relevant_estimators():
         "robustcov StudentT(df=3)",
         "robustcov RegularizedCauchy",
         "robustcov HellingerTyler (experimental)",
-        "robustcov AutoRobustScatter",
+        "robustcov RobustScatterSelector",
     }
     assert expected <= names
 

@@ -58,7 +58,7 @@ def test_procrustes_alignment_recovers_rotated_basis():
 def test_subspace_stability_shapes_intervals_and_summary():
     X, _ = make_low_rank(seed=11)
     analysis = rc.SubspaceStability(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=35,
         random_state=0,
         min_successful_resamples=25,
@@ -79,7 +79,7 @@ def test_subspace_stability_shapes_intervals_and_summary():
 def test_subspace_stability_is_deterministic_with_seed():
     X, _ = make_low_rank(seed=12)
     kwargs = dict(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=25,
         random_state=42,
         min_successful_resamples=20,
@@ -97,7 +97,7 @@ def test_subspace_stability_is_deterministic_with_seed():
 def test_well_separated_subspace_has_small_bootstrap_angles():
     X, _ = make_low_rank(seed=13, n=500, noise=0.03)
     analysis = rc.SubspaceStability(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=40,
         random_state=1,
         min_successful_resamples=30,
@@ -116,13 +116,13 @@ def test_robust_stability_improves_under_row_contamination():
     X = np.vstack([X_clean, outliers])
 
     empirical = rc.SubspaceStability(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=30,
         random_state=2,
         min_successful_resamples=25,
     ).fit(X)
     robust = rc.SubspaceStability(
-        pca=rc.RobustPCA(
+        pca=rc.RobustScatterPCA(
             n_components=2,
             estimator=rc.FastMCD(n_init=35, random_state=0),
         ),
@@ -152,7 +152,7 @@ def test_robust_stability_improves_under_row_contamination():
 def test_float_component_selection_is_frozen_across_bootstraps():
     X, _ = make_low_rank(seed=16, p=7, q=3)
     analysis = rc.SubspaceStability(
-        pca=rc.RobustPCA(n_components=0.80, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=0.80, estimator=EmpiricalScatter()),
         n_resamples=25,
         random_state=3,
         min_successful_resamples=20,
@@ -196,7 +196,7 @@ def test_subspace_stability_unfitted_and_component_errors():
 
     X, _ = make_low_rank(seed=19)
     analysis = rc.SubspaceStability(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=20,
         random_state=0,
         min_successful_resamples=15,
@@ -209,7 +209,7 @@ def test_plot_subspace_stability(tmp_path):
     pytest.importorskip("matplotlib")
     X, _ = make_low_rank(seed=20)
     analysis = rc.SubspaceStability(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=20,
         random_state=0,
         min_successful_resamples=15,
@@ -232,7 +232,7 @@ def test_plot_subspace_stability(tmp_path):
 def test_dependent_resampling_fit_is_deterministic(method):
     X, _ = make_low_rank(seed=21, n=90)
     kwargs = dict(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=20,
         resampling=method,
         block_length=7,
@@ -294,7 +294,7 @@ def test_cluster_resampling_keeps_complete_groups():
     X, _ = make_low_rank(seed=22, n=48)
     groups = np.repeat(np.arange(8), 6)
     analysis = rc.SubspaceStability(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=20,
         sample_fraction=0.75,
         resampling="cluster",
@@ -341,7 +341,7 @@ def test_stationary_bootstrap_reflects_serial_dependence_in_eigenvalue_uncertain
     )
 
     common = dict(
-        pca=rc.RobustPCA(n_components=2, estimator=EmpiricalScatter()),
+        pca=rc.RobustScatterPCA(n_components=2, estimator=EmpiricalScatter()),
         n_resamples=50,
         confidence_level=0.90,
         random_state=7,

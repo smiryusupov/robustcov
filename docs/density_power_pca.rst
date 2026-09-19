@@ -6,7 +6,7 @@ Gaussian density-power-divergence loss.  It is useful when ordinary PCA is
 pulled toward a relatively small number of large reconstruction errors and a
 fixed component count is available.
 
-Unlike :class:`~robustcov.RobustPCA`, it does not first estimate a full scatter
+Unlike :class:`~robustcov.RobustScatterPCA`, it does not first estimate a full scatter
 matrix.  Scores and loadings are updated together by robust alternating
 regressions.  This can be attractive when :math:`p` is large or when corruption
 is concentrated in individual entries of the data matrix.

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import copy
+import warnings
 
 import numpy as np
 from scipy.stats import chi2
@@ -63,7 +64,7 @@ class RobustOutlierDetector(EstimatorMixin):
         return self.fit(X, y=y).labels_
 
 
-class AutoRobustAnomalyDetector(EstimatorMixin):
+class RobustOutlierEnsemble(EstimatorMixin):
     """Simple ensemble detector built from robust covariance estimators.
 
     Each estimator contributes a robust squared-distance score. Scores are normalized
@@ -132,3 +133,29 @@ class AutoRobustAnomalyDetector(EstimatorMixin):
 
     def fit_predict(self, X, y=None):
         return self.fit(X).labels_
+
+
+class AutoRobustAnomalyDetector(RobustOutlierEnsemble):
+    """Deprecated compatibility name for :class:`RobustOutlierEnsemble`."""
+
+    def __init__(
+        self,
+        estimators=None,
+        threshold="empirical",
+        alpha=0.975,
+        contamination=None,
+        normalize_quantile=0.90,
+    ):
+        warnings.warn(
+            "AutoRobustAnomalyDetector is deprecated; use RobustOutlierEnsemble. "
+            "AutoRobustAnomalyDetector is planned for removal no earlier than robustcov 0.4.0.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            estimators=estimators,
+            threshold=threshold,
+            alpha=alpha,
+            contamination=contamination,
+            normalize_quantile=normalize_quantile,
+        )

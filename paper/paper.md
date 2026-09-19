@@ -73,7 +73,7 @@ ownership of the explanation algorithms.
 common interface. FastMCD targets separable contamination; `RegularizedCauchy` and
 `StudentTScatter` target small-sample and heavy-tailed settings; `TylerShape`
 and `RegularizedTyler` expose scale-invariant shape estimation; and
-`AutoRobustScatter` provides a practical default for users who do not want to
+`RobustScatterSelector` provides a practical default for users who do not want to
 choose an estimator manually.
 
 The SPD geometry layer makes the covariance geometry explicit. It provides
@@ -101,7 +101,7 @@ command records the source-tree digest, environment, commands, key results, and
 SHA-256 hashes for the numerical areas changed in this release cycle.
 
 In the eight-scenario quick small-sample heavy-tail profile,
-`AutoRobustScatter` achieved median relative Frobenius error `0.5907` and win
+`RobustScatterSelector` achieved median relative Frobenius error `0.5907` and win
 rate `0.8750`, with its runtime including candidate fitting and selection.
 `RegularizedCauchy` was the strongest single estimator across all eight
 scenarios with median error `0.5950`.  On the four scenarios where classical
