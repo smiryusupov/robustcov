@@ -7,4 +7,3 @@ adaptations and RobustCov-specific compositions.  See also
 
 .. automodule:: robustcov.provenance
    :members:
-   :undoc-members:

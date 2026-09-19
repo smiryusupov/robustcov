@@ -278,6 +278,19 @@
   letter-spacing: -0.02em;
 }
 
+.robustcov-capability-math {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.robustcov-capability-math sub {
+  font-size: 0.62em;
+  vertical-align: -0.2em;
+}
+
+
 .robustcov-scope-note {
   margin: 2rem 0;
   padding: 1rem 1.1rem;

@@ -1,5 +1,5 @@
-Choose an estimator
-===================
+Choose a method
+===============
 
 Start from the failure mode
 ---------------------------
@@ -17,9 +17,9 @@ in the data, then compare methods inside that family.
    * - A minority of complete rows are abnormal
      - Rowwise high-breakdown covariance
      - ``FastMCD``, ``DetS``, ``DetMM``, ``MRCD``
-   * - Tails are broad or covariance is poorly conditioned
+   * - Tails are broad rather than a small separated outlier group
      - Heavy-tail / regularized scatter
-     - ``RegularizedCauchy``, ``StudentTScatter``, ``RegularizedTyler``, ``MRCD``
+     - ``RegularizedCauchy``, ``StudentTScatter``, ``RegularizedTyler``
    * - Individual cells are corrupted or missing
      - Cellwise robust covariance or PCA
      - ``CellMCD``, ``CellRCov``, ``CellPCA``, ``SparseCellPCA``
@@ -48,7 +48,7 @@ the structure of one observation, the contamination mechanism, the ``n``-to-
    :widths: 24 20 28 28
 
    * - Situation
-     - Recommended estimator
+     - Start with
      - Why
      - Main limitation
    * - ``n`` much larger than ``p`` and outliers are separable

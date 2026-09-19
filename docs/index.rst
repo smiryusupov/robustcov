@@ -44,9 +44,9 @@ Choose a path
      </a>
      <a class="robustcov-path-card" href="estimator_guide.html">
        <span class="robustcov-card-number">02</span>
-       <h3>Choose the right model</h3>
+       <h3>Choose a method</h3>
        <p>Start from row outliers, bad cells, heavy tails, high dimensions, matrices, or a changing stream.</p>
-       <strong>Estimator guide →</strong>
+       <strong>Method chooser →</strong>
      </a>
      <a class="robustcov-path-card" href="user_guide.html">
        <span class="robustcov-card-number">03</span>
@@ -69,23 +69,23 @@ What RobustCov provides
 
    <div class="robustcov-capability-grid">
      <a class="robustcov-capability" href="workflows.html#covariance-scatter-and-anomaly-scores">
-       <span class="robustcov-capability-icon">Σ</span>
+       <span class="robustcov-capability-icon robustcov-capability-math" aria-hidden="true"><var>Σ</var></span>
        <h3>Estimate geometry</h3>
        <p>Robust location, covariance, scatter, precision, Mahalanobis scores, whitening, and kernels.</p>
      </a>
      <a class="robustcov-capability" href="workflows.html#pca-subspaces-and-monitoring">
-       <span class="robustcov-capability-icon">L + S</span>
+       <span class="robustcov-capability-icon robustcov-capability-math" aria-hidden="true"><var>X</var> ≈ <var>L</var> + <var>S</var></span>
        <h3>Decompose and reduce</h3>
        <p>Robust PCA, low-rank-plus-sparse decomposition, cellwise PCA, stability, and latent factors.</p>
      </a>
      <a class="robustcov-capability" href="monitoring.html">
-       <span class="robustcov-capability-icon">p ≤ α</span>
+       <span class="robustcov-capability-icon robustcov-capability-math" aria-hidden="true"><var>p</var> ≤ <var>α</var></span>
        <h3>Detect and monitor</h3>
        <p>Anomaly diagnostics, conformal alert calibration, frozen references, and adaptive subspace tracking.</p>
      </a>
      <a class="robustcov-capability" href="workflows.html#structured-and-cellwise-data">
-       <span class="robustcov-capability-icon">X₁…Xₙ</span>
-       <h3>Handle difficult structure</h3>
+       <span class="robustcov-capability-icon robustcov-capability-math" aria-hidden="true"><var>x</var><sub>1</sub>, …, <var>x</var><sub>n</sub></span>
+       <h3>Handle structured data</h3>
        <p>Bad cells, missing entries, high-dimensional tables, matrices, tensors, embeddings, and sparse graphs.</p>
      </a>
    </div>
@@ -110,37 +110,37 @@ A 60-second start
    unusual_rows = np.flatnonzero(detector.labels_ == -1)
    robust_distances = detector.mahalanobis(X)
 
-See :doc:`quickstart` for held-out conformal calibration, native availability,
-and a complete fitted-object walkthrough.
+See :doc:`quickstart` for held-out conformal calibration and a complete
+fitted-object walkthrough.
 
 Choose by data problem
 ----------------------
 
 .. list-table:: A practical first choice
    :header-rows: 1
-   :widths: 31 35 34
+   :widths: 34 34 32
 
    * - Data problem
-     - Start with
+     - Method family
      - Read next
    * - A minority of complete rows are outliers
-     - ``FastMCD``, ``DetS``, or ``DetMM``
+     - Rowwise high-breakdown covariance
      - :doc:`estimator_guide`
    * - Heavy tails or an ill-conditioned / high-dimensional covariance
-     - ``RegularizedCauchy``, ``StudentTScatter``, ``RegularizedTyler``, or ``MRCD``
-     - :doc:`method_comparison`
+     - Heavy-tail or regularized scatter
+     - :doc:`estimator_guide`
    * - Isolated bad cells or missing entries
-     - ``CellMCD``, ``CellRCov``, ``CellPCA``, or ``SparseCellPCA``
-     - :doc:`workflows`
+     - Cellwise covariance or robust PCA
+     - :doc:`user_guide`
    * - One matrix is low rank plus sparse gross corruption
-     - ``PrincipalComponentPursuit`` / ``PCP``
+     - Low-rank plus sparse decomposition
      - :doc:`principal_component_pursuit`
    * - A reference geometry must be monitored over time
-     - ``RobustSubspaceMonitor``, ``ConformalAlertCalibrator``, or experimental ``OnlineRobustSubspaceTracker``
+     - Detection, calibration, and monitoring
      - :doc:`monitoring`
    * - Observations are matrices, tensors, or learned embeddings
-     - ``MatrixMCD``, ``RobustMultilinearPCA``, or ``FeatureGeometry``
-     - :doc:`use_case_gallery`
+     - Structured covariance, multilinear PCA, or feature geometry
+     - :doc:`user_guide`
 
 .. raw:: html
 

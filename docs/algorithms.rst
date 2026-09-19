@@ -682,8 +682,8 @@ This makes Tyler's estimator highly robust to radial outliers because observatio
 robust distances receive small weights. Since the estimator is shape-only, it is often paired with a
 separate scale correction or used primarily for robust distances and shape diagnostics.
 
-Regularized Tyler / KL Tyler / Wiesel Tyler
--------------------------------------------
+Regularized Tyler and named KL/Wiesel variants
+------------------------------------------------
 
 When :math:`p` is close to :math:`n` or :math:`p > n`, unregularized scatter estimates can become
 singular or unstable. ``RegularizedTyler`` shrinks the Tyler update toward a target matrix
@@ -700,18 +700,18 @@ singular or unstable. ``RegularizedTyler`` shrinks the Tyler update toward a tar
    \qquad 0 \leq \alpha \leq 1.
 
 The result is normalized after each update. Shrinkage improves conditioning and makes the estimator
-usable in high-dimensional small-sample regimes. In the current MVP, ``KLRegularizedTyler`` and
-``WieselTyler`` are documented aliases around this regularized Tyler prototype. They keep the API
-space open for a future exact objective-specific implementation.
+usable in high-dimensional small-sample regimes. ``KLRegularizedTyler`` and
+``WieselTyler`` currently use the same fixed-point shrinkage engine as
+``RegularizedTyler`` while retaining distinct names for provenance and
+benchmarking. They should therefore not be interpreted as exact
+objective-specific KL or Wiesel solvers.
 
 Geometry note.  Regularized Tyler and Wiesel-style estimators are often
 understood through the geometry of the symmetric positive-definite cone.  Their
 objectives can be geodesically convex under appropriate formulations, even when
-they are not ordinary Euclidean-convex functions of the matrix entries.  This is
-why the package documentation separates the fixed-point update used in the MVP
-from stronger mathematical claims about an exact KL/Wiesel objective.  The
-current implementation is pragmatic; future versions may expose objective-level
-solvers once the exact formulation is stabilized.
+they are not ordinary Euclidean-convex functions of the matrix entries.  The
+package documentation therefore distinguishes the implemented fixed-point
+update from stronger mathematical claims about an exact KL/Wiesel objective.
 
 Student-t scatter
 -----------------
@@ -745,8 +745,8 @@ Regularized Cauchy
 ------------------
 
 ``RegularizedCauchy`` is the very-heavy-tail member of the same M-estimator family. It corresponds
-to a Cauchy-like radial downweighting rule and shrinkage toward a stable target. In practice this is
-the current flagship estimator for small-sample heavy-tail covariance recovery.
+to a Cauchy-like radial downweighting rule and shrinkage toward a stable target. It is a practical
+starting point for small-sample heavy-tail covariance recovery when regularization is needed.
 
 A simplified view is
 
@@ -768,11 +768,12 @@ weights with square-root-space shrinkage. It is useful for exploratory compariso
 not yet be cited as the exact optimizer of a specific Hellinger objective. The API label is
 experimental until the objective and fixed-point update are finalized.
 
-RobustScatterSelector
----------------------
+Robust scatter selection workflow
+---------------------------------
 
-``RobustScatterSelector`` is a practical selector. It fits a small candidate set and chooses an
-estimator using a diagnostic or stability score.
+``RobustScatterSelector`` is a package-level selection workflow rather than a new scatter
+estimating equation. It fits a small candidate set and chooses an estimator using a diagnostic or
+stability score.
 
 .. code-block:: text
 
@@ -881,18 +882,10 @@ Estimator selection summary
      - ``RobustScatterSelector``
      - diagnostic or stability-based selection
 
-References
-----------
-
-See :doc:`references` for the full bibliography. Key background includes Rousseeuw and Van Driessen
-for FastMCD, Tyler for shape estimation, Wiesel for regularized robust covariance, and standard
-Student-t/Cauchy M-estimation literature.
-
-
 Robust multilinear PCA
 ----------------------
 
-For matrix observations :math:`X_i\in\mathbb{R}^{r	imes c}`,
+For matrix observations :math:`X_i\in\mathbb{R}^{r\times c}`,
 ``RobustMultilinearPCA`` fits
 
 .. math::
@@ -914,3 +907,11 @@ scores, center, row loadings, and column loadings.
 The package uses a robust clipped-HOSVD initialization and fixed MAD residual
 scales.  It follows the ROMPCA modeling structure but does not claim exact
 reference-software parity.
+
+
+References
+----------
+
+See :doc:`references` for the full bibliography. Key background includes Rousseeuw and Van Driessen
+for FastMCD, Tyler for shape estimation, Wiesel for regularized robust covariance, and standard
+Student-t/Cauchy M-estimation literature.

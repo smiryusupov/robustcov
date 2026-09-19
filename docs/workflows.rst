@@ -1,5 +1,5 @@
-Workflows
-=========
+How-to workflows
+================
 
 Start from the statistical task rather than from an estimator name. Most
 RobustCov workflows follow the same pattern: fit a robust geometry on a

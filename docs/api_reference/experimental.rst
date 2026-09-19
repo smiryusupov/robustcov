@@ -11,7 +11,6 @@ The filtering estimator is available only from ``robustcov.experimental``.
 
 .. autoclass:: robustcov.experimental.SpectralFilteringCovariance
    :members:
-   :undoc-members:
    :show-inheritance:
 
 Distributionally robust PCA
@@ -22,7 +21,6 @@ The distributionally robust estimator is intentionally available only from
 
 .. autoclass:: robustcov.experimental.DistributionallyRobustPCA
    :members:
-   :undoc-members:
    :show-inheritance:
 
 Online robust subspace tracking
@@ -30,10 +28,8 @@ Online robust subspace tracking
 
 .. autoclass:: robustcov.OnlineRobustSubspaceTracker
    :members:
-   :undoc-members:
    :show-inheritance:
 
 .. autoclass:: robustcov.OnlineSubspaceUpdate
    :members:
-   :undoc-members:
    :show-inheritance:

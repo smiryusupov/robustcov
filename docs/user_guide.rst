@@ -18,37 +18,37 @@ Choose the task
 
 .. list-table:: Task-first map
    :header-rows: 1
-   :widths: 26 35 39
+   :widths: 30 32 38
 
    * - I need to...
-     - Start with
+     - Method family
      - Read next
    * - estimate covariance or scatter when some rows are abnormal
-     - ``FastMCD``, ``DetS``, ``DetMM``, or ``MRCD``
+     - Rowwise high-breakdown covariance
      - :doc:`estimator_guide` and :doc:`workflows`
    * - estimate stable geometry under heavy tails or high dimension
-     - ``RegularizedCauchy``, ``StudentTScatter``, ``RegularizedTyler``, or ``MRCD``
+     - Heavy-tail or regularized scatter
      - :doc:`estimator_guide` and :doc:`method_comparison`
    * - preserve useful rows when individual cells are bad or missing
-     - ``CellMCD``, ``CellRCov``, ``CellPCA``, or ``SparseCellPCA``
+     - Cellwise covariance or robust PCA
      - :doc:`cellwise_covariance` and :doc:`cellwise_pca`
    * - reduce dimension or separate low-rank structure from corruption
-     - ``RobustScatterPCA``, ``PrincipalComponentPursuit``, ``CellPCA``, or ``RobustMultilinearPCA``
+     - Robust PCA or low-rank decomposition
      - :doc:`robust_pca`, :doc:`principal_component_pursuit`, and :doc:`cellwise_pca`
    * - score unusual observations or calibrate alerts
-     - ``RobustOutlierDetector`` and ``ConformalAlertCalibrator``
+     - Robust-distance detection and calibration
      - :doc:`workflows` and :doc:`conformal_alert_calibration`
    * - monitor a reference subspace or feature distribution over time
-     - ``RobustSubspaceMonitor`` or ``FeatureGeometry``
+     - Frozen-reference monitoring and feature geometry
      - :doc:`monitoring` and :doc:`feature_geometry`
    * - estimate a sparse precision or dependence graph
-     - ``RobustGraphicalLasso`` or ``SGLASSO``
+     - Robust sparse precision estimation
      - :doc:`sparse_precision` and :doc:`spatial_sign_precision`
    * - work with matrix- or tensor-valued observations
-     - ``MatrixMCD`` or ``RobustMultilinearPCA``
+     - Structured covariance or multilinear PCA
      - :doc:`matrix_covariance` and :doc:`robust_multilinear_pca`
    * - recover latent sources or factors
-     - ``TwoScatterICA``, ``RobustSOBI``, or ``RobustFactorModel``
+     - Robust source separation or factor models
      - :doc:`source_separation_factor_models`
 
 Covariance, scatter, and robust distances

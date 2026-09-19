@@ -6,7 +6,6 @@ SHAP and LIME adapters
 
 .. automodule:: robustcov.explain
    :members:
-   :undoc-members:
 
 Optional external dataset loaders
 ---------------------------------
