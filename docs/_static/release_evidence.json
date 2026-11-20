@@ -2,79 +2,76 @@
   "artifacts": {
     "docs/_static/benchmarks/small_sample.csv": {
       "bytes": 18666,
-      "sha256": "1806e037a5bed2c0a81b957c964fe84beead3453f6019c696950083143ce5c63"
+      "sha256": "4c689f76e34a550304371a47931f73b27398a3761fe391b84644f8449c99d53b"
     },
     "docs/_static/benchmarks/small_sample_rank.png": {
-      "bytes": 98899,
-      "sha256": "6f3d869f2c7d4347fcb5c276d6e310c5cbd20237615aa2d884164b620d68267a"
+      "bytes": 115103,
+      "sha256": "9194e90eb75fbb3c7c815b2fd09fb9c34d1831ceb11a1fe2c78f019633c896ea"
     },
     "docs/_static/benchmarks/small_sample_summary.csv": {
       "bytes": 1377,
-      "sha256": "8ba095e32eb2d36b1a0cfe93a638e8c7ceb1c4bbafb6939b909ce9bd05bfc34b"
+      "sha256": "c17cb02b40df4628e5e84cc3a0c656b71c5b623046d3c044767a92dc60468d24"
     },
     "docs/_static/benchmarks/speed.csv": {
       "bytes": 9380,
-      "sha256": "52e39dd934ccedfae17678daddd6b83f9785567f1d3677f3aacfcf76db4490a3"
+      "sha256": "2e1a99ecd9690161d0509f1eff042b942fddbf717d206670ebd4f16b2c3f4d33"
     },
     "docs/_static/benchmarks/speed.png": {
-      "bytes": 382708,
-      "sha256": "1b08971ec93c8f3c04ab53fe4d8a46c6a9799f06ff060302a7468fc1f1853897"
+      "bytes": 405566,
+      "sha256": "4e3af01e52a3f86800c5db20cf22566873c5b3c5ee1477ed26e50a6fa7f0cc1f"
     },
     "docs/_static/benchmarks/statistical_validation.json": {
       "bytes": 2911,
       "sha256": "586e1d817d86a341c9a21b4fdca9c76b2302836f26ad90b5f170672c7a0a9cd0"
     },
     "docs/_static/examples/robust_explanations_iris.json": {
-      "bytes": 624,
-      "sha256": "d8a299f3d8a9537b7b398f581f0f96915b88586374b1735db1d81713eb410607"
+      "bytes": 333,
+      "sha256": "84d5f0ffea2278b4d0bcd30bc34fa86cf7e6757d0d6fa89b560ad0da6b7502b8"
     },
     "docs/_static/examples/robust_explanations_iris.png": {
       "bytes": 41255,
       "sha256": "48124104db9453f66923a00b80599e1e574174f1c4d8f377f73f274ba12f5694"
     },
     "docs/_static/examples/robust_explanations_iris_output.txt": {
-      "bytes": 260,
-      "sha256": "5eb552c5f98a95ca07a3f17ea0ee877e45c1d8a4883015f936e17a687d3e61bd"
+      "bytes": 144,
+      "sha256": "8e7a6f17d921f2c6a55a442310e2fc7985c4a5d8f3da4e4fb2fd182161ef56d1"
     }
   },
   "commands": [
-    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python benchmarks/small_sample_heavy_tail.py --profile quick --repeat 2 --csv docs/_static/benchmarks/small_sample.csv",
-    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python benchmarks/benchmark_summary.py --input docs/_static/benchmarks/small_sample.csv --csv docs/_static/benchmarks/small_sample_summary.csv",
-    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python examples/plot_benchmark_summary.py --input docs/_static/benchmarks/small_sample_summary.csv --metric mean_rank --output docs/_static/benchmarks/small_sample_rank.png",
-    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python benchmarks/speed_estimators.py --profile quick --repeat 2 --csv docs/_static/benchmarks/speed.csv",
-    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python examples/plot_speed_comparison.py --input docs/_static/benchmarks/speed.csv --output docs/_static/benchmarks/speed.png",
-    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python benchmarks/statistical_validation.py --json-output docs/_static/benchmarks/statistical_validation.json",
-    "/home/shohruh/Documents/Github/robustcov/.venv/bin/python examples/robust_explanations_iris.py --json-output docs/_static/examples/robust_explanations_iris.json --plot-output docs/_static/examples/robust_explanations_iris.png"
+    "/home/shohruh/.venvs/stm-py314/bin/python benchmarks/small_sample_heavy_tail.py --profile quick --repeat 2 --csv docs/_static/benchmarks/small_sample.csv",
+    "/home/shohruh/.venvs/stm-py314/bin/python benchmarks/benchmark_summary.py --input docs/_static/benchmarks/small_sample.csv --csv docs/_static/benchmarks/small_sample_summary.csv",
+    "/home/shohruh/.venvs/stm-py314/bin/python examples/plot_benchmark_summary.py --input docs/_static/benchmarks/small_sample_summary.csv --metric mean_rank --output docs/_static/benchmarks/small_sample_rank.png",
+    "/home/shohruh/.venvs/stm-py314/bin/python benchmarks/speed_estimators.py --profile quick --repeat 2 --csv docs/_static/benchmarks/speed.csv",
+    "/home/shohruh/.venvs/stm-py314/bin/python examples/plot_speed_comparison.py --input docs/_static/benchmarks/speed.csv --output docs/_static/benchmarks/speed.png",
+    "/home/shohruh/.venvs/stm-py314/bin/python benchmarks/statistical_validation.py --json-output docs/_static/benchmarks/statistical_validation.json",
+    "/home/shohruh/.venvs/stm-py314/bin/python examples/robust_explanations_iris.py --json-output docs/_static/examples/robust_explanations_iris.json --plot-output docs/_static/examples/robust_explanations_iris.png"
   ],
   "environment": {
-    "lime": "0.2.0.1",
+    "lime": null,
     "machine": "x86_64",
-    "matplotlib": "3.11.0",
-    "numpy": "2.4.6",
-    "platform": "Linux-6.17.0-1032-oem-x86_64-with-glibc2.39",
-    "python": "3.12.3",
-    "python_compiler": "GCC 13.3.0",
+    "matplotlib": "3.10.8",
+    "numpy": "2.3.5",
+    "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+    "python": "3.14.4",
+    "python_compiler": "GCC 15.2.0",
     "python_implementation": "CPython",
-    "scikit_learn": "1.9.0",
-    "scipy": "1.18.0",
-    "shap": "0.52.0"
+    "scikit_learn": "1.9.1",
+    "scipy": "1.17.0",
+    "shap": null
   },
-  "generated_at_utc": "2026-09-19T12:02:02.339751+00:00",
+  "generated_at_utc": "2026-11-20T19:36:58.469267+00:00",
   "key_results": {
     "classical_contamination_speed": {
-      "fastmcd_seconds": 0.005179,
-      "local_speed_ratio": 28.092681984939183,
-      "sklearn_mincovdet_seconds": 0.145492
+      "fastmcd_seconds": 0.012553,
+      "local_speed_ratio": 29.69114952600972,
+      "sklearn_mincovdet_seconds": 0.372713
     },
     "robust_explanations_iris": {
       "contaminated_rows": 12,
       "contaminated_rows_retained": 0,
       "dataset": "sklearn Iris classes 0 and 1",
       "lime": {
-        "available": true,
-        "contaminated_empirical_drift": 0.2094721480514683,
-        "drift_ratio": 0.07790080427788364,
-        "robust_reference_drift": 0.016318048807025295
+        "available": false
       },
       "model": "standardized logistic regression",
       "n_features": 4,
@@ -82,10 +79,7 @@
       "robust_support_size": 62,
       "schema_version": 1,
       "shap": {
-        "available": true,
-        "contaminated_empirical_drift": 2.5275552789414255,
-        "drift_ratio": 0.1533197820993489,
-        "robust_reference_drift": 0.3875242246113584
+        "available": false
       }
     },
     "small_sample": {
@@ -96,7 +90,7 @@
         "mean_error": "0.6659",
         "mean_rank": "1.6250",
         "median_error": "0.5907",
-        "median_seconds": "0.029984",
+        "median_seconds": "0.103946",
         "method": "robustcov RobustScatterSelector",
         "not_applicable": "0",
         "success_rate": "1.0000",
@@ -110,7 +104,7 @@
         "mean_error": "0.7454",
         "mean_rank": "5.5000",
         "median_error": "0.6774",
-        "median_seconds": "0.004294",
+        "median_seconds": "0.010013",
         "method": "robustcov FastMCD",
         "not_applicable": "4",
         "success_rate": "1.0000",
@@ -124,7 +118,7 @@
         "mean_error": "0.6808",
         "mean_rank": "1.8750",
         "median_error": "0.5950",
-        "median_seconds": "0.003983",
+        "median_seconds": "0.010901",
         "method": "robustcov RegularizedCauchy",
         "not_applicable": "0",
         "success_rate": "1.0000",
@@ -138,7 +132,7 @@
         "mean_error": "1.1903",
         "mean_rank": "6.7500",
         "median_error": "0.8233",
-        "median_seconds": "0.010644",
+        "median_seconds": "0.029554",
         "method": "sklearn MinCovDet",
         "not_applicable": "4",
         "success_rate": "1.0000",
@@ -197,6 +191,6 @@
     }
   },
   "schema_version": 1,
-  "source_revision": "47012beebca8925fe6fa906b9a9cf2f02018366d",
-  "source_tree_sha256": "db5c62f2c1d70d238e5ae5110628795d2f9c1aaaf9bc47a4461b0f418a17cd68"
+  "source_revision": "906c1cf541592817185d3d99f6ce9421fea4894d",
+  "source_tree_sha256": "94c7992902ab9ec28725d149520a3aa02efd5b42a4843a346c567ca3201a112e"
 }

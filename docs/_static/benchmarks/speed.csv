@@ -1,49 +1,49 @@
 workload,workload_label,n,p,contamination,df,family,method,experimental,status,reason,median_seconds,min_seconds,max_seconds,selected_estimator,note
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,high-breakdown subset,robustcov FastMCD,False,ok,,0.005179,0.004840,0.005518,,native classical MCD
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,high-breakdown regularized subset,robustcov MRCD,False,ok,,0.013855,0.013044,0.014666,,regularized subset estimator for p close to or above n
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,deterministic high-breakdown,robustcov DetS,False,ok,,0.143353,0.137337,0.149369,,deterministic S-estimator
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,deterministic high-breakdown,robustcov DetMM,False,ok,,0.177376,0.142128,0.212625,,high-breakdown start with efficient MM refinement
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,elliptical shape,robustcov TylerShape,False,ok,,0.000594,0.000554,0.000633,,unregularized affine-equivariant shape
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,regularized elliptical shape,robustcov RegularizedTyler,False,ok,,0.000438,0.000432,0.000445,,regularized Tyler shape
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,regularized elliptical shape,robustcov KLRegularizedTyler,False,ok,,0.000422,0.000414,0.000430,,KL-labelled regularized Tyler interface
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,regularized elliptical shape,robustcov WieselTyler,False,ok,,0.000404,0.000395,0.000412,,Wiesel-labelled regularized Tyler interface
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,heavy-tail M-scatter,robustcov StudentT(df=3),False,ok,,0.003087,0.003015,0.003159,,Student-t radial weights
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,heavy-tail M-scatter,robustcov RegularizedCauchy,False,ok,,0.003147,0.003032,0.003262,,redescending Cauchy-like radial weights
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,experimental elliptical shape,robustcov HellingerTyler (experimental),True,ok,,0.004148,0.004098,0.004198,,experimental square-root shrinkage prototype
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,automatic selection workflow,robustcov RobustScatterSelector,False,ok,,0.017497,0.017381,0.017613,RegularizedCauchy,runtime includes fitting and selecting multiple candidates
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,classical / shrinkage,sklearn Empirical,False,ok,,0.002930,0.000291,0.005568,,non-robust reference
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,classical / shrinkage,sklearn LedoitWolf,False,ok,,0.000264,0.000249,0.000279,,linear shrinkage reference
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,classical / shrinkage,sklearn OAS,False,ok,,0.000171,0.000170,0.000173,,oracle-approximating shrinkage reference
-classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,high-breakdown subset,sklearn MinCovDet,False,ok,,0.145492,0.141292,0.149692,,classical MCD reference
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,high-breakdown subset,robustcov FastMCD,False,ok,,0.007542,0.007128,0.007956,,native classical MCD
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,high-breakdown regularized subset,robustcov MRCD,False,ok,,0.012745,0.012275,0.013215,,regularized subset estimator for p close to or above n
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,deterministic high-breakdown,robustcov DetS,False,ok,,0.131499,0.130478,0.132520,,deterministic S-estimator
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,deterministic high-breakdown,robustcov DetMM,False,ok,,0.189680,0.140790,0.238570,,high-breakdown start with efficient MM refinement
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,elliptical shape,robustcov TylerShape,False,ok,,0.001474,0.001223,0.001725,,unregularized affine-equivariant shape
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,regularized elliptical shape,robustcov RegularizedTyler,False,ok,,0.001108,0.001104,0.001113,,regularized Tyler shape
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,regularized elliptical shape,robustcov KLRegularizedTyler,False,ok,,0.001113,0.001095,0.001130,,KL-labelled regularized Tyler interface
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,regularized elliptical shape,robustcov WieselTyler,False,ok,,0.001090,0.001082,0.001099,,Wiesel-labelled regularized Tyler interface
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,heavy-tail M-scatter,robustcov StudentT(df=3),False,ok,,0.002360,0.002270,0.002451,,Student-t radial weights
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,heavy-tail M-scatter,robustcov RegularizedCauchy,False,ok,,0.002249,0.002240,0.002257,,redescending Cauchy-like radial weights
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,experimental elliptical shape,robustcov HellingerTyler (experimental),True,ok,,0.003642,0.003566,0.003718,,experimental square-root shrinkage prototype
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,automatic selection workflow,robustcov RobustScatterSelector,False,ok,,0.014714,0.014595,0.014834,StudentTScatter,runtime includes fitting and selecting multiple candidates
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,classical / shrinkage,sklearn Empirical,False,ok,,0.000395,0.000227,0.000562,,non-robust reference
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,classical / shrinkage,sklearn LedoitWolf,False,ok,,0.000260,0.000242,0.000279,,linear shrinkage reference
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,classical / shrinkage,sklearn OAS,False,ok,,0.000173,0.000166,0.000180,,oracle-approximating shrinkage reference
-heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,high-breakdown subset,sklearn MinCovDet,False,ok,,0.015030,0.014850,0.015211,,classical MCD reference
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,high-breakdown subset,robustcov FastMCD,False,ok,,0.012553,0.012210,0.012895,,native classical MCD
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,high-breakdown regularized subset,robustcov MRCD,False,ok,,0.047020,0.046066,0.047975,,regularized subset estimator for p close to or above n
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,deterministic high-breakdown,robustcov DetS,False,ok,,0.550878,0.506254,0.595503,,deterministic S-estimator
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,deterministic high-breakdown,robustcov DetMM,False,ok,,0.678499,0.595797,0.761202,,high-breakdown start with efficient MM refinement
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,elliptical shape,robustcov TylerShape,False,ok,,0.003328,0.001631,0.005025,,unregularized affine-equivariant shape
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,regularized elliptical shape,robustcov RegularizedTyler,False,ok,,0.004361,0.001323,0.007399,,regularized Tyler shape
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,regularized elliptical shape,robustcov KLRegularizedTyler,False,ok,,0.004273,0.001246,0.007300,,KL-labelled regularized Tyler interface
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,regularized elliptical shape,robustcov WieselTyler,False,ok,,0.004380,0.001263,0.007496,,Wiesel-labelled regularized Tyler interface
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,heavy-tail M-scatter,robustcov StudentT(df=3),False,ok,,0.008934,0.008644,0.009224,,Student-t radial weights
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,heavy-tail M-scatter,robustcov RegularizedCauchy,False,ok,,0.008994,0.008601,0.009387,,redescending Cauchy-like radial weights
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,experimental elliptical shape,robustcov HellingerTyler (experimental),True,ok,,0.012070,0.011564,0.012576,,experimental square-root shrinkage prototype
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,automatic selection workflow,robustcov RobustScatterSelector,False,ok,,0.083517,0.050224,0.116809,RegularizedCauchy,runtime includes fitting and selecting multiple candidates
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,classical / shrinkage,sklearn Empirical,False,ok,,0.005543,0.000649,0.010437,,non-robust reference
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,classical / shrinkage,sklearn LedoitWolf,False,ok,,0.000610,0.000565,0.000656,,linear shrinkage reference
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,classical / shrinkage,sklearn OAS,False,ok,,0.000407,0.000398,0.000416,,oracle-approximating shrinkage reference
+classical_contamination,Low-dimensional row contamination,800,8,0.1,inf,high-breakdown subset,sklearn MinCovDet,False,ok,,0.372713,0.369787,0.375639,,classical MCD reference
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,high-breakdown subset,robustcov FastMCD,False,ok,,0.023208,0.022499,0.023917,,native classical MCD
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,high-breakdown regularized subset,robustcov MRCD,False,ok,,0.053651,0.033073,0.074229,,regularized subset estimator for p close to or above n
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,deterministic high-breakdown,robustcov DetS,False,ok,,0.442334,0.408789,0.475879,,deterministic S-estimator
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,deterministic high-breakdown,robustcov DetMM,False,ok,,0.648903,0.461620,0.836187,,high-breakdown start with efficient MM refinement
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,elliptical shape,robustcov TylerShape,False,ok,,0.019999,0.005737,0.034262,,unregularized affine-equivariant shape
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,regularized elliptical shape,robustcov RegularizedTyler,False,ok,,0.006405,0.005941,0.006869,,regularized Tyler shape
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,regularized elliptical shape,robustcov KLRegularizedTyler,False,ok,,0.005846,0.005552,0.006139,,KL-labelled regularized Tyler interface
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,regularized elliptical shape,robustcov WieselTyler,False,ok,,0.005884,0.005881,0.005887,,Wiesel-labelled regularized Tyler interface
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,heavy-tail M-scatter,robustcov StudentT(df=3),False,ok,,0.006811,0.006519,0.007103,,Student-t radial weights
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,heavy-tail M-scatter,robustcov RegularizedCauchy,False,ok,,0.006625,0.006563,0.006687,,redescending Cauchy-like radial weights
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,experimental elliptical shape,robustcov HellingerTyler (experimental),True,ok,,0.010614,0.010532,0.010696,,experimental square-root shrinkage prototype
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,automatic selection workflow,robustcov RobustScatterSelector,False,ok,,0.070551,0.041436,0.099666,StudentTScatter,runtime includes fitting and selecting multiple candidates
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,classical / shrinkage,sklearn Empirical,False,ok,,0.002579,0.000886,0.004272,,non-robust reference
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,classical / shrinkage,sklearn LedoitWolf,False,ok,,0.000712,0.000661,0.000764,,linear shrinkage reference
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,classical / shrinkage,sklearn OAS,False,ok,,0.001561,0.000596,0.002527,,oracle-approximating shrinkage reference
+heavy_tail,Moderate-dimensional Student-t tails,500,20,0.0,3.0,high-breakdown subset,sklearn MinCovDet,False,ok,,0.059828,0.058743,0.060913,,classical MCD reference
 high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,high-breakdown subset,robustcov FastMCD,False,not_applicable,requires default MCD support h > p,,,,,native classical MCD
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,high-breakdown regularized subset,robustcov MRCD,False,ok,,0.014257,0.014187,0.014328,,regularized subset estimator for p close to or above n
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,high-breakdown regularized subset,robustcov MRCD,False,ok,,0.053668,0.043723,0.063612,,regularized subset estimator for p close to or above n
 high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,deterministic high-breakdown,robustcov DetS,False,not_applicable,requires ceil(n / 2) > p,,,,,deterministic S-estimator
 high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,deterministic high-breakdown,robustcov DetMM,False,not_applicable,requires ceil(n / 2) > p,,,,,high-breakdown start with efficient MM refinement
 high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,elliptical shape,robustcov TylerShape,False,not_applicable,requires n > p,,,,,unregularized affine-equivariant shape
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,regularized elliptical shape,robustcov RegularizedTyler,False,ok,,0.135069,0.134788,0.135350,,regularized Tyler shape
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,regularized elliptical shape,robustcov KLRegularizedTyler,False,ok,,0.135436,0.135198,0.135673,,KL-labelled regularized Tyler interface
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,regularized elliptical shape,robustcov WieselTyler,False,ok,,0.135387,0.135006,0.135768,,Wiesel-labelled regularized Tyler interface
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,heavy-tail M-scatter,robustcov StudentT(df=3),False,ok,,0.050855,0.050830,0.050880,,Student-t radial weights
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,heavy-tail M-scatter,robustcov RegularizedCauchy,False,ok,,0.031304,0.031146,0.031461,,redescending Cauchy-like radial weights
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,experimental elliptical shape,robustcov HellingerTyler (experimental),True,ok,,0.370124,0.369631,0.370617,,experimental square-root shrinkage prototype
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,automatic selection workflow,robustcov RobustScatterSelector,False,ok,,0.257489,0.256457,0.258521,StudentTScatter,runtime includes fitting and selecting multiple candidates
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,classical / shrinkage,sklearn Empirical,False,ok,,0.001416,0.001184,0.001648,,non-robust reference
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,classical / shrinkage,sklearn LedoitWolf,False,ok,,0.001174,0.001143,0.001205,,linear shrinkage reference
-high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,classical / shrinkage,sklearn OAS,False,ok,,0.001087,0.001081,0.001093,,oracle-approximating shrinkage reference
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,regularized elliptical shape,robustcov RegularizedTyler,False,ok,,0.325340,0.320457,0.330222,,regularized Tyler shape
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,regularized elliptical shape,robustcov KLRegularizedTyler,False,ok,,0.347669,0.347321,0.348017,,KL-labelled regularized Tyler interface
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,regularized elliptical shape,robustcov WieselTyler,False,ok,,0.409955,0.385523,0.434387,,Wiesel-labelled regularized Tyler interface
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,heavy-tail M-scatter,robustcov StudentT(df=3),False,ok,,0.154619,0.152036,0.157202,,Student-t radial weights
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,heavy-tail M-scatter,robustcov RegularizedCauchy,False,ok,,0.091215,0.090494,0.091937,,redescending Cauchy-like radial weights
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,experimental elliptical shape,robustcov HellingerTyler (experimental),True,ok,,1.047571,1.036834,1.058308,,experimental square-root shrinkage prototype
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,automatic selection workflow,robustcov RobustScatterSelector,False,ok,,0.682538,0.680186,0.684889,StudentTScatter,runtime includes fitting and selecting multiple candidates
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,classical / shrinkage,sklearn Empirical,False,ok,,0.003998,0.003733,0.004264,,non-robust reference
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,classical / shrinkage,sklearn LedoitWolf,False,ok,,0.004639,0.004279,0.004999,,linear shrinkage reference
+high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,classical / shrinkage,sklearn OAS,False,ok,,0.003442,0.003429,0.003454,,oracle-approximating shrinkage reference
 high_dimensional,High-dimensional heavy tails (p > n),90,120,0.0,3.0,high-breakdown subset,sklearn MinCovDet,False,not_applicable,requires default MCD support h > p,,,,,classical MCD reference
